@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rviz_playground</name>
-  <version>0.0.1</version>
-  <description>Playing around with RVIZ</description>
-  <maintainer email="albaalia@live.com">ros</maintainer>
-  <license>Package for playing around with with RVIZ</license>
+  <name>turtle_nav_cpp</name>
+  <version>0.3.4</version>
+  <description>
+    Running navigation algorithms such as (Kalman filters), control, etc. on the turtlesim.
+  </description>
+  <license>albaalia@live.com</license>
+
+  <maintainer email="albaalia@live.com">Amro Al-Baali</maintainer>
+  <author email="albaalia@live.com">Amro Al-Baali</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  
   <depend>geometry_msgs</depend>
   <depend>launch</depend>
   <depend>launch_ros</depend>
