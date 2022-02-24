@@ -42,16 +42,24 @@ public:
   {
 
     // Declare and acquire parameters
-    this->declare_parameter<std::string>("target_frame", "turtle_est");
+    //  Estimated turtle name
+    this->declare_parameter<std::string>("target_name", "turtle_est_nm");
+    this->get_parameter("target_name", turtle_name_);
+
+    //  Estimated turtle frame
+    this->declare_parameter<std::string>("target_frame", "turtle_est_frm");
     this->get_parameter("target_frame", target_frame_);
 
+    //  Odometry frame
     this->declare_parameter<std::string>("odom_frame", "odom");
     this->get_parameter("odom_frame", odom_frame_);
 
+    //  Map frame
     this->declare_parameter<std::string>("map_frame", "map");
     this->get_parameter("map_frame", map_frame_);
 
     // Turtle not spawned yet
+    turtle_spawning_service_ready_ = false;
     est_turtle_spawned_ = false;
 
     // Create a client to spawn a turtle
@@ -71,9 +79,18 @@ public:
     new_pose.theta = 0.0;
     new_pose.linear_velocity = 0.0;
     new_pose.angular_velocity = 0.0;
-    SpawnRobot(new_pose, "new_turtle");
-    // RCLCPP_INFO(this->get_logger(), "Result: \033[96;1m", success, "\033[0m");
+
+    // Spawn turtle
+    SpawnTurtle(new_pose, turtle_name_);
     
+  }
+
+  ~EstimatorBroadcaster() {
+    // Kill spawned turtle
+    if (!est_turtle_spawned_)
+      return;
+    
+    KillTurtle(turtle_name_);
   }
 
 private:
@@ -86,48 +103,68 @@ private:
    * @param[in] turtle_name 
    * @return true Turtle successfully spawned
    */
-  bool SpawnRobot(const turtlesim::msg::Pose& in_pose, const std::string& turtle_name)
+  bool SpawnTurtle(const turtlesim::msg::Pose& in_pose, const std::string& turtle_name)
   {
-    if (est_turtle_spawned_) {
-      return est_turtle_spawned_;
-    }
-
-    // Spawn only if the service is ready
-    if (spawner_->service_is_ready()) {
-      // Initialize request
-      auto request = std::make_shared<SrvSpawn::Request>();
-      request->x = in_pose.x;
-      request->y = in_pose.y;
-      request->theta = in_pose.theta;
-      request->name = turtle_name;
-
-      // Call request
-      using ServiceResponseFuture =
-          rclcpp::Client<turtlesim::srv::Spawn>::SharedFuture;
-      auto response_received_callback = [this, turtle_name](ServiceResponseFuture future) {
-        auto result = future.get();
-        if (result->name == turtle_name) {
-          // Successfully spawned turtle
-          est_turtle_spawned_ = true;
-        } else {
-          RCLCPP_ERROR(this->get_logger(), "Spawn service callback result mismatch");
-        }
-      };
-      auto result = spawner_->async_send_request(request, response_received_callback);
-      
-
-    } else {
-      RCLCPP_INFO(this->get_logger(), "Spawn service is not ready");
-    }
+    while (!spawner_->service_is_ready())
+      RCLCPP_DEBUG(this->get_logger(), "Spawn service is not ready");
     
-    return false;
+    if (turtle_spawning_service_ready_) {
+      if (!est_turtle_spawned_) {
+        est_turtle_spawned_ = true;
+        RCLCPP_INFO(this->get_logger(), "Successfully spawned");        
+      }
+    } else {
+      // Spawn only if the service is ready
+      if (spawner_->service_is_ready()) {
+        // Initialize request
+        auto request = std::make_shared<SrvSpawn::Request>();
+        request->x = in_pose.x;
+        request->y = in_pose.y;
+        request->theta = in_pose.theta;
+        request->name = turtle_name;
+
+        // Call request
+        using ServiceResponseFuture =
+            rclcpp::Client<turtlesim::srv::Spawn>::SharedFuture;
+        auto response_received_callback = [this, turtle_name](ServiceResponseFuture future) {
+          auto result = future.get();
+          if (result->name == turtle_name) {
+            // Successfully spawned turtle
+            std::stringstream ss;
+            turtle_spawning_service_ready_ = true;
+          } else {
+            RCLCPP_ERROR(this->get_logger(), "Spawn service callback result mismatch");
+          }
+        };
+        auto result = spawner_->async_send_request(request, response_received_callback);
+      
+      } else {
+        RCLCPP_INFO(this->get_logger(), "Spawn service is not ready");
+      }
+    }
+
+    return est_turtle_spawned_;
   }
 
+  /**
+   * @brief Kill a spawned turtle
+   * 
+   * @param[in] turtle_name 
+   */
+  void KillTurtle(const std::string turtle_name) {
+    // TODO: implement a service call to kill a spawned turtle
+  }
+
+  // if the service for spawning turtle is available
+  bool turtle_spawning_service_ready_;
   // Turtle successfully spawned
   bool est_turtle_spawned_;
 
   // Spawner service client
   rclcpp::Client<SrvSpawn>::SharedPtr spawner_{nullptr};
+
+  // Spawned turtle name
+  std::string turtle_name_;
 
   // Frame names
   std::string target_frame_;
