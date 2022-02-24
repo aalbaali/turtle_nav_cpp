@@ -17,6 +17,32 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(turtlesim REQUIRED)
+
+# Estimated pose broadcaster
+add_executable(turtle_est_broadcaster src/turtle_est_broadcaster.cpp)
+ament_target_dependencies(
+  turtle_est_broadcaster
+  rclcpp
+  tf2
+  tf2_ros
+  turtlesim
+  geometry_msgs
+)
+
+# Install targets
+install(TARGETS
+  turtle_est_broadcaster
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 # Install launch files
 install(DIRECTORY
