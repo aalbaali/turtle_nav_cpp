@@ -61,7 +61,11 @@ public:
 
     //  Estimated turtle frame
     this->declare_parameter<std::string>("target_frame", "turtle_est_frm");
-    this->get_parameter("target_frame", base_link_frame_);
+    this->get_parameter("target_frame", est_turtle_frame_);
+
+    //  True turtle frame
+    this->declare_parameter<std::string>("true_frame", "turtle_true_frm");
+    this->get_parameter("true_frame", true_turtle_frame_);
 
     //  Odometry frame
     this->declare_parameter<std::string>("odom_frame", "odom");
@@ -84,9 +88,9 @@ public:
     teleporter_ = this->create_client<SrvTeleportRequest>(teleport_service_topic_);
 
     // Subscribe to estimated pose topic
-            std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
+    subscription_ = this->create_subscription<turtlesim::msg::Pose>(
             pose_subscription_topic_, 1,
-            std::bind(&EstimatorBroadcaster::pose_callback, this, _1));
+            std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
   }
 
 private:
@@ -116,23 +120,11 @@ private:
   void SendTf2Transforms(const turtlesim::msg::Pose::SharedPtr msg) const {
      rclcpp::Time now;
 
-    // odom->base_link transform
-    geometry_msgs::msg::TransformStamped base_link_tf;
+    // Send true odom->robot transform
+    SendTf2Transform(msg, odom_frame_, true_turtle_frame_, now);
 
-    base_link_tf.transform.translation.x = msg->x;
-    base_link_tf.transform.translation.y = msg->y;
-    base_link_tf.transform.translation.z = 0.0;
-    tf2::Quaternion q;
-    q.setRPY(0, 0, msg->theta);
-    base_link_tf.transform.rotation.x = q.x();
-    base_link_tf.transform.rotation.y = q.y();
-    base_link_tf.transform.rotation.z = q.z();
-    base_link_tf.transform.rotation.w = q.w();
-
-    base_link_tf.header.frame_id = odom_frame_;
-    base_link_tf.child_frame_id = base_link_frame_;
-    base_link_tf.header.stamp = now;
-    tf_broadcaster_->sendTransform(base_link_tf);
+    // Send estimated odom->robot transform
+    SendTf2Transform(msg, odom_frame_, est_turtle_frame_, now);
 
     // map->odom transform
     geometry_msgs::msg::TransformStamped odom_tf;
@@ -142,6 +134,7 @@ private:
     odom_tf.transform.translation.x = 3.0;
     odom_tf.transform.translation.y = 3.0;
     odom_tf.transform.translation.z = 0.0;
+    tf2::Quaternion q;
     q.setRPY(0, 0, 0);
     odom_tf.transform.rotation.x = q.x();
     odom_tf.transform.rotation.y = q.y();
@@ -152,6 +145,51 @@ private:
     odom_tf.child_frame_id = odom_frame_;
     odom_tf.header.stamp = now;
     tf_broadcaster_->sendTransform(odom_tf);
+  }
+
+
+  /**
+   * @brief Overloads `SendTf2Transform`, where time is generated within the function
+   * 
+   * @param[in] msg Pose to send to TF2
+   * @param[in] header_frame_id Header (i.e., "from") frame ID
+   * @param[in] child_frame_id Child (i.e., "to") frame ID
+   */
+  void SendTf2Transform(const turtlesim::msg::Pose::SharedPtr msg,
+        const std::string& header_frame_id, const std::string& child_frame_id) const {
+    rclcpp::Time now;
+    SendTf2Transform(msg, header_frame_id, child_frame_id, now);
+  }
+
+  /**
+   * @brief Send a single transform to TF2
+   * 
+   * @param[in] msg Pose to send to TF2
+   * @param[in] header_frame_id Header (i.e., "from") frame ID
+   * @param[in] child_frame_id Child (i.e., "to") frame ID
+   * @param[in] time Input time to be recorded in the header
+   */
+  void SendTf2Transform(const turtlesim::msg::Pose::SharedPtr msg,
+        const std::string& header_frame_id, const std::string& child_frame_id,
+        const rclcpp::Time& time) const {
+
+    // odom->base_link transform
+    geometry_msgs::msg::TransformStamped transform;
+
+    transform.transform.translation.x = msg->x;
+    transform.transform.translation.y = msg->y;
+    transform.transform.translation.z = 0.0;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, msg->theta);
+    transform.transform.rotation.x = q.x();
+    transform.transform.rotation.y = q.y();
+    transform.transform.rotation.z = q.z();
+    transform.transform.rotation.w = q.w();
+
+    transform.header.frame_id = header_frame_id;
+    transform.child_frame_id = child_frame_id;
+    transform.header.stamp = time;
+    tf_broadcaster_->sendTransform(transform);
   }
 
   /**
@@ -255,7 +293,8 @@ private:
   std::string turtle_name_;
 
   // Frame names
-  std::string base_link_frame_;
+  std::string est_turtle_frame_;
+  std::string true_turtle_frame_;
   std::string odom_frame_;
   std::string map_frame_;
 };
