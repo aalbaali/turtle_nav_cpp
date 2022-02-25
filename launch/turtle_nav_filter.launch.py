@@ -54,6 +54,8 @@ def generate_launch_description():
             parameters=[
                 {'true_meas_topic': TRUE_TURTLE_TOPIC_NAME + '/cmd_vel'},   # Subscribe to this
                 {'noisy_meas_topic': MEAS_TOPIC_NS + '/wheel_encoder'},     # Publish to this
+                {'linear_speed_noise_params': [0.0, 0.1]},                  # [mean, std]
+                {'angular_speed_noise_params': [0.0, 0.01]},                # [mean, std]
             ]
         ),
     ])

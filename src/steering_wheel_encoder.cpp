@@ -17,11 +17,21 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <random>
+#include <map>
+#include <vector>
+#include <array>
 
 using std::placeholders::_1;
 
 using Twist = geometry_msgs::msg::Twist;
 using TwistWithCovStamped = geometry_msgs::msg::TwistWithCovarianceStamped;
+
+// String to double map to extract Gaussian params
+using StrToDoubleMap = std::map<std::string, double>;
+
+// (mean, std)
+using GaussianParamsVec = std::vector<double>;
 
 class SteeringWheelEncoder : public rclcpp::Node {
  public:
@@ -36,10 +46,32 @@ class SteeringWheelEncoder : public rclcpp::Node {
     this->declare_parameter<std::string>("noisy_meas_topic", "meas/wheel_encoder");
     this->get_parameter("noisy_meas_topic", noisy_meas_topic_);
 
+    GaussianParamsVec gaussian_params;
+
+    //  Linear speed Gaussian PDF params (mean, std)
+    //  Note that a non-zero mean value implies the sensor is biased
+    this->declare_parameter("linear_speed_noise_params", GaussianParamsVec{0.0, 1.0});
+    this->get_parameter("linear_speed_noise_params", gaussian_params);
+    linear_speed_noise_gaussian_ = std::normal_distribution<double>(
+        gaussian_params[0], gaussian_params[1]);
+    
+
+    //  Angular speed Gaussian PDF params (mean, std)
+    //  Note that a non-zero mean value implies the sensor is biased
+    gaussian_params.clear();
+    this->declare_parameter("angular_speed_noise_params", GaussianParamsVec{0.0, 1.0});
+    this->get_parameter("angular_speed_noise_params", gaussian_params);
+    angular_speed_noise_gaussian_ = std::normal_distribution<double>(
+        gaussian_params[0], gaussian_params[1]);
+
+
     std::stringstream ss;
-    ss << "Topics: true_meas_topic: \033[92;1m'" << true_meas_topic_ << "'\033[0m"
-        << "noisy_meas_topic: '\033[92;1m" << noisy_meas_topic_ << "'\033[0m";
+    ss << "Map params. mu: \033[92;1m" << gaussian_params[0] << "\033[0m"
+       << ", std: \033[92;1m" << gaussian_params[1] << "\033[0m";
     RCLCPP_INFO(this->get_logger(), ss.str());
+
+    rn_generator_ = std::default_random_engine();
+
 
     // Subscribe to true measurement topic
     true_meas_subscriber_ = this->create_subscription<Twist>(
@@ -59,10 +91,14 @@ class SteeringWheelEncoder : public rclcpp::Node {
     noisy_meas.header.stamp = this->get_clock()->now();    
     noisy_meas.twist.twist = *true_meas.get();
 
+    // Add noise
+    noisy_meas.twist.twist.linear.x += linear_speed_noise_gaussian_(rn_generator_);
+    noisy_meas.twist.twist.angular.z += angular_speed_noise_gaussian_(rn_generator_);
+
     // Variance on x, y, theta
-    double var_x = 1e-1;
-    double var_y = 1e-1;
-    double var_theta = 1e-2;
+    double var_x = std::pow(linear_speed_noise_gaussian_.stddev(), 2);
+    double var_y = -1.0;
+    double var_theta = std::pow(angular_speed_noise_gaussian_.stddev(), 2);
     std::array<double, 36> cov {
         var_x, 0.0, 0.0, 0.0, 0.0, 0.0, // x
         0.0, var_y, 0.0, 0.0, 0.0, 0.0, // y
@@ -87,6 +123,13 @@ class SteeringWheelEncoder : public rclcpp::Node {
 
   // Publisher
   rclcpp::Publisher<TwistWithCovStamped>::SharedPtr noisy_meas_publisher_{nullptr};
+
+  // Random number generator
+  std::default_random_engine rn_generator_;
+
+  // Measurement noise (Gaussian/normal) distributions
+  std::normal_distribution<double> linear_speed_noise_gaussian_;
+  std::normal_distribution<double> angular_speed_noise_gaussian_;
 };
 
 
