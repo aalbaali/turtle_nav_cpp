@@ -39,6 +39,10 @@ using std::placeholders::_1;
 using SrvSpawn = turtlesim::srv::Spawn;
 using SrvTeleportRequest = turtlesim::srv::TeleportAbsolute;
 
+/**
+ * @brief Class that broadcasts TF2 transforms and communicates with turtlesim
+ * 
+ */
 class EstimatorBroadcaster : public rclcpp::Node
 {
 public:
@@ -89,7 +93,7 @@ public:
 
     // Subscribe to estimated pose topic
     subscription_ = this->create_subscription<turtlesim::msg::Pose>(
-            pose_subscription_topic_, 1,
+            pose_subscription_topic_, 10,
             std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
   }
 

@@ -37,9 +37,18 @@ ament_target_dependencies(
   geometry_msgs
 )
 
+# Steering wheel encoder
+add_executable(steering_wheel_encoder src/steering_wheel_encoder.cpp)
+ament_target_dependencies(
+  steering_wheel_encoder
+  rclcpp
+  geometry_msgs
+)
+
 # Install targets
 install(TARGETS
   turtle_est_broadcaster
+  steering_wheel_encoder
   DESTINATION lib/${PROJECT_NAME}
 )
 

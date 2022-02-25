@@ -13,7 +13,10 @@ TRUE_TURTLE_TOPIC_NAME = 'true_turtle'
 # Estimated turtle topic name
 EST_TURTLE_TOPIC_NAME = 'est_turtle'
 
+# Measurements namespace (i.e., any measurements should fall under it)
+MEAS_TOPIC_NS = 'meas'
 
+# TODO: make this more module, similar to Hadabot's code
 def generate_launch_description():
     return LaunchDescription([
         # Turtlesim simulator
@@ -33,12 +36,24 @@ def generate_launch_description():
             package='turtle_nav_cpp',
             executable='turtle_est_broadcaster',
             parameters=[
-                {'target_name': 'est_turtle'},
-                {'target_frame': 'est_turtle'},
-                {'odom_frame': 'odom'},
-                {'map_frame': 'map'},
-                {'pose_subscribe_topic': TRUE_TURTLE_TOPIC_NAME + '/pose'},
+                {'target_name': 'est_turtle'},   # Name of the spawned turtle
+                {'target_frame': 'est_turtle'},  # Estimated pose TF frame   
+                {'true_frame': 'true_turtle'},   # True pose TF frame
+                {'odom_frame': 'odom'},          # Odometry TF frame
+                {'map_frame': 'map'},            # Map TF frame
+                {'pose_subscribe_topic': TRUE_TURTLE_TOPIC_NAME + '/pose'},  # Subscribe to this
+                # Request teleport service from this
                 {'teleport_service': EST_TURTLE_TOPIC_NAME + '/teleport_absolute'},
+            ]
+        ),
+
+        # Steering wheel encoder node
+        Node(
+            package='turtle_nav_cpp',
+            executable='steering_wheel_encoder',
+            parameters=[
+                {'true_meas_topic': TRUE_TURTLE_TOPIC_NAME + '/cmd_vel'},   # Subscribe to this
+                {'noisy_meas_topic': MEAS_TOPIC_NS + '/wheel_encoder'},     # Publish to this
             ]
         ),
     ])
