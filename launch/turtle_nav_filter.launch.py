@@ -37,7 +37,8 @@ def generate_launch_description():
                 {'target_frame': 'est_turtle'},
                 {'odom_frame': 'odom'},
                 {'map_frame': 'map'},
-                {'pose_subscribe_topic': TRUE_TURTLE_TOPIC_NAME + '/pose'}
+                {'pose_subscribe_topic': TRUE_TURTLE_TOPIC_NAME + '/pose'},
+                {'teleport_service': EST_TURTLE_TOPIC_NAME + '/teleport_absolute'},
             ]
         ),
     ])

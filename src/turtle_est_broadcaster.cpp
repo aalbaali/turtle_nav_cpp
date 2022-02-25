@@ -25,6 +25,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/buffer.h>
 #include <turtlesim/srv/spawn.hpp>
+#include <turtlesim/srv/teleport_absolute.hpp>
 #include <turtlesim/msg/pose.hpp>
 
 #include <chrono>
@@ -36,6 +37,7 @@ using std::placeholders::_1;
 
 // Turtle spawner service
 using SrvSpawn = turtlesim::srv::Spawn;
+using SrvTeleportRequest = turtlesim::srv::TeleportAbsolute;
 
 class EstimatorBroadcaster : public rclcpp::Node
 {
@@ -48,6 +50,10 @@ public:
     //  Topic to subscribe to
     this->declare_parameter<std::string>("pose_subscribe_topic", "/true_turtle/pose");
     this->get_parameter("pose_subscribe_topic", pose_subscription_topic_);
+
+    //  Teleport service topic
+    this->declare_parameter<std::string>("teleport_service", "/est_turtle/teleport_absolute");
+    this->get_parameter("teleport_service", teleport_service_topic_);
 
     //  Estimated turtle name
     this->declare_parameter<std::string>("target_name", "turtle_est_nm");
@@ -72,30 +78,13 @@ public:
     // Create a client to spawn a turtle
     spawner_ = this->create_client<SrvSpawn>("spawn");
 
+    // Create a client to teleport the turtle in turtlesim
+    teleporter_ = this->create_client<SrvTeleportRequest>(teleport_service_topic_);
+
     // Subscribe to estimated pose topic
     subscription_ = this->create_subscription<turtlesim::msg::Pose>(
-            pose_subscription_topic_, 10,
+            pose_subscription_topic_, 1,
             std::bind(&EstimatorBroadcaster::pose_callback, this, _1));
-
-    // TODO: temporarily manually set new pose
-    turtlesim::msg::Pose new_pose;
-    new_pose.x = 2.0;
-    new_pose.y = 3.0;
-    new_pose.theta = 0.0;
-    new_pose.linear_velocity = 0.0;
-    new_pose.angular_velocity = 0.0;
-
-    // Spawn turtle
-    SpawnTurtle(new_pose, turtle_name_);
-    
-  }
-
-  ~EstimatorBroadcaster() {
-    // Kill spawned turtle
-    if (!est_turtle_spawned_)
-      return;
-    
-    KillTurtle(turtle_name_);
   }
 
 private:
@@ -104,7 +93,33 @@ private:
    * 
    * @param msg 
    */
-  void pose_callback(const turtlesim::msg::Pose::SharedPtr msg) const {
+  void pose_callback(const turtlesim::msg::Pose::SharedPtr msg) {
+    // Spawn robot if not spawned already
+    if (!est_turtle_spawned_) {
+      SpawnTurtle(*msg.get(), turtle_name_);
+    }
+
+    TeleportPose(msg);
+  }
+
+  /**
+   * @brief Teleport turtlesim robot
+   * 
+   * @param[in] msg Turtlesim pose
+   */
+  void TeleportPose(const turtlesim::msg::Pose::SharedPtr msg) {
+    // Abort if service isn't ready
+    if (!teleporter_->service_is_ready())      
+      return;
+
+    // Initialize request
+    auto request = std::make_shared<SrvTeleportRequest::Request>();
+    request->set__x(msg->x);
+    request->set__y(msg->y);
+    request->set__theta(msg->theta);
+
+    auto result = teleporter_->async_send_request(request);
+    
     std::stringstream ss;
     ss << "x: " << msg->x << ", y: " << msg->y << ", theta: " << msg->theta;
     RCLCPP_INFO(this->get_logger(), ss.str());
@@ -117,8 +132,7 @@ private:
    * @param[in] turtle_name 
    * @return true Turtle successfully spawned
    */
-  bool SpawnTurtle(const turtlesim::msg::Pose& in_pose, const std::string& turtle_name)
-  {
+  bool SpawnTurtle(const turtlesim::msg::Pose& in_pose, const std::string& turtle_name) {
     while (!spawner_->service_is_ready())
       RCLCPP_DEBUG(this->get_logger(), "Spawn service is not ready");
     
@@ -145,7 +159,8 @@ private:
           if (result->name == turtle_name) {
             // Successfully spawned turtle
             std::stringstream ss;
-            turtle_spawning_service_ready_ = true;
+            this->turtle_spawning_service_ready_ = true;
+            RCLCPP_INFO(this->get_logger(), "\033[92;1mSuccessfully\033[0m spawned robot");
           } else {
             RCLCPP_ERROR(this->get_logger(), "Spawn service callback result mismatch");
           }
@@ -158,15 +173,6 @@ private:
     }
 
     return est_turtle_spawned_;
-  }
-
-  /**
-   * @brief Kill a spawned turtle
-   * 
-   * @param[in] turtle_name 
-   */
-  void KillTurtle(const std::string turtle_name) {
-    // TODO: implement a service call to kill a spawned turtle
   }
 
   // Turtlesim Pose subscriber
@@ -184,8 +190,14 @@ private:
   // Spawner service client
   rclcpp::Client<SrvSpawn>::SharedPtr spawner_{nullptr};
 
+  // Turtlesim absolute teleport service
+  rclcpp::Client<SrvTeleportRequest>::SharedPtr teleporter_{nullptr};
+
   // Pose topic to subscribe to
   std::string pose_subscription_topic_;
+  
+  // Teleport service request topic
+  std::string teleport_service_topic_;
 
   // Spawned turtle name
   std::string turtle_name_;
