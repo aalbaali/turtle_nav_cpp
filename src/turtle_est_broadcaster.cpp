@@ -30,6 +30,9 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <functional>
+
+using std::placeholders::_1;
 
 // Turtle spawner service
 using SrvSpawn = turtlesim::srv::Spawn;
@@ -42,6 +45,10 @@ public:
   {
 
     // Declare and acquire parameters
+    //  Topic to subscribe to
+    this->declare_parameter<std::string>("pose_subscribe_topic", "/true_turtle/pose");
+    this->get_parameter("pose_subscribe_topic", pose_subscription_topic_);
+
     //  Estimated turtle name
     this->declare_parameter<std::string>("target_name", "turtle_est_nm");
     this->get_parameter("target_name", turtle_name_);
@@ -65,12 +72,10 @@ public:
     // Create a client to spawn a turtle
     spawner_ = this->create_client<SrvSpawn>("spawn");
 
-    // Turtlesim Pose subscriber
-    rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr subscription_;
-
-    // Transform publisher
-    // It's a unique pointer so only this class has access to the pointer
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    // Subscribe to estimated pose topic
+    subscription_ = this->create_subscription<turtlesim::msg::Pose>(
+            pose_subscription_topic_, 10,
+            std::bind(&EstimatorBroadcaster::pose_callback, this, _1));
 
     // TODO: temporarily manually set new pose
     turtlesim::msg::Pose new_pose;
@@ -94,8 +99,17 @@ public:
   }
 
 private:
-  // Spawn robot
-  // in_pose uses only x, y, theta
+  /**
+   * @brief Call back function when subscribing to the estimated pose topic
+   * 
+   * @param msg 
+   */
+  void pose_callback(const turtlesim::msg::Pose::SharedPtr msg) const {
+    std::stringstream ss;
+    ss << "x: " << msg->x << ", y: " << msg->y << ", theta: " << msg->theta;
+    RCLCPP_INFO(this->get_logger(), ss.str());
+  }
+
   /**
    * @brief Spawn/start a robot at a given pose location and turtle name
    * 
@@ -155,6 +169,13 @@ private:
     // TODO: implement a service call to kill a spawned turtle
   }
 
+  // Turtlesim Pose subscriber
+  rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr subscription_;
+
+  // Transform publisher
+  // It's a unique pointer so only this class has access to the pointer
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  
   // if the service for spawning turtle is available
   bool turtle_spawning_service_ready_;
   // Turtle successfully spawned
@@ -162,6 +183,9 @@ private:
 
   // Spawner service client
   rclcpp::Client<SrvSpawn>::SharedPtr spawner_{nullptr};
+
+  // Pose topic to subscribe to
+  std::string pose_subscription_topic_;
 
   // Spawned turtle name
   std::string turtle_name_;
