@@ -61,7 +61,7 @@ public:
 
     //  Estimated turtle frame
     this->declare_parameter<std::string>("target_frame", "turtle_est_frm");
-    this->get_parameter("target_frame", target_frame_);
+    this->get_parameter("target_frame", base_link_frame_);
 
     //  Odometry frame
     this->declare_parameter<std::string>("odom_frame", "odom");
@@ -75,6 +75,8 @@ public:
     turtle_spawning_service_ready_ = false;
     est_turtle_spawned_ = false;
 
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
     // Create a client to spawn a turtle
     spawner_ = this->create_client<SrvSpawn>("spawn");
 
@@ -82,7 +84,7 @@ public:
     teleporter_ = this->create_client<SrvTeleportRequest>(teleport_service_topic_);
 
     // Subscribe to estimated pose topic
-    subscription_ = this->create_subscription<turtlesim::msg::Pose>(
+            std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
             pose_subscription_topic_, 1,
             std::bind(&EstimatorBroadcaster::pose_callback, this, _1));
   }
@@ -93,13 +95,63 @@ private:
    * 
    * @param msg 
    */
-  void pose_callback(const turtlesim::msg::Pose::SharedPtr msg) {
+  void PoseCallback(const turtlesim::msg::Pose::SharedPtr msg) {
     // Spawn robot if not spawned already
     if (!est_turtle_spawned_) {
       SpawnTurtle(*msg.get(), turtle_name_);
     }
 
+    // Teleport turtle in turtlesim
     TeleportPose(msg);
+
+    // Send TF2 transforms
+    SendTf2Transforms(msg);
+  }
+
+  /**
+   * @brief Send `base_link->odom` and `odom->map` TF transforms
+   * 
+   * @param[in] msg Estimated turtle pose with respect to the odometry frame
+   */
+  void SendTf2Transforms(const turtlesim::msg::Pose::SharedPtr msg) const {
+     rclcpp::Time now;
+
+    // odom->base_link transform
+    geometry_msgs::msg::TransformStamped base_link_tf;
+
+    base_link_tf.transform.translation.x = msg->x;
+    base_link_tf.transform.translation.y = msg->y;
+    base_link_tf.transform.translation.z = 0.0;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, msg->theta);
+    base_link_tf.transform.rotation.x = q.x();
+    base_link_tf.transform.rotation.y = q.y();
+    base_link_tf.transform.rotation.z = q.z();
+    base_link_tf.transform.rotation.w = q.w();
+
+    base_link_tf.header.frame_id = odom_frame_;
+    base_link_tf.child_frame_id = base_link_frame_;
+    base_link_tf.header.stamp = now;
+    tf_broadcaster_->sendTransform(base_link_tf);
+
+    // map->odom transform
+    geometry_msgs::msg::TransformStamped odom_tf;
+
+    // Setting arbitrary values for now. I'm setting nonzero values so the transform is more visible
+    // in rviz
+    odom_tf.transform.translation.x = 3.0;
+    odom_tf.transform.translation.y = 3.0;
+    odom_tf.transform.translation.z = 0.0;
+    q.setRPY(0, 0, 0);
+    odom_tf.transform.rotation.x = q.x();
+    odom_tf.transform.rotation.y = q.y();
+    odom_tf.transform.rotation.z = q.z();
+    odom_tf.transform.rotation.w = q.w();
+
+    odom_tf.header.frame_id = map_frame_;
+    odom_tf.child_frame_id = odom_frame_;
+    odom_tf.header.stamp = now;
+    tf_broadcaster_->sendTransform(odom_tf);
   }
 
   /**
@@ -203,7 +255,7 @@ private:
   std::string turtle_name_;
 
   // Frame names
-  std::string target_frame_;
+  std::string base_link_frame_;
   std::string odom_frame_;
   std::string map_frame_;
 };
