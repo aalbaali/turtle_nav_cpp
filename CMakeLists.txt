@@ -70,6 +70,7 @@ ament_target_dependencies(
   position_sensor
   rclcpp
   geometry_msgs
+  turtlesim
   Eigen3
 )
 
