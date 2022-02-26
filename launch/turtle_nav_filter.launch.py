@@ -56,6 +56,20 @@ def generate_launch_description():
                 {'noisy_meas_topic': MEAS_TOPIC_NS + '/wheel_encoder'},     # Publish to this
                 {'linear_speed_noise_params': [0.0, 0.1]},                  # [mean, std]
                 {'angular_speed_noise_params': [0.0, 0.01]},                # [mean, std]
+                {'meas_frame': 'est_turtle'}                                # Frame of measurement
+            ]
+        ),
+
+        # Position sensor node
+        Node(
+            package='turtle_nav_cpp',
+            executable='position_sensor',
+            parameters=[
+                {'true_meas_topic': TRUE_TURTLE_TOPIC_NAME + '/pose'},  # Subscribe to this
+                {'noisy_meas_topic': MEAS_TOPIC_NS + '/position'},      # Publish to this
+                {'biases': [0.0, 0.0]},                                 # x, y
+                {'covariance': [0.1, 0.0, 0.0, 0.1]},  # Row major order, just like ROS2
+                {'meas_frame': 'map'}                                   # Frame of measurement
             ]
         ),
     ])
