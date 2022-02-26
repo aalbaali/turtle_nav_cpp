@@ -2,10 +2,10 @@
  * Amro Al-Baali 2022
  * @file steering_wheel_encoder.cpp
  * @brief Node simulating a wheel encoder sensor
- * 
- * @details The node subscribes to the true `/cmd_vel` topic[Twist] and publishes to a new 
+ *
+ * @details The node subscribes to the true `/cmd_vel` topic[Twist] and publishes to a new
  *          topic[TwistWithCovarianceStamped]
- * 
+ *
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Feb-24
  */
@@ -46,6 +46,10 @@ class SteeringWheelEncoder : public rclcpp::Node {
     this->declare_parameter<std::string>("noisy_meas_topic", "meas/wheel_encoder");
     this->get_parameter("noisy_meas_topic", noisy_meas_topic_);
 
+    //  Measurement frame
+    this->declare_parameter<std::string>("meas_frame", "est_turtle");
+    this->get_parameter("meas_frame", meas_frame_);
+
     GaussianParamsVec gaussian_params;
 
     //  Linear speed Gaussian PDF params (mean, std)
@@ -54,7 +58,7 @@ class SteeringWheelEncoder : public rclcpp::Node {
     this->get_parameter("linear_speed_noise_params", gaussian_params);
     linear_speed_noise_gaussian_ = std::normal_distribution<double>(
         gaussian_params[0], gaussian_params[1]);
-    
+
 
     //  Angular speed Gaussian PDF params (mean, std)
     //  Note that a non-zero mean value implies the sensor is biased
@@ -77,18 +81,17 @@ class SteeringWheelEncoder : public rclcpp::Node {
     true_meas_subscriber_ = this->create_subscription<Twist>(
             true_meas_topic_, 10,
             std::bind(&SteeringWheelEncoder::MeasCallBack, this, _1));
-    
+
     // Set up publisher
     noisy_meas_publisher_ = this->create_publisher<TwistWithCovStamped>(noisy_meas_topic_, 10);
   }
 
  private:
   void MeasCallBack(const Twist::SharedPtr true_meas) {
-    // std_msgs::msg::Header header;
-    // header.frame_id
 
     TwistWithCovStamped noisy_meas;
-    noisy_meas.header.stamp = this->get_clock()->now();    
+    noisy_meas.header.frame_id = meas_frame_;
+    noisy_meas.header.stamp = this->get_clock()->now();
     noisy_meas.twist.twist = *true_meas.get();
 
     // Add noise
@@ -117,6 +120,9 @@ class SteeringWheelEncoder : public rclcpp::Node {
 
   // Topic to publish to
   std::string noisy_meas_topic_;
+
+  // Measurement frame
+  std::string meas_frame_;
 
   // Subscriber
   rclcpp::Subscription<Twist>::SharedPtr true_meas_subscriber_{nullptr};
