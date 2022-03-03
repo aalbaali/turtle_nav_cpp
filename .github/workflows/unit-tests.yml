@@ -18,7 +18,9 @@ jobs:
       - name: Install dependencies
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
-                   "apt-get update -y && rosdep update && rosdep install --from-paths src --ignore-src -y"
+                   "apt-get update -y" \
+                   "&& rosdep update" \
+                   "&& rosdep install --from-paths src --ignore-src -y"
 
       - name: Build packages
         working-directory: ${{env.working-directory}}
