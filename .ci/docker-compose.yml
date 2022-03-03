@@ -1,0 +1,6 @@
+services:
+  ros2-ws:
+    build: .
+    volumes:
+      - ..:/workspace
+    working_dir: "/workspace"
