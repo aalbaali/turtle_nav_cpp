@@ -37,7 +37,7 @@ def generate_launch_description():
             executable='turtle_est_broadcaster',
             parameters=[
                 {'target_name': 'est_turtle'},   # Name of the spawned turtle
-                {'target_frame': 'est_turtle'},  # Estimated pose TF frame   
+                {'target_frame': 'est_turtle'},  # Estimated pose TF frame
                 {'true_frame': 'true_turtle'},   # True pose TF frame
                 {'odom_frame': 'odom'},          # Odometry TF frame
                 {'map_frame': 'map'},            # Map TF frame
