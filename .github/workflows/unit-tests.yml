@@ -16,5 +16,11 @@ jobs:
       - name: Build Docker image
         run: docker build -t $DOCKER_IMAGE_NAME $DOCKERFILE_DIR
 
-      - name: Run tests from Docker container
-        run: docker run --rm -v $PWD:/workspace -w /workspace $DOCKER_IMAGE_NAME:latest $DOCKERFILE_DIR/run_all.sh
+      - name: Install packages
+        run: docker run -v $PWD:/workspace -w /workspace $DOCKER_IMAGE_NAME:latest $DOCKERFILE_DIR/install_packages.sh
+
+      - name: Colcon build
+        run: docker run -v $PWD:/workspace -w /workspace $DOCKER_IMAGE_NAME:latest $DOCKERFILE_DIR/colcon_build.sh
+
+      - name: Colcon test
+        run: docker run -v $PWD:/workspace -w /workspace $DOCKER_IMAGE_NAME:latest $DOCKERFILE_DIR/colcon_test.sh
