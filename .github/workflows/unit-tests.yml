@@ -26,7 +26,7 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
                     "colcon build --merge-install --symlink-install" \
-                   "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'"" \
+                   "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
                    "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
 
       - name: Clone and install colcon-tools
