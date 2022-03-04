@@ -79,6 +79,22 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
 
+  uncrustify:
+    name: Run ament_uncrustify
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: ament_cpplint
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_uncrustify src/ test/"
+
   cppcheck:
     name: Run ament_cppcheck
     runs-on: ubuntu-20.04
