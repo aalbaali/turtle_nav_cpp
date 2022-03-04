@@ -9,8 +9,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Build packages
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
@@ -57,8 +60,8 @@ jobs:
       - name: Run tests
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
-      
-      
+
+
   # Linters
   cpplint:
     name: Run ament_cpplint
@@ -67,8 +70,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ament_cpplint
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
@@ -80,8 +86,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ament_cppcheck
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
@@ -93,8 +102,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
-    steps:      
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ament_lint_cmake
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake " \
@@ -108,8 +120,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ament_xmllint
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_xmllint " \
@@ -123,8 +138,11 @@ jobs:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
       working-directory: .devcontainer/
-    
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ament_flake8
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_flake8"
