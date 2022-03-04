@@ -18,27 +18,5 @@ RUN apt-get -y update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV DEBIAN_FRONTEND=dialog
-# RUN echo "$PWD"
-# RUN echo "$(ls -lFa)"
-# # Install dependencies
-# RUN apt-get update \
-#     && rosdep update && rosdep install --from-paths /workspace/src --ignore-src -y
-
-# # Build package
-# RUN colcon build --merge-install --symlink-install --cmake-args \
-#     '-DCMAKE_BUILD_TYPE=RelWithDebInfo' '-DCMAKE_EXPORT_COMPILE_COMMANDS=On' \
-#     -Wall -Wextra -Wpedantic
-
-
-# # Install colcon test tools
-# RUN git clone https://github.com/aalbaali/colcon_test_tools.git /Dev/colcon_test_tools \
-#   && cd /Dev/colcon_test_tools \
-#   && ./install.sh \
-#   && source /usr/local/bin/colcon_tools.sh
-
-# # Build tests
-# RUN colcon test --merget-install
-
-# CMD ["source /usr/local/bin/colcon_tools.sh && colcon_test"]
 
 CMD ["/bin/bash"]

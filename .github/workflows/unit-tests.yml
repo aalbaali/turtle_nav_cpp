@@ -29,15 +29,35 @@ jobs:
                    "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
                    "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
 
+      - name: Build tests
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
+
       - name: Clone and install colcon-tools
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
                 "if [[ ! -d colcon_test_tools ]]; then git clone https://github.com/aalbaali/colcon_test_tools.git colcon_test_tools; fi"
 
-      - name: Build tests
-        working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
-
       - name: Run tests
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
+      
+      - name: ament_cpplint
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
+
+      - name: ament_cppcheck
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
+      
+      - name: ament_lint_cmake
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake"
+
+      - name: ament_xmllint
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_xmllint"
+
+      - name: ament_flake8
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_flake8"
