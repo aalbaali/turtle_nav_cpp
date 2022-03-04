@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
-      DOCKERFILE_DIR: .ci/
-      working-directory: .ci/
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
 
     steps:
       - name: Checkout code
