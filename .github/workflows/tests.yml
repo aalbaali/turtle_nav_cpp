@@ -95,23 +95,26 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
 
-  cmake_lint:
-    name: Run ament_lint_cmake
-    runs-on: ubuntu-20.04
-    env:
-      DOCKER_IMAGE_NAME: gh_ci_image
-      DOCKERFILE_DIR: .devcontainer/
-      working-directory: .devcontainer/
+  # `ament_lint_cmake` seems to have some inconsistent results, so it won't be used
+  # It's provided here for reference and possible future use
+  
+  # cmake_lint:
+  #   name: Run ament_lint_cmake
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     DOCKER_IMAGE_NAME: gh_ci_image
+  #     DOCKERFILE_DIR: .devcontainer/
+  #     working-directory: .devcontainer/
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: ament_lint_cmake
-        working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake " \
-              "$(find -name "CMakeLists.txt" -not -path "./build/*" " \
-              "-not -path "./install/*" -not -path "./test/*")"
+  #     - name: ament_lint_cmake
+  #       working-directory: ${{env.working-directory}}
+  #       run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake " \
+  #             "$(find -name "CMakeLists.txt" -not -path "./build/*" " \
+  #             "-not -path "./install/*" -not -path "./test/*")"
 
   xmllint:
     name: Run ament_xmllint
