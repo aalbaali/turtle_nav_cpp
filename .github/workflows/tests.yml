@@ -80,7 +80,7 @@ jobs:
         run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
 
   cppcheck:
-    name: Run ament_cpplint
+    name: Run ament_cppcheck
     runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
@@ -96,7 +96,7 @@ jobs:
         run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
 
   cmake_lint:
-    name: Run ament_cpplint
+    name: Run ament_lint_cmake
     runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
@@ -114,7 +114,7 @@ jobs:
               "-not -path "./install/*" -not -path "./test/*")"
 
   xmllint:
-    name: Run ament_cpplint
+    name: Run ament_xmllint
     runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
@@ -132,7 +132,7 @@ jobs:
               "-not -path "./install/*" -not -path "./test/*")"
 
   flake8:
-    name: Run ament_cpplint
+    name: Run ament_flake8
     runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
