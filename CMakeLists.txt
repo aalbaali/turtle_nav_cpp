@@ -40,10 +40,28 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs geometry_msgs
   ADD_LINTER_TESTS
 )
-  
+
 ament_export_dependencies(rosidl_default_runtime)
 #######################################################
 
+#######################################################
+# Add utils library
+add_library(utils src/utils.cpp)
+target_include_directories(utils
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+# target_include_directories(utils PRIVATE include)
+ament_target_dependencies(
+  utils
+  # rclcpp
+  tf2
+  tf2_ros
+  turtlesim
+  geometry_msgs
+  Eigen3
+)
+#######################################################
 
 # Estimated pose broadcaster
 add_executable(turtle_est_broadcaster src/turtle_est_broadcaster.cpp)
@@ -66,6 +84,7 @@ ament_target_dependencies(
 
 # Position sensor
 add_executable(position_sensor src/position_sensor.cpp)
+target_link_libraries(position_sensor utils)
 ament_target_dependencies(
   position_sensor
   rclcpp
@@ -90,12 +109,17 @@ install(TARGETS
 # Install launch files
 install(DIRECTORY
   launch
+  include
   DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+
+  add_subdirectory(test)
 endif()
 
 

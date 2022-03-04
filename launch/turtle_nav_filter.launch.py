@@ -16,6 +16,7 @@ EST_TURTLE_TOPIC_NAME = 'est_turtle'
 # Measurements namespace (i.e., any measurements should fall under it)
 MEAS_TOPIC_NS = 'meas'
 
+
 # TODO: make this more module, similar to Hadabot's code
 def generate_launch_description():
     return LaunchDescription([
@@ -37,7 +38,7 @@ def generate_launch_description():
             executable='turtle_est_broadcaster',
             parameters=[
                 {'target_name': 'est_turtle'},   # Name of the spawned turtle
-                {'target_frame': 'est_turtle'},  # Estimated pose TF frame   
+                {'target_frame': 'est_turtle'},  # Estimated pose TF frame
                 {'true_frame': 'true_turtle'},   # True pose TF frame
                 {'odom_frame': 'odom'},          # Odometry TF frame
                 {'map_frame': 'map'},            # Map TF frame

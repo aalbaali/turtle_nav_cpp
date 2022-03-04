@@ -1,29 +1,27 @@
 /**
- * Amro Al-Baali 2022
+ * Copyright 2022 Amro Al-Baali
  * @file position_sensor.cpp
- * @brief Node simulating a position sensor. It subscribes to the true turtlesim pose and publishes
- *        noisy positions
+ * @brief Node simulating a position sensor. It subscribes to the true turtlesim
+ * pose and publishes noisy positions
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Feb-25
  */
 
-#include <rclcpp/rclcpp.hpp>
+#include <algorithm>
+#include <array>
+#include <functional>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <map>
+#include <memory>
+#include <random>
+#include <rclcpp/rclcpp.hpp>
+#include <string>
 #include <turtlesim/msg/pose.hpp>
+#include <vector>
 
 #include "turtle_nav_cpp/msg/vector3_with_covariance_stamped.hpp"
-
-#include <Eigen/Dense>
-
-#include <string>
-#include <memory>
-#include <functional>
-#include <random>
-#include <map>
-#include <vector>
-#include <array>
-#include <algorithm>
+#include "turtle_nav_cpp/utils.hpp"
 
 using std::placeholders::_1;
 
@@ -38,33 +36,14 @@ using StrToDoubleMap = std::map<std::string, double>;
 // (mean, std)
 using GaussianParamsVec = std::vector<double>;
 
-using Eigen::Matrix2d;
-
-/**
- * @brief Convert 2D row-major vector to a matrix
- *
- * @param[in] vec Vector to convert. Length must be a squared number (e.g., 1, 4, 9, etc.)
- * @return Eigen::Matrix2d
- */
-Matrix2d Vec2ToMatrix(std::vector<double> vec) {
-  // Check if length is a power of 2 [https://stackoverflow.com/questions/600293/how-to-check-if-a-number-is-a-power-of-2]
-  if (vec.size() == 4){
-    std::stringstream ss;
-    ss << "Vector size must be 4. Provided size: " << vec.size();
-    throw std::length_error(ss.str());
-  }
-
-  Matrix2d mat;
-  for (auto v : vec)
-    mat << v;
-
-  return mat;
-}
-
-class PositionSensor : public rclcpp::Node {
- public:
+namespace turtle_nav_cpp
+{
+class PositionSensor : public rclcpp::Node
+{
+public:
   PositionSensor()
-  : Node("position_sensor") {
+  : Node("position_sensor")
+  {
     // Declare and acquire parameters
     //  Topic to subscribe to
     this->declare_parameter<std::string>("true_meas_topic", "true_turtle/pose");
@@ -88,32 +67,31 @@ class PositionSensor : public rclcpp::Node {
     //  Get noise covariance
     input.clear();
     input.reserve(4);
-    this->declare_parameter<std::vector<double>>("covariance",
-      std::vector<double>{1.0, 0.0, 0.0, 1.0});
+    this->declare_parameter<std::vector<double>>(
+      "covariance", std::vector<double>{1.0, 0.0, 0.0, 1.0});
     this->get_parameter("covariance", input);
     std::copy_n(input.begin(), 4, noise_cov_arr_.begin());
-    // TODO: replace array with matrix
-    
-    try{
+    // TODO(aalbaali): replace array with matrix
+
+    try {
       noise_cov_ = Vec2ToMatrix(input);
-    } catch (const std::exception& e) {
-        RCLCPP_ERROR(this->get_logger(), e.what());
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(this->get_logger(), e.what());
     }
 
     rn_generator_ = std::default_random_engine();
 
-
     // Subscribe to true pose topic
     true_meas_subscriber_ = this->create_subscription<TurtlePose>(
-            true_meas_topic_, 10,
-            std::bind(&PositionSensor::MeasCallBack, this, _1));
+      true_meas_topic_, 10, std::bind(&PositionSensor::MeasCallBack, this, _1));
 
     // Set up publisher
     noisy_meas_publisher_ = this->create_publisher<Vec3WithCovStamped>(noisy_meas_topic_, 10);
   }
 
- private:
-  void MeasCallBack(const TurtlePose::SharedPtr true_pose) {
+private:
+  void MeasCallBack(const TurtlePose::SharedPtr true_pose)
+  {
     Vec3WithCovStamped noisy_meas;
     noisy_meas.header.frame_id = meas_frame_;
     noisy_meas.header.stamp = this->get_clock()->now();
@@ -125,11 +103,11 @@ class PositionSensor : public rclcpp::Node {
 
     // Add noise
     // For now, assume cross-covariance between x and y is zero
-    auto x_meas_noise_gaussian = std::normal_distribution<double>(
-        noise_biases_[0], std::sqrt(noise_cov_arr_[0]));
-    auto y_meas_noise_gaussian = std::normal_distribution<double>(
-        noise_biases_[1], std::sqrt(noise_cov_arr_[3]));
-        
+    auto x_meas_noise_gaussian =
+      std::normal_distribution<double>(noise_biases_[0], std::sqrt(noise_cov_arr_[0]));
+    auto y_meas_noise_gaussian =
+      std::normal_distribution<double>(noise_biases_[1], std::sqrt(noise_cov_arr_[3]));
+
     noisy_meas.vector.vector.x += x_meas_noise_gaussian(rn_generator_);
     noisy_meas.vector.vector.y += y_meas_noise_gaussian(rn_generator_);
 
@@ -137,11 +115,7 @@ class PositionSensor : public rclcpp::Node {
     double var_x = noise_cov_arr_[0];
     double var_y = noise_cov_arr_[3];
     double var_z = -1.0;
-    std::array<double, 9> cov {
-        var_x, 0.0, 0.0,
-        0.0, var_y, 0.0,
-        0.0, 0.0, var_z
-    };
+    std::array<double, 9> cov{var_x, 0.0, 0.0, 0.0, var_y, 0.0, 0.0, 0.0, var_z};
     noisy_meas.vector.covariance = cov;
 
     noisy_meas_publisher_->publish(noisy_meas);
@@ -173,12 +147,12 @@ class PositionSensor : public rclcpp::Node {
   Matrix2d noise_cov_;
   std::array<double, 4> noise_cov_arr_;
 };
-
+}  // namespace turtle_nav_cpp
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PositionSensor>());
+  rclcpp::spin(std::make_shared<turtle_nav_cpp::PositionSensor>());
   rclcpp::shutdown();
   return 0;
 }

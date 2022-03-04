@@ -32,3 +32,6 @@ It's possible to publish teleop to a different topic by remapping the topics.
 ```bash
 ros2 run turtlesim turtle_teleop --ros-args --remap /turtle1/cmd_vel:=/turtle_true/cmd_vel
 ```
+
+# Running tests
+To run the tests locally, run the `.devcontainer/run_all.sh` script
