@@ -9,7 +9,7 @@
 
 #include <Eigen/Dense>
 #include <iostream>
-
+#include <vector>
 
 namespace turtle_nav_cpp
 {
@@ -30,4 +30,4 @@ Matrix2d Vec2ToMatrix(const std::vector<double> & vec)
 
   return mat;
 }
-}
+}  // namespace turtle_nav_cpp

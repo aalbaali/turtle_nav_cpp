@@ -1,5 +1,5 @@
 /**
- * Amro Al-Baali 2022
+ * Copyright Amro Al-Baali 2022
  * @file steering_wheel_encoder.cpp
  * @brief Node simulating a wheel encoder sensor
  *
