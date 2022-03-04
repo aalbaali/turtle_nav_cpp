@@ -3,8 +3,24 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    name: Run tests
-    runs-on: ubuntu-latest
+    name: Build package
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:
+      - name: Build packages
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+                    "colcon build --merge-install --symlink-install" \
+                  "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
+                  "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+
+  unit-test:
+    name: Run unit-tests
+    runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_NAME: gh_ci_image
       DOCKERFILE_DIR: .devcontainer/
@@ -42,22 +58,73 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
       
+      
+  # Linters
+  cpplint:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:
       - name: ament_cpplint
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
 
+  cppcheck:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:
       - name: ament_cppcheck
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
-      
+
+  cmake_lint:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:      
       - name: ament_lint_cmake
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake"
+        run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake " \
+              "$(find -name "CMakeLists.txt" -not -path "./build/*" " \
+              "-not -path "./install/*" -not -path "./test/*")"
 
+  xmllint:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:
       - name: ament_xmllint
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "ament_xmllint"
+        run: docker-compose run ros2-ws /bin/bash -c "ament_xmllint " \
+              "$(find -name "*.xml" -not -path "./build/*" " \
+              "-not -path "./install/*" -not -path "./test/*")"
 
+  flake8:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+    
+    steps:
       - name: ament_flake8
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_flake8"
