@@ -30,5 +30,3 @@ docker-compose run ros2-ws /bin/bash -c "colcon build --cmake-target clean --mer
 docker-compose down
 
 cd -
-# docker build -t gh_colcon_ci_image .
-# docker run --rm -v $PWD:/workspace -w /workspace gh_colcon_ci_image:latest 
