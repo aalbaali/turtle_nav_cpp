@@ -6,16 +6,14 @@
  * @date 2022-Mar-02
  */
 
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/utils.hpp"
-#include <vector>
 
 namespace turtle_nav_cpp
 {
-TEST(Vec2ToMatrix, WrongVectorSize)
-{
-  EXPECT_ANY_THROW(Vec2ToMatrix(std::vector<double>{1.0}));
-}
+TEST(Vec2ToMatrix, WrongVectorSize) { EXPECT_ANY_THROW(Vec2ToMatrix(std::vector<double>{1.0})); }
 
 TEST(Vec2ToMatrix, CheckMatrixEntries)
 {

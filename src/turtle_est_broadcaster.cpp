@@ -45,8 +45,7 @@ using SrvTeleportRequest = turtlesim::srv::TeleportAbsolute;
 class EstimatorBroadcaster : public rclcpp::Node
 {
 public:
-  EstimatorBroadcaster()
-  : Node("turtle_est_broadcaster")
+  EstimatorBroadcaster() : Node("turtle_est_broadcaster")
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -252,16 +251,16 @@ private:
         // Call request
         using ServiceResponseFuture = rclcpp::Client<turtlesim::srv::Spawn>::SharedFuture;
         auto response_received_callback = [this, turtle_name](ServiceResponseFuture future) {
-            auto result = future.get();
-            if (result->name == turtle_name) {
-              // Successfully spawned turtle
-              std::stringstream ss;
-              this->turtle_spawning_service_ready_ = true;
-              RCLCPP_INFO(this->get_logger(), "\033[92;1mSuccessfully\033[0m spawned robot");
-            } else {
-              RCLCPP_ERROR(this->get_logger(), "Spawn service callback result mismatch");
-            }
-          };
+          auto result = future.get();
+          if (result->name == turtle_name) {
+            // Successfully spawned turtle
+            std::stringstream ss;
+            this->turtle_spawning_service_ready_ = true;
+            RCLCPP_INFO(this->get_logger(), "\033[92;1mSuccessfully\033[0m spawned robot");
+          } else {
+            RCLCPP_ERROR(this->get_logger(), "Spawn service callback result mismatch");
+          }
+        };
         auto result = spawner_->async_send_request(request, response_received_callback);
 
       } else {

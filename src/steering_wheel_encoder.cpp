@@ -35,8 +35,7 @@ using GaussianParamsVec = std::vector<double>;
 class SteeringWheelEncoder : public rclcpp::Node
 {
 public:
-  SteeringWheelEncoder()
-  : Node("steering_wheel_encoder")
+  SteeringWheelEncoder() : Node("steering_wheel_encoder")
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -69,8 +68,8 @@ public:
       std::normal_distribution<double>(gaussian_params[0], gaussian_params[1]);
 
     std::stringstream ss;
-    ss << "Map params. mu: \033[92;1m" << gaussian_params[0] << "\033[0m" <<
-      ", std: \033[92;1m" << gaussian_params[1] << "\033[0m";
+    ss << "Map params. mu: \033[92;1m" << gaussian_params[0] << "\033[0m"
+       << ", std: \033[92;1m" << gaussian_params[1] << "\033[0m";
     RCLCPP_INFO(this->get_logger(), ss.str());
 
     rn_generator_ = std::default_random_engine();
@@ -100,12 +99,12 @@ private:
     double var_y = -1.0;
     double var_theta = std::pow(angular_speed_noise_gaussian_.stddev(), 2);
     std::array<double, 36> cov{
-      var_x, 0.0, 0.0, 0.0, 0.0, 0.0,             // x
-      0.0, var_y, 0.0, 0.0, 0.0, 0.0,             // y
-      0.0, 0.0, -1.0, 0.0, 0.0, 0.0,              // z
-      0.0, 0.0, 0.0, -1.0, 0.0, 0.0,              // r.x
-      0.0, 0.0, 0.0, 0.0, -1.0, 0.0,              // r.y
-      0.0, 0.0, 0.0, 0.0, 0.0, var_theta,         // r.z
+      var_x, 0.0,   0.0,  0.0,  0.0,  0.0,        // x
+      0.0,   var_y, 0.0,  0.0,  0.0,  0.0,        // y
+      0.0,   0.0,   -1.0, 0.0,  0.0,  0.0,        // z
+      0.0,   0.0,   0.0,  -1.0, 0.0,  0.0,        // r.x
+      0.0,   0.0,   0.0,  0.0,  -1.0, 0.0,        // r.y
+      0.0,   0.0,   0.0,  0.0,  0.0,  var_theta,  // r.z
     };
     noisy_meas.twist.covariance = cov;
 

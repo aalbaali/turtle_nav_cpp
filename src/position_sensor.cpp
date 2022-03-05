@@ -41,8 +41,7 @@ namespace turtle_nav_cpp
 class PositionSensor : public rclcpp::Node
 {
 public:
-  PositionSensor()
-  : Node("position_sensor")
+  PositionSensor() : Node("position_sensor")
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
