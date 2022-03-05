@@ -6,4 +6,4 @@ ros-foxy-robot-localization
 ros-foxy-tf2-tools
 ros-foxy-tf-transformations
 ros-foxy-turtlesim
-
+ros-foxy-ament-clang-format
