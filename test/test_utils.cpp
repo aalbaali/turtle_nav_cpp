@@ -8,15 +8,17 @@
 
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/utils.hpp"
+#include <vector>
 
 namespace turtle_nav_cpp
 {
-
-TEST(Vec2ToMatrix, WrongVectorSize) {
+TEST(Vec2ToMatrix, WrongVectorSize)
+{
   EXPECT_ANY_THROW(Vec2ToMatrix(std::vector<double>{1.0}));
 }
 
-TEST(Vec2ToMatrix, CheckMatrixEntries) {
+TEST(Vec2ToMatrix, CheckMatrixEntries)
+{
   auto v = std::vector<double>{0.0, 1.0, 2.0, 3.0};
 
   // Matrix is inserted in row-major format
@@ -30,4 +32,4 @@ TEST(Vec2ToMatrix, CheckMatrixEntries) {
     }
   }
 }
-}  // turtle_nav_cpp
+}  // namespace turtle_nav_cpp

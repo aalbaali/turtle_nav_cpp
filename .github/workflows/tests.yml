@@ -95,22 +95,27 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_uncrustify src/ test/"
 
-  cppcheck:
-    name: Run ament_cppcheck
-    runs-on: ubuntu-20.04
-    env:
-      DOCKER_IMAGE_NAME: gh_ci_image
-      DOCKERFILE_DIR: .devcontainer/
-      working-directory: .devcontainer/
+  ##################################################################################################
+  # `ament_cppcheck` seems to have some inconsistent results, so it won't be used
+  # It's provided here for reference and possible future use
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # cppcheck:
+  #   name: Run ament_cppcheck
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     DOCKER_IMAGE_NAME: gh_ci_image
+  #     DOCKERFILE_DIR: .devcontainer/
+  #     working-directory: .devcontainer/
 
-      - name: ament_cppcheck
-        working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
+  #     - name: ament_cppcheck
+  #       working-directory: ${{env.working-directory}}
+  #       run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
+
+  ##################################################################################################
   # `ament_lint_cmake` seems to have some inconsistent results, so it won't be used
   # It's provided here for reference and possible future use
   

@@ -6,8 +6,8 @@
  * @date 2022-Mar-02
  */
 
-#ifndef TURTLE_NAV_CPP_INCLUDE_TURTLE_NAV_CPP_UTILS_HPP_
-#define TURTLE_NAV_CPP_INCLUDE_TURTLE_NAV_CPP_UTILS_HPP_
+#ifndef TURTLE_NAV_CPP__UTILS_HPP_
+#define TURTLE_NAV_CPP__UTILS_HPP_
 
 #include <Eigen/Dense>
 #include <vector>
@@ -29,6 +29,6 @@ using Eigen::Matrix2d;
 */
 Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
 
-}
+}  // namespace turtle_nav_cpp
 
-#endif // TURTLE_NAV_CPP_INCLUDE_TURTLE_NAV_CPP_UTILS_HPP_
+#endif  // TURTLE_NAV_CPP__UTILS_HPP_
