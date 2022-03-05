@@ -71,6 +71,7 @@ public:
       "covariance", std::vector<double>{1.0, 0.0, 0.0, 1.0});
     this->get_parameter("covariance", input);
     std::copy_n(input.begin(), 4, noise_cov_arr_.begin());
+    
     // TODO(aalbaali): replace array with matrix
 
     try {
