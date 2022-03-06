@@ -49,4 +49,4 @@ To update the `.pre-commit-config.yaml` file:
 ```bash
 pre-commit autoupdate
 ```
-See https://github.com/pre-commit/pre-commit.
+Check [pre-commit](https://pre-commit.com/) for further details on `pre-commit`.
