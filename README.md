@@ -35,3 +35,18 @@ ros2 run turtlesim turtle_teleop --ros-args --remap /turtle1/cmd_vel:=/turtle_tr
 
 # Running tests
 To run the tests locally, run the `.devcontainer/run_all.sh` script
+
+# Pre-commits
+To use:
+```bash
+pre-commit run -a
+```
+Or:
+```bash
+pre-commit install  # (runs every time you commit in git)
+```
+To update the `.pre-commit-config.yaml` file:
+```bash
+pre-commit autoupdate
+```
+Check [pre-commit](https://pre-commit.com/) for further details on `pre-commit`.

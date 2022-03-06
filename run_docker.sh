@@ -15,7 +15,7 @@ docker-compose run ros2-ws /bin/bash -c \
 # Clone and install colcon-tools
 docker-compose run ros2-ws /bin/bash -c \
   "if [[ ! -d colcon_test_tools ]]; then git clone https://github.com/aalbaali/colcon_test_tools.git colcon_test_tools; fi"
-  
+
 
 # Build tests
 docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"

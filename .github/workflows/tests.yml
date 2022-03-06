@@ -91,10 +91,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: ament_cpplint
+      - name: ament_clang_format
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_clang_format src/ test/"
-      
+
   # uncrustify:
   #   name: Run ament_uncrustify
   #   runs-on: ubuntu-20.04
@@ -134,7 +134,7 @@ jobs:
   ##################################################################################################
   # `ament_lint_cmake` seems to have some inconsistent results, so it won't be used
   # It's provided here for reference and possible future use
-  
+
   # cmake_lint:
   #   name: Run ament_lint_cmake
   #   runs-on: ubuntu-20.04
