@@ -32,7 +32,7 @@ find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 #######################################################
-# Add custom mesages
+# Add custom messages
 find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Vector3WithCovariance.msg"
