@@ -32,7 +32,7 @@ def generate_launch_description():
                     ("turtle1/color_sensor", TRUE_TURTLE_TOPIC_NAME + "/color_sensor"),
                 ],
             ),
-            # Estimator broadcaster
+            # Estimate broadcaster
             Node(
                 package="turtle_nav_cpp",
                 executable="turtle_est_broadcaster",
@@ -42,9 +42,9 @@ def generate_launch_description():
                     {"true_frame": "true_turtle"},  # True pose TF frame
                     {"odom_frame": "odom"},  # Odometry TF frame
                     {"map_frame": "map"},  # Map TF frame
-                    {
-                        "pose_subscribe_topic": TRUE_TURTLE_TOPIC_NAME + "/pose"
-                    },  # Subscribe to this
+                    {"pose_subscribe_topic": TRUE_TURTLE_TOPIC_NAME + "/pose"},
+                    # Subscribe to this (temporarily subscribed to the true pose until the pose
+                    # estimate topic is read)
                     # Request teleport service from this
                     {"teleport_service": EST_TURTLE_TOPIC_NAME + "/teleport_absolute"},
                 ],

@@ -30,7 +30,7 @@ publishes to `/turtle1/cmd_vel` by default.
 However, in this package, velocities are published/subscribed from different topics such as `/turtle_true/cmd_vel`.
 It's possible to publish teleop to a different topic by remapping the topics.
 ```bash
-ros2 run turtlesim turtle_teleop --ros-args --remap /turtle1/cmd_vel:=/turtle_true/cmd_vel
+ros2 run turtlesim turtle_teleop_key --ros-args --remap /turtle1/cmd_vel:=/turtle_true/cmd_vel
 ```
 
 # Running tests

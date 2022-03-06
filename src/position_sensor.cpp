@@ -38,6 +38,9 @@ using GaussianParamsVec = std::vector<double>;
 
 namespace turtle_nav_cpp
 {
+using Eigen::Matrix2d;
+using Eigen::Vector2d;
+
 class PositionSensor : public rclcpp::Node
 {
 public:
@@ -60,8 +63,7 @@ public:
     std::vector<double> input;
     this->declare_parameter<std::vector<double>>("biases", std::vector<double>{0.0, 0.0});
     this->get_parameter("biases", input);
-    noise_biases_.reserve(2);
-    noise_biases_ = input;
+    noise_biases_ = Eigen::Map<Eigen::Vector2d>(input.data());
 
     //  Get noise covariance
     input.clear();
@@ -69,15 +71,9 @@ public:
     this->declare_parameter<std::vector<double>>(
       "covariance", std::vector<double>{1.0, 0.0, 0.0, 1.0});
     this->get_parameter("covariance", input);
-    std::copy_n(input.begin(), 4, noise_cov_arr_.begin());
 
-    // TODO(aalbaali): replace array with matrix
-
-    try {
-      noise_cov_ = Vec2ToMatrix(input);
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(this->get_logger(), e.what());
-    }
+    // Copy to Eigen matrix
+    noise_cov_ = Vec2ToMatrix(input);
 
     rn_generator_ = std::default_random_engine();
 
@@ -103,17 +99,18 @@ private:
 
     // Add noise
     // For now, assume cross-covariance between x and y is zero
+    // TODO(aalbaali): Use vectors and covariances
     auto x_meas_noise_gaussian =
-      std::normal_distribution<double>(noise_biases_[0], std::sqrt(noise_cov_arr_[0]));
+      std::normal_distribution<double>(noise_biases_(0), std::sqrt(noise_cov_(0, 0)));
     auto y_meas_noise_gaussian =
-      std::normal_distribution<double>(noise_biases_[1], std::sqrt(noise_cov_arr_[3]));
+      std::normal_distribution<double>(noise_biases_(1), std::sqrt(noise_cov_(1, 1)));
 
     noisy_meas.vector.vector.x += x_meas_noise_gaussian(rn_generator_);
     noisy_meas.vector.vector.y += y_meas_noise_gaussian(rn_generator_);
 
     // Variance on x, y, theta
-    double var_x = noise_cov_arr_[0];
-    double var_y = noise_cov_arr_[3];
+    double var_x = noise_cov_(0, 0);
+    double var_y = noise_cov_(1, 1);
     double var_z = -1.0;
     std::array<double, 9> cov{var_x, 0.0, 0.0, 0.0, var_y, 0.0, 0.0, 0.0, var_z};
     noisy_meas.vector.covariance = cov;
@@ -143,7 +140,7 @@ private:
   std::normal_distribution<double> standard_normal_dist_{0.0, 1.0};
 
   // Measurement parameters
-  std::vector<double> noise_biases_;
+  Vector2d noise_biases_;
   Matrix2d noise_cov_;
   std::array<double, 4> noise_cov_arr_;
 };
