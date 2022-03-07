@@ -44,7 +44,8 @@ using Eigen::Vector2d;
 class PositionSensor : public rclcpp::Node
 {
 public:
-  PositionSensor() : Node("position_sensor")
+  PositionSensor()
+  : Node("position_sensor"), noise_biases_(ImportNoiseBiases("biases", Eigen::Vector2d({0.0, 0.0})))
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -59,11 +60,11 @@ public:
     this->declare_parameter<std::string>("meas_frame", "map");
     this->get_parameter("meas_frame", meas_frame_);
 
-    //  Get noise biases
+    // //  Get noise biases
     std::vector<double> input;
-    this->declare_parameter<std::vector<double>>("biases", std::vector<double>{0.0, 0.0});
-    this->get_parameter("biases", input);
-    noise_biases_ = Eigen::Map<Eigen::Vector2d>(input.data());
+    // this->declare_parameter<std::vector<double>>("biases", std::vector<double>{0.0, 0.0});
+    // this->get_parameter("biases", input);
+    // noise_biases_ = Eigen::Map<Eigen::Vector2d>(input.data());
 
     //  Get noise covariance
     input.clear();
@@ -116,6 +117,28 @@ private:
     noisy_meas.vector.covariance = cov;
 
     noisy_meas_publisher_->publish(noisy_meas);
+  }
+
+  /**
+   * @brief Import measurement noise biases from the config aprams
+   *
+   * @param[in] param_name Parameter name in the config params
+   * @param[in] default_val Default value if parameter not found
+   * @return Eigen::Vector2d Measurement noise biases
+   */
+  const Eigen::Vector2d ImportNoiseBiases(
+    const std::string & param_name, const Eigen::Vector2d & default_val)
+  {
+    // The default values take `std::vector<double>`, which is obtained from `Eigen::Vector2d` using
+    // `.data()` method
+    std::vector<double> default_val_std_vec;
+    default_val_std_vec.assign(default_val.data(), default_val.data() + default_val.size());
+
+    // Store the imported biases in a temporary `std::vector` object
+    std::vector<double> input;
+    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
+    this->get_parameter(param_name, input);
+    return Eigen::Map<Eigen::Vector2d>(input.data());
   }
 
   // Topic to subscribe to
