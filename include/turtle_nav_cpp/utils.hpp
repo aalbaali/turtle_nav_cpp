@@ -29,6 +29,8 @@ using Eigen::Matrix2d;
 */
 Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
 
+// TODO(aalbaali): Add a `Vec2ToMatrix` move function (i.e., takes `...&& vec`)
+
 }  // namespace turtle_nav_cpp
 
 #endif  // TURTLE_NAV_CPP__UTILS_HPP_

@@ -44,8 +44,17 @@ using Eigen::Vector2d;
 class PositionSensor : public rclcpp::Node
 {
 public:
+  /**
+   * @brief Construct a new Position Sensor object
+   *
+   * @details `noise_biases` and `noise_cov_` are initialized in the initializer list because they
+   * are const objects
+   *
+   */
   PositionSensor()
-  : Node("position_sensor"), noise_biases_(ImportNoiseBiases("biases", Eigen::Vector2d({0.0, 0.0})))
+  : Node("position_sensor"),
+    noise_biases_(ImportNoiseBiases("biases", Vector2d::Zero())),
+    noise_cov_(ImportNoiseCovariance("covariance", Matrix2d::Identity()))
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -59,22 +68,6 @@ public:
     //  Frame of measurement
     this->declare_parameter<std::string>("meas_frame", "map");
     this->get_parameter("meas_frame", meas_frame_);
-
-    // //  Get noise biases
-    std::vector<double> input;
-    // this->declare_parameter<std::vector<double>>("biases", std::vector<double>{0.0, 0.0});
-    // this->get_parameter("biases", input);
-    // noise_biases_ = Eigen::Map<Eigen::Vector2d>(input.data());
-
-    //  Get noise covariance
-    input.clear();
-    input.reserve(4);
-    this->declare_parameter<std::vector<double>>(
-      "covariance", std::vector<double>{1.0, 0.0, 0.0, 1.0});
-    this->get_parameter("covariance", input);
-
-    // Copy to Eigen matrix
-    noise_cov_ = Vec2ToMatrix(input);
 
     rn_generator_ = std::default_random_engine();
 
@@ -126,19 +119,43 @@ private:
    * @param[in] default_val Default value if parameter not found
    * @return Eigen::Vector2d Measurement noise biases
    */
-  const Eigen::Vector2d ImportNoiseBiases(
-    const std::string & param_name, const Eigen::Vector2d & default_val)
+  const Vector2d ImportNoiseBiases(const std::string & param_name, const Vector2d & default_val)
   {
+    // Vector size
+    const size_t vec_size = default_val.size();
+
     // The default values take `std::vector<double>`, which is obtained from `Eigen::Vector2d` using
-    // `.data()` method
+    // the `.data()` method
     std::vector<double> default_val_std_vec;
-    default_val_std_vec.assign(default_val.data(), default_val.data() + default_val.size());
+    default_val_std_vec.assign(default_val.data(), default_val.data() + vec_size);
 
     // Store the imported biases in a temporary `std::vector` object
     std::vector<double> input;
+    input.reserve(vec_size);
     this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
     this->get_parameter(param_name, input);
-    return Eigen::Map<Eigen::Vector2d>(input.data());
+    return Eigen::Map<Vector2d>(input.data());
+  }
+
+  const Matrix2d ImportNoiseCovariance(const std::string & param_name, const Matrix2d & default_val)
+  {
+    // Matrix size
+    const size_t mat_size = default_val.size();
+
+    // The default values take `std::vector<double>`, which is obtained from `Eigen::Matrix2d` using
+    // the `.data()` method
+    std::vector<double> default_val_std_vec;
+    default_val_std_vec.assign(default_val.data(), default_val.data() + default_val.size());
+
+    //  Get covariance biases
+    std::vector<double> input;
+    input.clear();
+    input.reserve(mat_size);
+    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
+    this->get_parameter(param_name, input);
+
+    // Copy to Eigen matrix and return
+    return Vec2ToMatrix(input);
   }
 
   // Topic to subscribe to
@@ -165,7 +182,6 @@ private:
   // Measurement parameters
   Vector2d noise_biases_;
   Matrix2d noise_cov_;
-  std::array<double, 4> noise_cov_arr_;
 };
 }  // namespace turtle_nav_cpp
 
