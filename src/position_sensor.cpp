@@ -54,7 +54,8 @@ public:
   PositionSensor()
   : Node("position_sensor"),
     noise_biases_(ImportNoiseBiases("biases", Vector2d::Zero())),
-    noise_cov_(ImportNoiseCovariance("covariance", Matrix2d::Identity()))
+    noise_cov_(ImportNoiseCovariance("covariance", Matrix2d::Identity())),
+    noise_cov_chol_L_(noise_cov_)
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -115,6 +116,8 @@ private:
   /**
    * @brief Import measurement noise biases from the config aprams
    *
+   * @details This function can be generalized in used in `utils.{hpp, cpp}`
+   *
    * @param[in] param_name Parameter name in the config params
    * @param[in] default_val Default value if parameter not found
    * @return Eigen::Vector2d Measurement noise biases
@@ -158,6 +161,27 @@ private:
     return Vec2ToMatrix(input);
   }
 
+  /**
+   * @brief Import lower matrix of a Cholesky decomposition and throw an error if the matrix is non
+   * semi-positive definite
+   *
+   * @param[in] matrix Symmetric positive (semi-) definite matrix
+   * @return const Matrix2d Lower triangular matrix of a LL^{trans} Cholesky factorization
+   */
+  const Matrix2d GetCholeskyLower(const Matrix2d & matrix)
+  {
+    // Cholesky factorization
+    const Eigen::LLT<Eigen::Matrix2d> matrix_llt(matrix);
+
+    // Check for covariance positive semi-definiteness
+    if (matrix_llt.info() == Eigen::NumericalIssue) {
+      throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
+    }
+
+    // Return lower triangular part only
+    return matrix_llt.matrixL();
+  }
+
   // Topic to subscribe to
   std::string true_meas_topic_;
 
@@ -182,6 +206,9 @@ private:
   // Measurement parameters
   Vector2d noise_biases_;
   Matrix2d noise_cov_;
+
+  // Covariance cholesky decomposition, lower triangular matrix
+  Matrix2d noise_cov_chol_L_;
 };
 }  // namespace turtle_nav_cpp
 
