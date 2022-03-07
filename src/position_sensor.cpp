@@ -70,38 +70,39 @@ public:
     this->declare_parameter<std::string>("meas_frame", "map");
     this->get_parameter("meas_frame", meas_frame_);
 
-    rn_generator_ = std::default_random_engine();
-
     // Subscribe to true pose topic
     true_meas_subscriber_ = this->create_subscription<TurtlePose>(
       true_meas_topic_, 10, std::bind(&PositionSensor::MeasCallBack, this, _1));
 
     // Set up publisher
     noisy_meas_publisher_ = this->create_publisher<Vec3WithCovStamped>(noisy_meas_topic_, 10);
+
+    // Set the random number generators and the randn_ lambda function
+    rn_generator_ = std::default_random_engine();
+    randn_ = [this]() { return standard_normal_dist_(rn_generator_); };
   }
 
 private:
+  /**
+   * @brief Measurement call-back function that publishes a noise measured position
+   *
+   * @param[in] true_pose The true pose from which the true position is extracted
+   */
   void MeasCallBack(const TurtlePose::SharedPtr true_pose)
   {
     Vec3WithCovStamped noisy_meas;
     noisy_meas.header.frame_id = meas_frame_;
     noisy_meas.header.stamp = this->get_clock()->now();
 
-    // Set true measurements
+    // Set true position
     noisy_meas.vector.vector.x = true_pose->x;
     noisy_meas.vector.vector.y = true_pose->y;
     noisy_meas.vector.vector.z = 0.0;  // z-value is ignored
 
-    // Add noise
-    // For now, assume cross-covariance between x and y is zero
-    // TODO(aalbaali): Use vectors and covariances
-    auto x_meas_noise_gaussian =
-      std::normal_distribution<double>(noise_biases_(0), std::sqrt(noise_cov_(0, 0)));
-    auto y_meas_noise_gaussian =
-      std::normal_distribution<double>(noise_biases_(1), std::sqrt(noise_cov_(1, 1)));
-
-    noisy_meas.vector.vector.x += x_meas_noise_gaussian(rn_generator_);
-    noisy_meas.vector.vector.y += y_meas_noise_gaussian(rn_generator_);
+    // Sample and add noise
+    auto noise = noise_biases_ + noise_cov_chol_L_ * (Vector2d::NullaryExpr(2, randn_));
+    noisy_meas.vector.vector.x += noise(0);
+    noisy_meas.vector.vector.y += noise(1);
 
     // Variance on x, y, theta
     double var_x = noise_cov_(0, 0);
@@ -200,8 +201,15 @@ private:
   // Random number generator
   std::default_random_engine rn_generator_;
 
+  // Scalar standard normal distribution (i.e., mean 0 and variance 1)
+  std::normal_distribution<double> rn_standard_normal_distribution_;
+
   // Standard normal distribution
+  // TODO(aalbaali): Add this and randn function to `utils.{hpp, cpp}`.
   std::normal_distribution<double> standard_normal_dist_{0.0, 1.0};
+
+  // Scalar function that returns a sample from a standard normal distribution
+  std::function<double()> randn_;
 
   // Measurement parameters
   Vector2d noise_biases_;
