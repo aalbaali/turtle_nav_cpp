@@ -9,3 +9,7 @@ assignees: ''
 ---
 
 ### Description
+
+### Stories
+- [ ] Story 1 #<story number>
+- [ ] Story 2 #<story number>
