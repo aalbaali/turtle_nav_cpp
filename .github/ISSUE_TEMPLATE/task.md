@@ -7,6 +7,4 @@ assignees: ''
 
 ---
 
-Story:
-
 ### Description
