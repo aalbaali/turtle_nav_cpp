@@ -17,9 +17,9 @@ jobs:
       - name: Build packages
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
-                    "colcon build --merge-install --symlink-install" \
-                  "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
-                  "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+          "colcon build --merge-install --symlink-install" \
+          "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
+          "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
 
   unit-test:
     name: Run unit-tests
@@ -186,3 +186,46 @@ jobs:
       - name: ament_flake8
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "ament_flake8"
+
+  coverage:
+    name: Run codecov
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # All steps below uses docker-compose
+      - name: Install dependencies
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+          "apt-get update -y" \
+          "&& rosdep update" \
+          "&& rosdep install --from-paths src --ignore-src -y"
+
+      - name: Build packages
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+          "colcon build --merge-install --symlink-install" \
+          "--cmake-args '-DCMAKE_BUILD_TYPE=Debug' '-DCMAKE_CXX_FLAGS=\"--coverage\"' '-DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON'" \
+          "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+
+      - name: Build tests
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+
+      # - name: Clone and install colcon-tools
+      #   working-directory: ${{env.working-directory}}
+      #   run: docker-compose run ros2-ws /bin/bash -c \
+      #     "if [[ ! -d colcon_test_tools ]]; then git clone https://github.com/aalbaali/colcon_test_tools.git colcon_test_tools; fi"
+
+      # - name: Run tests
+      #   working-directory: ${{env.working-directory}}
+      #   run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
