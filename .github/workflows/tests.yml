@@ -220,12 +220,3 @@ jobs:
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
-
-      # - name: Clone and install colcon-tools
-      #   working-directory: ${{env.working-directory}}
-      #   run: docker-compose run ros2-ws /bin/bash -c \
-      #     "if [[ ! -d colcon_test_tools ]]; then git clone https://github.com/aalbaali/colcon_test_tools.git colcon_test_tools; fi"
-
-      # - name: Run tests
-      #   working-directory: ${{env.working-directory}}
-      #   run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
