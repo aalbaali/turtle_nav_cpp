@@ -30,4 +30,6 @@ TEST(Vec2ToMatrix, CheckMatrixEntries)
     }
   }
 }
+
+TEST(FOO, Zeros) { EXPECT_EQ(Foo(0, 0), 0); }
 }  // namespace turtle_nav_cpp
