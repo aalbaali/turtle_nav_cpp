@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/25-add-code-coverage-tool/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
+
 # In this repo
 The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
 

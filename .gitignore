@@ -3,3 +3,7 @@ build/**
 install/**
 log/**
 colcon_tools/**
+
+**.gcno
+**.gcda
+**.gcov

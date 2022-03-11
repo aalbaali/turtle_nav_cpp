@@ -11,6 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update \
     # Install list of packages
     && xargs apt-get -y install --no-install-recommends < /scripts/packages.txt \
+    && pip3 install --no-input gcovr \
     #
     # Clean up
     && apt-get autoremove -y \

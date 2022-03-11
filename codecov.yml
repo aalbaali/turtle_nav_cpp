@@ -1,0 +1,5 @@
+---
+codecov:
+  bot: "codecov-io"
+  notify:
+    after_n_builds: 2

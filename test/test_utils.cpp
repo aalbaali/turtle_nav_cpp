@@ -30,4 +30,5 @@ TEST(Vec2ToMatrix, CheckMatrixEntries)
     }
   }
 }
+
 }  // namespace turtle_nav_cpp
