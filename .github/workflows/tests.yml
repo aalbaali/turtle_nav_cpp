@@ -218,5 +218,9 @@ jobs:
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
 
+      - name: Gcovr
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr --xml-pretty report.xml"
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
