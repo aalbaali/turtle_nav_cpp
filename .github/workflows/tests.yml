@@ -220,11 +220,11 @@ jobs:
 
       - name: Gcovr txt -verbose
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --txt -v"
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ --txt -v"
 
       - name: Gcovr
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr -v -r ./ build --xml > report.xml"
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -v -r ./ --xml > report.xml"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
