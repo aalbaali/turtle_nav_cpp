@@ -209,10 +209,7 @@ jobs:
 
       - name: Build packages
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c \
-          "colcon build" \
-          "--cmake-args '-DCMAKE_BUILD_TYPE=Debug' '-DCMAKE_CXX_FLAGS=\"--coverage\"' '-DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON'" \
-          "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+        run: docker-compose run ros2-ws /bin/bash -c "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"--coverage\" -DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Wall -Wextra -Wpedantic"
 
       - name: Build tests
         working-directory: ${{env.working-directory}}
@@ -220,11 +217,11 @@ jobs:
 
       - name: Gcovr txt -verbose
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ --txt -v"
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --txt -v"
 
       - name: Gcovr
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr -v -r ./ --xml > report.xml"
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --txt -v --xml=report.xml"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
