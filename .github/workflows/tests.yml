@@ -210,17 +210,17 @@ jobs:
       - name: Build packages
         working-directory: ${{env.working-directory}}
         run: docker-compose run ros2-ws /bin/bash -c \
-          "colcon build --merge-install --symlink-install" \
+          "colcon build" \
           "--cmake-args '-DCMAKE_BUILD_TYPE=Debug' '-DCMAKE_CXX_FLAGS=\"--coverage\"' '-DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON'" \
           "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
 
       - name: Build tests
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
+        run: docker-compose run ros2-ws /bin/bash -c "colcon test"
 
       - name: Gcovr
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --xml-pretty > report.xml"
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --xml > report.xml"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
