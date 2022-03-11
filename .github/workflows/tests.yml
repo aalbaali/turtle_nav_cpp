@@ -220,7 +220,7 @@ jobs:
 
       - name: Gcovr
         working-directory: ${{env.working-directory}}
-        run: docker-compose run ros2-ws /bin/bash -c "gcovr --xml-pretty > report.xml"
+        run: docker-compose run ros2-ws /bin/bash -c "lcov --directory . --capture --output-file coverage.info"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
