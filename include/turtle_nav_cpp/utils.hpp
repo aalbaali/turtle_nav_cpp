@@ -29,15 +29,6 @@ using Eigen::Matrix2d;
 */
 Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
 
-/**
- * @brief Mock function to test code coverage
- *
- * @param[in] x
- * @param[in] y
- * @return int
- */
-int Foo(int x, int y);
-
 }  // namespace turtle_nav_cpp
 
 #endif  // TURTLE_NAV_CPP__UTILS_HPP_

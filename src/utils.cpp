@@ -26,5 +26,4 @@ Matrix2d Vec2ToMatrix(const std::vector<double> & vec)
   return Eigen::Map<const Eigen::Matrix<double, 2, 2>>(vec.data());
 }
 
-int Foo(int x, int y) { return x * y + x; }
 }  // namespace turtle_nav_cpp
