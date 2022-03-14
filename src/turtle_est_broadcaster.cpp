@@ -209,8 +209,11 @@ private:
 
     // Initialize request
     auto request = std::make_shared<SrvTeleportRequest::Request>();
-    request->set__x(msg->x);
-    request->set__y(msg->y);
+
+    // TODO(aalbaali): TEMPORARY x and y offset! Setting an offset between x and y so it's visible
+    // in turtlesim
+    request->set__x(msg->x + 1.0);
+    request->set__y(msg->y + 1.0);
     request->set__theta(msg->theta);
 
     auto result = teleporter_->async_send_request(request);
