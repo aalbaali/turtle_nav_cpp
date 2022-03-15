@@ -26,4 +26,10 @@ Matrix2d Vec2ToMatrix(const std::vector<double> & vec)
   return Eigen::Map<const Eigen::Matrix<double, 2, 2>>(vec.data());
 }
 
+bool IsPerfectSquare(double x)
+{
+  double x_sqrt = sqrt(x);
+  return (x_sqrt - floor(x_sqrt)) == 0;
+}
+
 }  // namespace turtle_nav_cpp

@@ -17,6 +17,14 @@ namespace turtle_nav_cpp
 using Eigen::Matrix2d;
 
 /**
+ * @brief Check if a number is a perfect square (i.e., if there exists an integer i such that x =
+ * i*i)
+ *
+ * @param x Number to check for perfect square
+ */
+bool IsPerfectSquare(double x);
+
+/**
 * @brief Convert 2D row-major vector to a matrix
 *
 * @details The vector is assumed to be row-major to be consistent with ROS2 convention (e.g.,
@@ -29,7 +37,7 @@ using Eigen::Matrix2d;
 */
 Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
 
-// TODO(aalbaali): Add a `Vec2ToMatrix` move function (i.e., takes `...&& vec`)
+// VecNToSquareMatrix()
 
 }  // namespace turtle_nav_cpp
 

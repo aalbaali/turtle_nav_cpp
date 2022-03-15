@@ -31,4 +31,18 @@ TEST(Vec2ToMatrix, CheckMatrixEntries)
   }
 }
 
+TEST(IsPerfectSquare, DoubleSquareNumber)
+{
+  EXPECT_TRUE(IsPerfectSquare(0.0));
+  EXPECT_TRUE(IsPerfectSquare(4.0));
+  EXPECT_FALSE(IsPerfectSquare(3.0));
+}
+
+TEST(IsPerfectSquare, IntSquareNumber)
+{
+  EXPECT_TRUE(IsPerfectSquare(0));
+  EXPECT_TRUE(IsPerfectSquare(4));
+  EXPECT_FALSE(IsPerfectSquare(3));
+}
+
 }  // namespace turtle_nav_cpp
