@@ -1,0 +1,24 @@
+name: ROS2 CI
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Setup ROS 2
+      uses: ros-tooling/setup-ros@0.0.15
+      with:
+        required-ros-distributions: foxy
+
+    - name: Run Tests
+      uses: ros-tooling/action-ros-ci@0.0.13
+      with:
+        package-name: turtle_nav_cpp
+
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      with:
+        name: colcon-logs
+        path: ros_ws/log
+      if: always()
