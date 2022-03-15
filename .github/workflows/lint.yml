@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        linter: [clang_format, cpplint, xmllint]
+        linter: [clang_format, cpplint, xmllint, uncrustify, cppcheck, lint_cmake]
     steps:
       - uses: actions/checkout@v3.0.0
       - uses: ros-tooling/setup-ros@v0.3
