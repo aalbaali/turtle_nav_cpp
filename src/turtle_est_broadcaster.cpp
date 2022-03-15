@@ -1,5 +1,5 @@
 /**
- * Amro Al-Baali 2022
+ * Copyright 2022 Ⓒ Amro Al-Baali
  * @file turtle_est_broadcaster.cpp
  * @brief Node that listens to the turtle's estimated pose topic and updates the turtle's estimated
  * pose in the turtlesim console
@@ -16,22 +16,21 @@
 //  - Publish map->odom transform
 //  - Request to teleport `turtle_est`
 
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
-
-#include <rclcpp/rclcpp.hpp>
 #include <tf2/exceptions.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/buffer.h>
-#include <turtlesim/srv/spawn.hpp>
-#include <turtlesim/srv/teleport_absolute.hpp>
-#include <turtlesim/msg/pose.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <chrono>
-#include <memory>
-#include <string>
 #include <functional>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <string>
+#include <turtlesim/msg/pose.hpp>
+#include <turtlesim/srv/spawn.hpp>
+#include <turtlesim/srv/teleport_absolute.hpp>
 
 using std::placeholders::_1;
 
@@ -39,13 +38,15 @@ using std::placeholders::_1;
 using SrvSpawn = turtlesim::srv::Spawn;
 using SrvTeleportRequest = turtlesim::srv::TeleportAbsolute;
 
+/**
+ * @brief Class that broadcasts TF2 transforms and communicates with turtlesim
+ *
+ */
 class EstimatorBroadcaster : public rclcpp::Node
 {
 public:
-  EstimatorBroadcaster()
-  : Node("turtle_est_broadcaster")
+  EstimatorBroadcaster() : Node("turtle_est_broadcaster")
   {
-
     // Declare and acquire parameters
     //  Topic to subscribe to
     this->declare_parameter<std::string>("pose_subscribe_topic", "/true_turtle/pose");
@@ -89,17 +90,17 @@ public:
 
     // Subscribe to estimated pose topic
     subscription_ = this->create_subscription<turtlesim::msg::Pose>(
-            pose_subscription_topic_, 1,
-            std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
+      pose_subscription_topic_, 10, std::bind(&EstimatorBroadcaster::PoseCallback, this, _1));
   }
 
 private:
   /**
    * @brief Call back function when subscribing to the estimated pose topic
-   * 
-   * @param msg 
+   *
+   * @param msg
    */
-  void PoseCallback(const turtlesim::msg::Pose::SharedPtr msg) {
+  void PoseCallback(const turtlesim::msg::Pose::SharedPtr msg)
+  {
     // Spawn robot if not spawned already
     if (!est_turtle_spawned_) {
       SpawnTurtle(*msg.get(), turtle_name_);
@@ -114,11 +115,12 @@ private:
 
   /**
    * @brief Send `base_link->odom` and `odom->map` TF transforms
-   * 
+   *
    * @param[in] msg Estimated turtle pose with respect to the odometry frame
    */
-  void SendTf2Transforms(const turtlesim::msg::Pose::SharedPtr msg) const {
-     rclcpp::Time now;
+  void SendTf2Transforms(const turtlesim::msg::Pose::SharedPtr msg) const
+  {
+    rclcpp::Time now;
 
     // Send true odom->robot transform
     SendTf2Transform(msg, odom_frame_, true_turtle_frame_, now);
@@ -147,32 +149,33 @@ private:
     tf_broadcaster_->sendTransform(odom_tf);
   }
 
-
   /**
    * @brief Overloads `SendTf2Transform`, where time is generated within the function
-   * 
+   *
    * @param[in] msg Pose to send to TF2
    * @param[in] header_frame_id Header (i.e., "from") frame ID
    * @param[in] child_frame_id Child (i.e., "to") frame ID
    */
-  void SendTf2Transform(const turtlesim::msg::Pose::SharedPtr msg,
-        const std::string& header_frame_id, const std::string& child_frame_id) const {
+  void SendTf2Transform(
+    const turtlesim::msg::Pose::SharedPtr msg, const std::string & header_frame_id,
+    const std::string & child_frame_id) const
+  {
     rclcpp::Time now;
     SendTf2Transform(msg, header_frame_id, child_frame_id, now);
   }
 
   /**
    * @brief Send a single transform to TF2
-   * 
+   *
    * @param[in] msg Pose to send to TF2
    * @param[in] header_frame_id Header (i.e., "from") frame ID
    * @param[in] child_frame_id Child (i.e., "to") frame ID
    * @param[in] time Input time to be recorded in the header
    */
-  void SendTf2Transform(const turtlesim::msg::Pose::SharedPtr msg,
-        const std::string& header_frame_id, const std::string& child_frame_id,
-        const rclcpp::Time& time) const {
-
+  void SendTf2Transform(
+    const turtlesim::msg::Pose::SharedPtr msg, const std::string & header_frame_id,
+    const std::string & child_frame_id, const rclcpp::Time & time) const
+  {
     // odom->base_link transform
     geometry_msgs::msg::TransformStamped transform;
 
@@ -194,22 +197,27 @@ private:
 
   /**
    * @brief Teleport turtlesim robot
-   * 
+   *
    * @param[in] msg Turtlesim pose
    */
-  void TeleportPose(const turtlesim::msg::Pose::SharedPtr msg) {
+  void TeleportPose(const turtlesim::msg::Pose::SharedPtr msg)
+  {
     // Abort if service isn't ready
-    if (!teleporter_->service_is_ready())      
+    if (!teleporter_->service_is_ready()) {
       return;
+    }
 
     // Initialize request
     auto request = std::make_shared<SrvTeleportRequest::Request>();
-    request->set__x(msg->x);
-    request->set__y(msg->y);
+
+    // TODO(aalbaali): TEMPORARY x and y offset! Setting an offset between x and y so it's visible
+    // in turtlesim
+    request->set__x(msg->x + 1.0);
+    request->set__y(msg->y + 1.0);
     request->set__theta(msg->theta);
 
     auto result = teleporter_->async_send_request(request);
-    
+
     std::stringstream ss;
     ss << "x: " << msg->x << ", y: " << msg->y << ", theta: " << msg->theta;
     RCLCPP_INFO(this->get_logger(), ss.str());
@@ -217,19 +225,21 @@ private:
 
   /**
    * @brief Spawn/start a robot at a given pose location and turtle name
-   * 
-   * @param[in] in_pose 
-   * @param[in] turtle_name 
+   *
+   * @param[in] in_pose
+   * @param[in] turtle_name
    * @return true Turtle successfully spawned
    */
-  bool SpawnTurtle(const turtlesim::msg::Pose& in_pose, const std::string& turtle_name) {
-    while (!spawner_->service_is_ready())
+  bool SpawnTurtle(const turtlesim::msg::Pose & in_pose, const std::string & turtle_name)
+  {
+    while (!spawner_->service_is_ready()) {
       RCLCPP_DEBUG(this->get_logger(), "Spawn service is not ready");
-    
+    }
+
     if (turtle_spawning_service_ready_) {
       if (!est_turtle_spawned_) {
         est_turtle_spawned_ = true;
-        RCLCPP_INFO(this->get_logger(), "Successfully spawned");        
+        RCLCPP_INFO(this->get_logger(), "Successfully spawned");
       }
     } else {
       // Spawn only if the service is ready
@@ -242,8 +252,7 @@ private:
         request->name = turtle_name;
 
         // Call request
-        using ServiceResponseFuture =
-            rclcpp::Client<turtlesim::srv::Spawn>::SharedFuture;
+        using ServiceResponseFuture = rclcpp::Client<turtlesim::srv::Spawn>::SharedFuture;
         auto response_received_callback = [this, turtle_name](ServiceResponseFuture future) {
           auto result = future.get();
           if (result->name == turtle_name) {
@@ -256,7 +265,7 @@ private:
           }
         };
         auto result = spawner_->async_send_request(request, response_received_callback);
-      
+
       } else {
         RCLCPP_INFO(this->get_logger(), "Spawn service is not ready");
       }
@@ -271,7 +280,7 @@ private:
   // Transform publisher
   // It's a unique pointer so only this class has access to the pointer
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-  
+
   // if the service for spawning turtle is available
   bool turtle_spawning_service_ready_;
   // Turtle successfully spawned
@@ -285,7 +294,7 @@ private:
 
   // Pose topic to subscribe to
   std::string pose_subscription_topic_;
-  
+
   // Teleport service request topic
   std::string teleport_service_topic_;
 
@@ -306,4 +315,3 @@ int main(int argc, char * argv[])
   rclcpp::shutdown();
   return 0;
 }
-
