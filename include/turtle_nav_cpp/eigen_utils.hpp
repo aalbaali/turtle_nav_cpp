@@ -30,7 +30,7 @@ using Eigen::Matrix2d;
  * @return Eigen::Matrix<double, row, col>
  */
 template <int row, int col = 1, int storage_opt = Eigen::StorageOptions::RowMajor>
-Eigen::Matrix<double, row, col, storage_opt> StdVectorToEigenVector(std::vector<double> & vec)
+Eigen::Matrix<double, row, col, storage_opt> StdVectorToEigenVector(const std::vector<double> & vec)
 {
   // Throw error if sizes don't match
   if (vec.size() != row * col) {
@@ -40,7 +40,7 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToEigenVector(std::vector<
     throw std::length_error(ss.str());
   }
 
-  return Eigen::Map<Eigen::Matrix<double, row, col, storage_opt>>(vec.data());
+  return Eigen::Map<const Eigen::Matrix<double, row, col, storage_opt>>(vec.data());
 }
 
 /**
