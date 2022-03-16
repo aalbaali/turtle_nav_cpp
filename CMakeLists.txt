@@ -57,7 +57,17 @@ ament_target_dependencies(
   Eigen3
 )
 
-# Add Eigen library
+# Add math-tools library
+add_library(math_utils src/math_utils.cpp)
+target_include_directories(math_utils
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(
+  math_utils
+)
+
+# Add Eigen-tools library
 add_library(eigen_utils src/eigen_utils.cpp)
 target_include_directories(eigen_utils
   PUBLIC
