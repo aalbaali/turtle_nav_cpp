@@ -12,25 +12,9 @@
 #include <Eigen/Dense>
 #include <vector>
 
-namespace turtle_nav_cpp
-{
 namespace eigen_utils
 {
 using Eigen::Matrix2d;
-
-// TODO(aalbaali): remove
-/**
-* @brief Convert 2D row-major vector to a matrix
-*
-* @details The vector is assumed to be row-major to be consistent with ROS2 convention (e.g.,
-* http://docs.ros.org/en/lunar/api/geometry_msgs/html/msg/PoseWithCovariance.html), which
-* unfortunately conflicts with Eigen's convention
-*
-* @param[in] vec Vector to convert. Length must be a squared number (e.g., 1,
-* 4, 9, etc.)
-* @return Eigen::Matrix2d
-*/
-Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
 
 /**
  * @brief Convert std::vector<double> to an Eigen type (matrix or vector) with the appropriate
@@ -69,6 +53,5 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToEigenVector(std::vector<
 const Matrix2d GetCholeskyLower(const Matrix2d & matrix);
 
 }  // namespace eigen_utils
-}  // namespace turtle_nav_cpp
 
 #endif  // TURTLE_NAV_CPP_EIGEN_UTILS_HPP_

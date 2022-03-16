@@ -28,19 +28,6 @@ using Eigen::Vector2d;
 bool IsPerfectSquare(double x);
 
 /**
-* @brief Convert 2D row-major vector to a matrix
-*
-* @details The vector is assumed to be row-major to be consistent with ROS2 convention (e.g.,
-* http://docs.ros.org/en/lunar/api/geometry_msgs/html/msg/PoseWithCovariance.html), which
-* unfortunately conflicts with Eigen's convention
-*
-* @param[in] vec Vector to convert. Length must be a squared number (e.g., 1,
-* 4, 9, etc.)
-* @return Eigen::Matrix2d
-*/
-Matrix2d Vec2ToMatrix(const std::vector<double> & vec);
-
-/**
  * @brief Declare and import a ROS2 parameter as an Eigen type
  *
  * @tparam row Number of rows of a matrix
