@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
+#include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/msg/vector3_with_covariance_stamped.hpp"
 #include "turtle_nav_cpp/ros_utils.hpp"
 
@@ -80,7 +81,7 @@ public:
 
     // Set the random number generators and the randn_ lambda function
     rn_generator_ = std::default_random_engine();
-    randn_ = [this]() { return standard_normal_dist_(rn_generator_); };
+    randn_ = [this]() { return standard_normal_dist(rn_generator_); };
   }
 
 private:
@@ -132,13 +133,6 @@ private:
 
   // Random number generator
   std::default_random_engine rn_generator_;
-
-  // Scalar standard normal distribution (i.e., mean 0 and variance 1)
-  std::normal_distribution<double> rn_standard_normal_distribution_;
-
-  // Standard normal distribution
-  // TODO(aalbaali): Add this and randn function to `utils.{hpp, cpp}`.
-  std::normal_distribution<double> standard_normal_dist_{0.0, 1.0};
 
   // Scalar function that returns a sample from a standard normal distribution
   std::function<double()> randn_;

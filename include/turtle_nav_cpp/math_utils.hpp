@@ -8,4 +8,11 @@
 #ifndef TURTLE_NAV_CPP_MATH_UTILS_HPP_
 #define TURTLE_NAV_CPP_MATH_UTILS_HPP_
 
+#include <random>
+
+namespace turtle_nav_cpp
+{
+// Single-variable standard normal distribution
+std::normal_distribution<double> standard_normal_dist{0.0, 1.0};
+}  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_MATH_UTILS_HPP_

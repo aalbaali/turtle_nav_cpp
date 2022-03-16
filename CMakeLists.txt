@@ -100,7 +100,7 @@ ament_target_dependencies(
 
 # Position sensor
 add_executable(position_sensor src/position_sensor.cpp)
-target_link_libraries(position_sensor ros_utils eigen_utils)
+target_link_libraries(position_sensor ros_utils eigen_utils math_utils)
 ament_target_dependencies(
   position_sensor
   rclcpp
