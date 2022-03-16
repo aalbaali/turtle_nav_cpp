@@ -46,13 +46,13 @@ ament_export_dependencies(rosidl_default_runtime)
 
 #######################################################
 # Add utils library
-add_library(utils src/utils.cpp)
-target_include_directories(utils
+add_library(ros_utils src/ros_utils.cpp)
+target_include_directories(ros_utils
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
-  utils
+  ros_utils
   rclcpp
   Eigen3
 )
@@ -100,7 +100,7 @@ ament_target_dependencies(
 
 # Position sensor
 add_executable(position_sensor src/position_sensor.cpp)
-target_link_libraries(position_sensor utils eigen_utils)
+target_link_libraries(position_sensor ros_utils eigen_utils)
 ament_target_dependencies(
   position_sensor
   rclcpp

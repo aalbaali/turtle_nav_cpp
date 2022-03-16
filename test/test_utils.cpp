@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "turtle_nav_cpp/utils.hpp"
+#include "turtle_nav_cpp/ros_utils.hpp"
 
 namespace turtle_nav_cpp
 {

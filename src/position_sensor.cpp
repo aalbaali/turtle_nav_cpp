@@ -22,7 +22,7 @@
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/msg/vector3_with_covariance_stamped.hpp"
-#include "turtle_nav_cpp/utils.hpp"
+#include "turtle_nav_cpp/ros_utils.hpp"
 
 using std::placeholders::_1;
 
@@ -101,7 +101,7 @@ private:
     noisy_meas.vector.vector.z = 0.0;  // z-value is ignored
 
     // Sample and add noise
-    auto noise = noise_biases_ + noise_cov_chol_L_ * (Vector2d::NullaryExpr(2, randn_));
+    auto noise = noise_biases_ + noise_cov_chol_L_ * Vector2d::NullaryExpr(2, randn_);
     noisy_meas.vector.vector.x += noise(0);
     noisy_meas.vector.vector.y += noise(1);
 

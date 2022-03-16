@@ -1,13 +1,13 @@
 /**
  * Copyright 2022 Ⓒ Amro Al-Baali
- * @file utils.hpp
+ * @file ros_utils.hpp
  * @brief
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Mar-02
  */
 
-#ifndef TURTLE_NAV_CPP__UTILS_HPP_
-#define TURTLE_NAV_CPP__UTILS_HPP_
+#ifndef TURTLE_NAV_CPP_ROS_UTILS_HPP_
+#define TURTLE_NAV_CPP_ROS_UTILS_HPP_
 
 #include <Eigen/Dense>
 #include <rclcpp/rclcpp.hpp>
@@ -73,4 +73,4 @@ Eigen::Matrix<double, row, col> ImportParamAsEigen(
 
 }  // namespace turtle_nav_cpp
 
-#endif  // TURTLE_NAV_CPP__UTILS_HPP_
+#endif  // TURTLE_NAV_CPP_ROS_UTILS_HPP_
