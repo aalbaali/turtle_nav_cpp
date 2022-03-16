@@ -54,7 +54,7 @@ target_include_directories(utils
 # target_include_directories(utils PRIVATE include)
 ament_target_dependencies(
   utils
-  # rclcpp
+  rclcpp
   tf2
   tf2_ros
   turtlesim

@@ -53,9 +53,9 @@ public:
    */
   PositionSensor()
   : Node("position_sensor"),
-    noise_biases_(ImportNoiseBiases("biases", Vector2d::Zero())),
-    noise_cov_(ImportNoiseCovariance("covariance", Matrix2d::Identity())),
-    noise_cov_chol_L_(noise_cov_)
+    noise_biases_(ImportParamAsEigen<2, 1>(this, "biases", Vector2d::Zero())),
+    noise_cov_(ImportParamAsEigen<2, 2>(this, "covariance", Matrix2d::Identity())),
+    noise_cov_chol_L_(GetCholeskyLower(noise_cov_))
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -112,54 +112,6 @@ private:
     noisy_meas.vector.covariance = cov;
 
     noisy_meas_publisher_->publish(noisy_meas);
-  }
-
-  /**
-   * @brief Import measurement noise biases from the config aprams
-   *
-   * @details This function can be generalized in used in `utils.{hpp, cpp}`
-   *
-   * @param[in] param_name Parameter name in the config params
-   * @param[in] default_val Default value if parameter not found
-   * @return Eigen::Vector2d Measurement noise biases
-   */
-  const Vector2d ImportNoiseBiases(const std::string & param_name, const Vector2d & default_val)
-  {
-    // Vector size
-    const size_t vec_size = default_val.size();
-
-    // The default values take `std::vector<double>`, which is obtained from `Eigen::Vector2d` using
-    // the `.data()` method
-    std::vector<double> default_val_std_vec;
-    default_val_std_vec.assign(default_val.data(), default_val.data() + vec_size);
-
-    // Store the imported biases in a temporary `std::vector` object
-    std::vector<double> input;
-    input.reserve(vec_size);
-    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
-    this->get_parameter(param_name, input);
-    return Eigen::Map<Vector2d>(input.data());
-  }
-
-  const Matrix2d ImportNoiseCovariance(const std::string & param_name, const Matrix2d & default_val)
-  {
-    // Matrix size
-    const size_t mat_size = default_val.size();
-
-    // The default values take `std::vector<double>`, which is obtained from `Eigen::Matrix2d` using
-    // the `.data()` method
-    std::vector<double> default_val_std_vec;
-    default_val_std_vec.assign(default_val.data(), default_val.data() + default_val.size());
-
-    //  Get covariance biases
-    std::vector<double> input;
-    input.clear();
-    input.reserve(mat_size);
-    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
-    this->get_parameter(param_name, input);
-
-    // Copy to Eigen matrix and return
-    return Vec2ToMatrix(input);
   }
 
   /**
