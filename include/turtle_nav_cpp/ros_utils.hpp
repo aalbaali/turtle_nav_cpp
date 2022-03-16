@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
+
 namespace turtle_nav_cpp
 {
 using Eigen::Matrix2d;

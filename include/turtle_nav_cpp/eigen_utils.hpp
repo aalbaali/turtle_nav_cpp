@@ -40,7 +40,7 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToEigenVector(std::vector<
     throw std::length_error(ss.str());
   }
 
-  return Eigen::Map<Eigen::Matrix<double, row, col>>(vec.data());
+  return Eigen::Map<Eigen::Matrix<double, row, col, storage_opt>>(vec.data());
 }
 
 /**
