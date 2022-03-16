@@ -51,14 +51,20 @@ target_include_directories(utils
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-# target_include_directories(utils PRIVATE include)
 ament_target_dependencies(
   utils
   rclcpp
-  tf2
-  tf2_ros
-  turtlesim
-  geometry_msgs
+  Eigen3
+)
+
+# Add Eigen library
+add_library(eigen_utils src/eigen_utils.cpp)
+target_include_directories(eigen_utils
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(
+  eigen_utils
   Eigen3
 )
 #######################################################
@@ -84,7 +90,7 @@ ament_target_dependencies(
 
 # Position sensor
 add_executable(position_sensor src/position_sensor.cpp)
-target_link_libraries(position_sensor utils)
+target_link_libraries(position_sensor utils eigen_utils)
 ament_target_dependencies(
   position_sensor
   rclcpp

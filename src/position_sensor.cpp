@@ -20,6 +20,7 @@
 #include <turtlesim/msg/pose.hpp>
 #include <vector>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/msg/vector3_with_covariance_stamped.hpp"
 #include "turtle_nav_cpp/utils.hpp"
 
@@ -55,7 +56,7 @@ public:
   : Node("position_sensor"),
     noise_biases_(ImportParamAsEigen<2, 1>(this, "biases", Vector2d::Zero())),
     noise_cov_(ImportParamAsEigen<2, 2>(this, "covariance", Matrix2d::Identity())),
-    noise_cov_chol_L_(GetCholeskyLower(noise_cov_))
+    noise_cov_chol_L_(eigen_utils::GetCholeskyLower(noise_cov_))
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -112,27 +113,6 @@ private:
     noisy_meas.vector.covariance = cov;
 
     noisy_meas_publisher_->publish(noisy_meas);
-  }
-
-  /**
-   * @brief Import lower matrix of a Cholesky decomposition and throw an error if the matrix is non
-   * semi-positive definite
-   *
-   * @param[in] matrix Symmetric positive (semi-) definite matrix
-   * @return const Matrix2d Lower triangular matrix of a LL^{trans} Cholesky factorization
-   */
-  const Matrix2d GetCholeskyLower(const Matrix2d & matrix)
-  {
-    // Cholesky factorization
-    const Eigen::LLT<Eigen::Matrix2d> matrix_llt(matrix);
-
-    // Check for covariance positive semi-definiteness
-    if (matrix_llt.info() == Eigen::NumericalIssue) {
-      throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
-    }
-
-    // Return lower triangular part only
-    return matrix_llt.matrixL();
   }
 
   // Topic to subscribe to

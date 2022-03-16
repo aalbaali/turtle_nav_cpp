@@ -17,7 +17,7 @@ EST_TURTLE_TOPIC_NAME = "est_turtle"
 MEAS_TOPIC_NS = "meas"
 
 
-# TODO: make this more module, similar to Hadabot's code
+# TODO(aalbaali): make this more module, similar to Hadabot's code
 def generate_launch_description():
     return LaunchDescription(
         [
