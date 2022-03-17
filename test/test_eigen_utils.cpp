@@ -13,13 +13,13 @@
 
 namespace eigen_utils
 {
-TEST(StdVectorToEigenVector, RowColMajor)
+TEST(StdVectorToMatrix, RowColMajor)
 {
   // Test for the row/column major of the matrix
   std::vector<double> v{1.0, 2.0, 3.0, 4.0};
 
   // Row-major
-  auto mat_row_major = StdVectorToEigenVector<2, 2, Eigen::StorageOptions::RowMajor>(v);
+  auto mat_row_major = StdVectorToMatrix<2, 2, Eigen::StorageOptions::RowMajor>(v);
 
   for (int row = 0; row < 2; row++) {
     for (int col = 0; col < 2; col++) {
@@ -29,7 +29,7 @@ TEST(StdVectorToEigenVector, RowColMajor)
   }
 
   // Column-major
-  auto mat_col_major = StdVectorToEigenVector<2, 2, Eigen::StorageOptions::ColMajor>(v);
+  auto mat_col_major = StdVectorToMatrix<2, 2, Eigen::StorageOptions::ColMajor>(v);
 
   for (int row = 0; row < 2; row++) {
     for (int col = 0; col < 2; col++) {

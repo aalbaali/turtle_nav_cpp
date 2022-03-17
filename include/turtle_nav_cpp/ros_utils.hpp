@@ -37,14 +37,14 @@ bool IsPerfectSquare(double x);
  * @param nh Node handle for extracting the parameters
  * @param param_name Parameter name to extract
  * @param default_val Default Eigen-type value
- * @return Eigen::Matrix<double, col, 1>
+ * @return Eigen::Matrix<double, row, col>
  */
-template <int row, int col = 1>
+template <const int row, int col = 1, int storage_opt = Eigen::StorageOptions::RowMajor>
 Eigen::Matrix<double, row, col> ImportParamAsEigen(
-  rclcpp::Node * nh, const std::string & param_name,
+  rclcpp::Node * const nh, const std::string & param_name,
   const Eigen::Matrix<double, row, col> & default_val)
 {
-  int sz = row * col;
+  const int sz = row * col;
 
   // The default values take `std::vector<double>`, which is obtained from `Eigen::Vector` using the
   // `.data()` method
@@ -57,6 +57,10 @@ Eigen::Matrix<double, row, col> ImportParamAsEigen(
   input.reserve(sz);
   nh->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
   nh->get_parameter(param_name, input);
+
+  // TODO(aalbaali): Using `eigen_utils::StdVectorToMatrix<row, col, storage_opt>(input)` is causing
+  // issues. Specifically, it's the choice of `col`.
+
   return Eigen::Map<Eigen::Matrix<double, row, col>>(input.data());
 }
 
