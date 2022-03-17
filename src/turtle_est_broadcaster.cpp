@@ -7,15 +7,6 @@
  * @date 2022-Feb-23
  */
 
-// Temporary: subscribe to the true pose directly until the estimated pose topic is ready
-
-// Action items:
-// - Spawn a new robot `turtle_est` if not created already
-// - Subscribe to the true pose topic. The callback function must
-//  - Publish odom->/est_pose transform
-//  - Publish map->odom transform
-//  - Request to teleport `turtle_est`
-
 #include <tf2/exceptions.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -131,6 +122,7 @@ private:
     // map->odom transform
     geometry_msgs::msg::TransformStamped odom_tf;
 
+    // TODO(aalbaali): Temporary
     // Setting arbitrary values for now. I'm setting nonzero values so the transform is more visible
     // in rviz
     odom_tf.transform.translation.x = 3.0;
