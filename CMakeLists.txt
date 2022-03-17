@@ -45,12 +45,15 @@ ament_export_dependencies(rosidl_default_runtime)
 #######################################################
 
 #######################################################
+# The `include` directory is included for multiple targets, so use
+# `include_directories` instead of `target_include_directories` for simplicity
+include_directories(
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 # Add ros utils library
 add_library(ros_utils INTERFACE)
-target_include_directories(ros_utils
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
   ros_utils
   INTERFACE
@@ -60,20 +63,12 @@ ament_target_dependencies(
 
 # Add math-tools library
 add_library(math_utils src/math_utils.cpp)
-target_include_directories(math_utils
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
   math_utils
 )
 
 # Add Eigen-tools library
 add_library(eigen_utils src/eigen_utils.cpp)
-target_include_directories(eigen_utils
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
   eigen_utils
   Eigen3
