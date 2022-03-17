@@ -45,6 +45,9 @@ ament_export_dependencies(rosidl_default_runtime)
 #######################################################
 
 #######################################################
+# TODO(aalbaali): Use `include_directories` instead of
+# `target_include_directories` for all targets
+
 # Add ros utils library
 add_library(ros_utils INTERFACE)
 target_include_directories(ros_utils
@@ -93,6 +96,10 @@ ament_target_dependencies(
 
 # Steering wheel encoder
 add_executable(steering_wheel_encoder src/steering_wheel_encoder.cpp)
+target_include_directories(steering_wheel_encoder
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
   steering_wheel_encoder
   rclcpp
