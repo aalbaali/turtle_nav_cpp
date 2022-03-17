@@ -81,7 +81,7 @@ public:
 
     // Set the random number generators and the randn_ lambda function
     rn_generator_ = std::default_random_engine();
-    randn_ = [this]() { return standard_normal_dist(rn_generator_); };
+    randn_ = [this]() { return randn_gen(rn_generator_); };
   }
 
 private:
