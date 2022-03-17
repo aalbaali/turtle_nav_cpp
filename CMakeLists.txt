@@ -45,20 +45,37 @@ ament_export_dependencies(rosidl_default_runtime)
 #######################################################
 
 #######################################################
-# Add utils library
-add_library(utils src/utils.cpp)
-target_include_directories(utils
+# Add ros utils library
+add_library(ros_utils INTERFACE)
+target_include_directories(ros_utils
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(
+  ros_utils
+  INTERFACE
+  rclcpp
+  Eigen3
+)
+
+# Add math-tools library
+add_library(math_utils src/math_utils.cpp)
+target_include_directories(math_utils
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-# target_include_directories(utils PRIVATE include)
 ament_target_dependencies(
-  utils
-  # rclcpp
-  tf2
-  tf2_ros
-  turtlesim
-  geometry_msgs
+  math_utils
+)
+
+# Add Eigen-tools library
+add_library(eigen_utils src/eigen_utils.cpp)
+target_include_directories(eigen_utils
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(
+  eigen_utils
   Eigen3
 )
 #######################################################
@@ -84,7 +101,7 @@ ament_target_dependencies(
 
 # Position sensor
 add_executable(position_sensor src/position_sensor.cpp)
-target_link_libraries(position_sensor utils)
+target_link_libraries(position_sensor ros_utils eigen_utils math_utils)
 ament_target_dependencies(
   position_sensor
   rclcpp

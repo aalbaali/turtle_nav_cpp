@@ -20,8 +20,10 @@
 #include <turtlesim/msg/pose.hpp>
 #include <vector>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
+#include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/msg/vector3_with_covariance_stamped.hpp"
-#include "turtle_nav_cpp/utils.hpp"
+#include "turtle_nav_cpp/ros_utils.hpp"
 
 using std::placeholders::_1;
 
@@ -53,9 +55,9 @@ public:
    */
   PositionSensor()
   : Node("position_sensor"),
-    noise_biases_(ImportNoiseBiases("biases", Vector2d::Zero())),
-    noise_cov_(ImportNoiseCovariance("covariance", Matrix2d::Identity())),
-    noise_cov_chol_L_(noise_cov_)
+    noise_biases_(ImportParamAsEigen<2, 1>(this, "biases", Vector2d::Zero())),
+    noise_cov_(ImportParamAsEigen<2, 2>(this, "covariance", Matrix2d::Identity())),
+    noise_cov_chol_L_(eigen_utils::GetCholeskyLower(noise_cov_))
   {
     // Declare and acquire parameters
     //  Topic to subscribe to
@@ -79,7 +81,7 @@ public:
 
     // Set the random number generators and the randn_ lambda function
     rn_generator_ = std::default_random_engine();
-    randn_ = [this]() { return standard_normal_dist_(rn_generator_); };
+    randn_ = [this]() { return randn_gen(rn_generator_); };
   }
 
 private:
@@ -100,7 +102,7 @@ private:
     noisy_meas.vector.vector.z = 0.0;  // z-value is ignored
 
     // Sample and add noise
-    auto noise = noise_biases_ + noise_cov_chol_L_ * (Vector2d::NullaryExpr(2, randn_));
+    auto noise = noise_biases_ + noise_cov_chol_L_ * Vector2d::NullaryExpr(2, randn_);
     noisy_meas.vector.vector.x += noise(0);
     noisy_meas.vector.vector.y += noise(1);
 
@@ -112,75 +114,6 @@ private:
     noisy_meas.vector.covariance = cov;
 
     noisy_meas_publisher_->publish(noisy_meas);
-  }
-
-  /**
-   * @brief Import measurement noise biases from the config aprams
-   *
-   * @details This function can be generalized in used in `utils.{hpp, cpp}`
-   *
-   * @param[in] param_name Parameter name in the config params
-   * @param[in] default_val Default value if parameter not found
-   * @return Eigen::Vector2d Measurement noise biases
-   */
-  const Vector2d ImportNoiseBiases(const std::string & param_name, const Vector2d & default_val)
-  {
-    // Vector size
-    const size_t vec_size = default_val.size();
-
-    // The default values take `std::vector<double>`, which is obtained from `Eigen::Vector2d` using
-    // the `.data()` method
-    std::vector<double> default_val_std_vec;
-    default_val_std_vec.assign(default_val.data(), default_val.data() + vec_size);
-
-    // Store the imported biases in a temporary `std::vector` object
-    std::vector<double> input;
-    input.reserve(vec_size);
-    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
-    this->get_parameter(param_name, input);
-    return Eigen::Map<Vector2d>(input.data());
-  }
-
-  const Matrix2d ImportNoiseCovariance(const std::string & param_name, const Matrix2d & default_val)
-  {
-    // Matrix size
-    const size_t mat_size = default_val.size();
-
-    // The default values take `std::vector<double>`, which is obtained from `Eigen::Matrix2d` using
-    // the `.data()` method
-    std::vector<double> default_val_std_vec;
-    default_val_std_vec.assign(default_val.data(), default_val.data() + default_val.size());
-
-    //  Get covariance biases
-    std::vector<double> input;
-    input.clear();
-    input.reserve(mat_size);
-    this->declare_parameter<std::vector<double>>(param_name, default_val_std_vec);
-    this->get_parameter(param_name, input);
-
-    // Copy to Eigen matrix and return
-    return Vec2ToMatrix(input);
-  }
-
-  /**
-   * @brief Import lower matrix of a Cholesky decomposition and throw an error if the matrix is non
-   * semi-positive definite
-   *
-   * @param[in] matrix Symmetric positive (semi-) definite matrix
-   * @return const Matrix2d Lower triangular matrix of a LL^{trans} Cholesky factorization
-   */
-  const Matrix2d GetCholeskyLower(const Matrix2d & matrix)
-  {
-    // Cholesky factorization
-    const Eigen::LLT<Eigen::Matrix2d> matrix_llt(matrix);
-
-    // Check for covariance positive semi-definiteness
-    if (matrix_llt.info() == Eigen::NumericalIssue) {
-      throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
-    }
-
-    // Return lower triangular part only
-    return matrix_llt.matrixL();
   }
 
   // Topic to subscribe to
@@ -200,13 +133,6 @@ private:
 
   // Random number generator
   std::default_random_engine rn_generator_;
-
-  // Scalar standard normal distribution (i.e., mean 0 and variance 1)
-  std::normal_distribution<double> rn_standard_normal_distribution_;
-
-  // Standard normal distribution
-  // TODO(aalbaali): Add this and randn function to `utils.{hpp, cpp}`.
-  std::normal_distribution<double> standard_normal_dist_{0.0, 1.0};
 
   // Scalar function that returns a sample from a standard normal distribution
   std::function<double()> randn_;
