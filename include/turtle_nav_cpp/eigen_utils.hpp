@@ -44,12 +44,12 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToMatrix(const std::vector
 }
 
 /**
-   * @brief Import lower matrix of a Cholesky decomposition and throw an error if the matrix is non
-   * semi-positive definite
-   *
-   * @param[in] matrix Symmetric positive (semi-) definite matrix
-   * @return const Matrix2d Lower triangular matrix of a LL^{trans} Cholesky factorization
-   */
+ * @brief Import lower matrix of a Cholesky decomposition and throw an error if the matrix is non
+ * semi-positive definite
+ *
+ * @param[in] matrix Symmetric positive (semi-) definite matrix
+ * @return const Matrix2d Lower triangular matrix of a LL^{trans} Cholesky factorization
+ */
 const Matrix2d GetCholeskyLower(const Matrix2d & matrix);
 
 }  // namespace eigen_utils
