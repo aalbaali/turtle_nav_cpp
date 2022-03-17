@@ -21,6 +21,17 @@ namespace turtle_nav_cpp
 bool IsPerfectSquare(double x);
 
 // Single-variable standard normal distribution
-std::normal_distribution<double> standard_normal_dist{0.0, 1.0};
+static std::normal_distribution<double> standard_normal_dist{0.0, 1.0};
+
+/**
+ * @brief Scalar standard normal distribution generator
+ *
+ * @details The `rn_generator` must be passed by reference
+ *
+ * @param[in] rn_generator Random number generator
+ * @return double Sampled random number
+ */
+double randn_gen(std::default_random_engine & rn_generator);
+
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_MATH_UTILS_HPP_

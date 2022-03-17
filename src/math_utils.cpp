@@ -8,6 +8,8 @@
 
 #include "turtle_nav_cpp/math_utils.hpp"
 
+#include <random>
+
 namespace turtle_nav_cpp
 {
 bool IsPerfectSquare(double x)
@@ -16,4 +18,8 @@ bool IsPerfectSquare(double x)
   return (x_sqrt - floor(x_sqrt)) == 0;
 }
 
+double randn_gen(std::default_random_engine & rn_generator)
+{
+  return standard_normal_dist(rn_generator);
+}
 }  // namespace turtle_nav_cpp
