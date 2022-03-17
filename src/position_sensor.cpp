@@ -1,8 +1,7 @@
 /**
  * Copyright 2022 Amro Al-Baali
  * @file position_sensor.cpp
- * @brief Node simulating a position sensor. It subscribes to the true turtlesim
- * pose and publishes noisy positions
+ * @brief Implementation of `position_sensor.hpp` and a node entry point
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Feb-25
  */
@@ -48,7 +47,6 @@ PositionSensor::PositionSensor()
 
   // Set the random number generators and the randn_ lambda function
   rn_generator_ = std::default_random_engine();
-  // TODO(aalbaali): Try std::bind(&randn_gen, rn_generator_))
   randn_ = [this]() { return randn_gen(rn_generator_); };
 }
 

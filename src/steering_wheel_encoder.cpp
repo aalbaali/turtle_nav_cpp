@@ -1,9 +1,7 @@
 /**
  * Copyright Amro Al-Baali 2022
  * @file steering_wheel_encoder.cpp
- * @brief Node simulating a wheel encoder sensor
- *
- * @details Implementation of steering_wheel_encoder.hpp
+ * @brief Implementation of steering_wheel_encoder.hpp and a node entry point
  *
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Feb-24
