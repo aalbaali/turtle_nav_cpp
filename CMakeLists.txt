@@ -45,14 +45,15 @@ ament_export_dependencies(rosidl_default_runtime)
 #######################################################
 
 #######################################################
-# Add utils library
-add_library(ros_utils src/ros_utils.cpp)
+# Add ros utils library
+add_library(ros_utils INTERFACE)
 target_include_directories(ros_utils
-  PUBLIC
+  INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(
   ros_utils
+  INTERFACE
   rclcpp
   Eigen3
 )

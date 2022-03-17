@@ -22,14 +22,6 @@ using Eigen::Matrix2d;
 using Eigen::Vector2d;
 
 /**
- * @brief Check if a number is a perfect square (i.e., if there exists an integer i such that x =
- * i*i)
- *
- * @param x Number to check for perfect square
- */
-bool IsPerfectSquare(double x);
-
-/**
  * @brief Declare and import a ROS2 parameter as an Eigen type
  *
  * @tparam row Number of rows of a matrix

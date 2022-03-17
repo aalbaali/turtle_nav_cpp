@@ -12,6 +12,14 @@
 
 namespace turtle_nav_cpp
 {
+/**
+ * @brief Check if a number is a perfect square (i.e., if there exists an integer i such that x =
+ * i*i)
+ *
+ * @param x Number to check for perfect square
+ */
+bool IsPerfectSquare(double x);
+
 // Single-variable standard normal distribution
 std::normal_distribution<double> standard_normal_dist{0.0, 1.0};
 }  // namespace turtle_nav_cpp
