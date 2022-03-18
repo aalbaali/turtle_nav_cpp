@@ -26,6 +26,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(turtlesim REQUIRED)
+find_package(nav2_msgs REQUIRED)
 
 # https://github.com/ros2/eigen3_cmake_module#:~:text=Edit%20your%20CMakeLists.txt
 find_package(eigen3_cmake_module REQUIRED)
@@ -84,6 +85,16 @@ ament_target_dependencies(
   tf2_ros
   turtlesim
   geometry_msgs
+)
+
+# Estimated pose broadcaster
+add_executable(dead_reckon_estimator src/dead_reckon_estimator.cpp)
+ament_target_dependencies(
+  dead_reckon_estimator
+  rclcpp
+  turtlesim #TEMPORARY!
+  geometry_msgs
+  nav2_msgs
 )
 
 # Steering wheel encoder

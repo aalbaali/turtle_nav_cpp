@@ -13,12 +13,12 @@
 
     # Map TF frame
     map_frame: "map"
-    pose_subscribe_topic: "true_turtle/pose"
+    pose_subscribe_topic: "/true_turtle/pose"
 
     #  Subscribe to this (temporarily subscribed to the true pose until the pose
     #  estimate topic is read)
     #  Request teleport service from this
-    teleport_service: "est_turtle/teleport_absolute"
+    teleport_service: "/est_turtle/teleport_absolute"
 
 /steering_wheel_encoder:
   ros__parameters:
