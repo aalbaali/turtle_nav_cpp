@@ -36,17 +36,36 @@ DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_
 }
 
 void DeadReckonEstimator::InitialPoseCallBack(
-  const PoseWithCovarianceStamped & pose_with_cov_stamped)
+  const PoseWithCovarianceStamped::SharedPtr pose_with_cov_stamped)
 {
+  latest_est_pose_ = *pose_with_cov_stamped;
+  estimator_is_active_ = true;
+
+  std::stringstream ss;
+  ss << "Initial pose received on '\033[36;1m" << initial_pose_topic_ << "'\033[0m";
+  ss << "with value '\033[36;1m" << pose_with_cov_stamped << "'\033[0m";
+  RCLCPP_INFO(this->get_logger(), ss.str());
+}
+
+void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr /* pose */)
+{
+  if (!estimator_is_active_) {
+    RCLCPP_DEBUG(this->get_logger(), "dead_reckon_estimator node not active yet");
+    return;
+  }
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
-  const geometry_msgs::msg::TwistWithCovarianceStamped & twist_with_cov_stamped)
+  const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr /* twist_with_cov_stamped */)
 {
+  if (!estimator_is_active_) {
+    RCLCPP_DEBUG(this->get_logger(), "dead_reckon_estimator node not active yet");
+    return;
+  }
 }
 
 void DeadReckonEstimator::EstPosePublisher(
-  const PoseWithCovarianceStamped & pose_with_cov_stamped) const
+  const PoseWithCovarianceStamped & /* pose_with_cov_stamped */) const
 {
 }
 

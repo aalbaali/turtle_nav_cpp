@@ -35,7 +35,7 @@ private:
    *
    * @param[in] pose_with_cov_stamped Received pose on the `/initialpose` topic
    */
-  void InitialPoseCallBack(const PoseWithCovarianceStamped & pose_with_cov_stamped);
+  void InitialPoseCallBack(const PoseWithCovarianceStamped::SharedPtr pose_with_cov_stamped);
 
   /**
    * @brief Callback function to wheel encoder measurements
@@ -46,7 +46,15 @@ private:
    * @param[in] twist_with_cov_stamped 2D noisy speed measurements
    */
   void CmdVelCallBack(
-    const geometry_msgs::msg::TwistWithCovarianceStamped & twist_with_cov_stamped);
+    const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr twist_with_cov_stamped);
+
+  /**
+   * ! TEMPORARY
+   * @brief Turtlesim true-pose call back
+   *
+   * @param[in] pose True pose from turtlesim
+   */
+  void TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose);
 
   /**
    * @brief Publish estimated node
