@@ -62,4 +62,12 @@ def generate_launch_description():
         Node(package="turtle_nav_cpp", executable="position_sensor", parameters=[config_params])
     )
 
+    # Rviz config file
+    rviz_config = os.path.join(
+        get_package_share_directory("turtle_nav_cpp"), "launch", "config", "turtle_nav_filter.rviz"
+    )
+
+    # Launch RVIZ
+    ld.add_action(Node(package="rviz2", executable="rviz2", arguments=["-d", rviz_config]))
+
     return ld
