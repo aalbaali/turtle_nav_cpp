@@ -1,0 +1,59 @@
+# Note: some parameters need to match topics remapped in the launch file.
+# Check the `TRUE_TURTLE_TOPIC_NAME` variable in the launch file.
+# So far, it's not possible to use config params to remap names
+/turtle_est_broadcaster:
+  ros__parameters:
+    # Name of the spawned turtle
+    target_name: "est_turtle"
+    # Estimated pose TF frame
+    target_frame: "est_turtle"
+
+    true_frame: "true_turtle"
+    odom_frame: "odom"
+
+    # Map TF frame
+    map_frame: "map"
+    pose_subscribe_topic: "true_turtle/pose"
+
+    #  Subscribe to this (temporarily subscribed to the true pose until the pose
+    #  estimate topic is read)
+    #  Request teleport service from this
+    teleport_service: "est_turtle/teleport_absolute"
+
+/steering_wheel_encoder:
+  ros__parameters:
+    # [mean, std]
+    angular_speed_noise_params:
+    - 0.0
+    - 0.01
+
+    # [mean, std]
+    linear_speed_noise_params:
+    - 0.0
+    - 0.1
+
+    # Frame of measurement
+    meas_frame: est_turtle
+
+    # Publish to this topic
+    noisy_meas_topic: meas/wheel_encoder
+
+    # Subscribe to this topic
+    true_meas_topic: true_turtle/cmd_vel
+    # use_sim_time: false
+
+
+/position_sensor:
+  ros__parameters:
+    biases:
+      - 0.0
+      - 0.0
+    covariance:
+      - 0.1
+      - 0.0
+      - 0.0
+      - 0.1
+    meas_frame: map
+    noisy_meas_topic: meas/position
+    true_meas_topic: true_turtle/pose
+    use_sim_time: false
