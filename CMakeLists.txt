@@ -126,6 +126,7 @@ install(TARGETS
 # Install launch files
 install(DIRECTORY
   launch
+  launch/config
   include
   DESTINATION share/${PROJECT_NAME}
 )
