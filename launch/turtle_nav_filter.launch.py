@@ -62,6 +62,15 @@ def generate_launch_description():
         Node(package="turtle_nav_cpp", executable="position_sensor", parameters=[config_params])
     )
 
+    # Dead-reckoning estimation node
+    ld.add_action(
+        Node(
+            package="turtle_nav_cpp",
+            executable="dead_reckon_estimator",
+            parameters=[config_params],
+        )
+    )
+
     # Rviz config file
     rviz_config = os.path.join(
         get_package_share_directory("turtle_nav_cpp"), "launch", "config", "turtle_nav_filter.rviz"
