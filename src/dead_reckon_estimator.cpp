@@ -8,6 +8,10 @@
 
 #include "turtle_nav_cpp/dead_reckon_estimator.hpp"
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+#include <array>
 #include <string>
 
 namespace turtle_nav_cpp
@@ -47,12 +51,36 @@ void DeadReckonEstimator::InitialPoseCallBack(
   RCLCPP_INFO(this->get_logger(), ss.str());
 }
 
-void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr /* pose */)
+// !TEMPORARY
+void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose)
 {
   if (!estimator_is_active_) {
     RCLCPP_DEBUG(this->get_logger(), "dead_reckon_estimator node not active yet");
     return;
   }
+
+  PoseWithCovarianceStamped pose_with_cov_out;
+
+  // TODO(aalbaali): Get this frame from params
+  pose_with_cov_out.header.frame_id = "odom";
+  pose_with_cov_out.header.stamp = this->get_clock()->now();
+  pose_with_cov_out.pose.pose.position.x = pose->x;
+  pose_with_cov_out.pose.pose.position.y = pose->y;
+
+  tf2::Quaternion q;
+  q.setRPY(0, 0, pose->theta);
+  q.normalize();
+  pose_with_cov_out.pose.pose.orientation = tf2::toMsg(q);
+
+  std::array<double, 36> cov;
+  cov[0 * 6 + 0] = 1;   // x
+  cov[1 * 6 + 1] = 1;   // y
+  cov[2 * 6 + 2] = -1;  // z
+  cov[3 * 6 + 3] = -1;  // roll
+  cov[4 * 6 + 4] = -1;  // pitch
+  cov[5 * 6 + 5] = -1;  // yaw
+
+  pose_with_cov_out.pose.covariance = cov;
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
