@@ -121,10 +121,10 @@ TEST(MatrixToStdArray, EigVector)
   const auto arr_col_major = MatrixToStdArray(mat_col_major);
 
   for (int i = 0; i < sz; i++) {
-    EXPECT_DOUBLE_EQ(arr_row_major[i], mat_row_major(1, i));
-    EXPECT_DOUBLE_EQ(arr_row_major[i], mat_col_major(i, 1));
-    EXPECT_DOUBLE_EQ(arr_col_major[i], mat_row_major(1, i));
-    EXPECT_DOUBLE_EQ(arr_col_major[i], mat_col_major(i, 1));
+    EXPECT_DOUBLE_EQ(arr_row_major[i], mat_row_major(i));
+    EXPECT_DOUBLE_EQ(arr_row_major[i], mat_col_major(i));
+    EXPECT_DOUBLE_EQ(arr_col_major[i], mat_row_major(i));
+    EXPECT_DOUBLE_EQ(arr_col_major[i], mat_col_major(i));
   }
 }
 
