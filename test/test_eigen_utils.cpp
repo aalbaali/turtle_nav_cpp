@@ -39,4 +39,52 @@ TEST(StdVectorToMatrix, RowColMajor)
   }
 }
 
+TEST(MatrixToStdArr, RowMajorTwoByTwoMatrix)
+{
+  // Vector to initialize matrix (using the `Eigen::Map` function)
+  std::vector<double> init_vals{1, 2, 3, 4, 5, 6};
+
+  // Matrix size
+  const int rows = 2;
+  const int cols = 3;
+
+  // Matrix data type. Note that it's row major in this test
+  using MatrixType = Eigen::Matrix<double, rows, cols, Eigen::StorageOptions::RowMajor>;
+
+  MatrixType mat = Eigen::Map<MatrixType>(init_vals.data());
+
+  // Get the array
+  const auto arr_row_major = MatrixToStdArray(mat);
+
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      EXPECT_DOUBLE_EQ(arr_row_major[cols * i + j], mat(i, j));
+    }
+  }
+}
+
+TEST(MatrixToStdArr, ColMajorTwoByTwoMatrix)
+{
+  // Vector to initialize matrix (using the `Eigen::Map` function)
+  std::vector<double> init_vals{1, 2, 3, 4, 5, 6};
+
+  // Matrix size
+  const int rows = 2;
+  const int cols = 3;
+
+  // Matrix data type. Note that it's row major in this test
+  using MatrixType = Eigen::Matrix<double, rows, cols, Eigen::StorageOptions::ColMajor>;
+
+  MatrixType mat = Eigen::Map<MatrixType>(init_vals.data());
+
+  // Get the array
+  const auto arr_row_major = MatrixToStdArray(mat);
+
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      EXPECT_DOUBLE_EQ(arr_row_major[i + rows * j], mat(i, j));
+    }
+  }
+}
+
 }  // namespace eigen_utils
