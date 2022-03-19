@@ -128,6 +128,7 @@ install(TARGETS
   turtle_est_broadcaster
   steering_wheel_encoder
   position_sensor
+  dead_reckon_estimator
   DESTINATION lib/${PROJECT_NAME}
 )
 

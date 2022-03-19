@@ -96,6 +96,7 @@ private:
   // true pose subscriber
   rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr true_pose_subscriber_{nullptr};
 
+  // TODO(aalbaali): Publish odometry instead of PoseWithCovariance
   // Estimated pose publisher
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr est_pose_publisher_{
     nullptr};

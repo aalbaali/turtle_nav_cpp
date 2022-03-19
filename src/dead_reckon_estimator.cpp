@@ -12,7 +12,11 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <array>
+#include <functional>
+#include <memory>
 #include <string>
+
+using std::placeholders::_1;
 
 namespace turtle_nav_cpp
 {
@@ -36,7 +40,17 @@ DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_
   this->declare_parameter<std::string>("est_pose_topic", "/est_turtle/est_pose");
   this->get_parameter("est_pose_topic", est_pose_topic_);
 
-  // est_pose_topic_
+  // Subscribe to the /initialpose topic from rviz
+  initial_pose_subscriber_ = this->create_subscription<PoseWithCovarianceStamped>(
+    initial_pose_topic_, 10, std::bind(&DeadReckonEstimator::InitialPoseCallBack, this, _1));
+
+  // !TEMPORARY
+  // Subscribe to the true pose
+  true_pose_subscriber_ = this->create_subscription<turtlesim::msg::Pose>(
+    true_pose_topic_, 10, std::bind(&DeadReckonEstimator::TruePoseCallBack, this, _1));
+
+  // Estimated pose publisher
+  est_pose_publisher_ = this->create_publisher<PoseWithCovarianceStamped>(est_pose_topic_, 10);
 }
 
 void DeadReckonEstimator::InitialPoseCallBack(
@@ -45,9 +59,17 @@ void DeadReckonEstimator::InitialPoseCallBack(
   latest_est_pose_ = *pose_with_cov_stamped;
   estimator_is_active_ = true;
 
+  est_pose_publisher_->publish(latest_est_pose_);
+
+  const double x = pose_with_cov_stamped->pose.pose.position.x;
+  const double y = pose_with_cov_stamped->pose.pose.position.y;
+  tf2::Quaternion q;
+  tf2::convert(pose_with_cov_stamped->pose.pose.orientation, q);
+  const double th = q.getAngle();
+
   std::stringstream ss;
-  ss << "Initial pose received on '\033[36;1m" << initial_pose_topic_ << "'\033[0m";
-  ss << "with value '\033[36;1m" << pose_with_cov_stamped << "'\033[0m";
+  ss << "Initial pose received on '\033[36;1m" << initial_pose_topic_ << "'\033[0m ";
+  ss << "with value '\033[36;1m(" << x << ", " << y << ", " << th << ")'\033[0m";
   RCLCPP_INFO(this->get_logger(), ss.str());
 }
 
@@ -55,7 +77,7 @@ void DeadReckonEstimator::InitialPoseCallBack(
 void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose)
 {
   if (!estimator_is_active_) {
-    RCLCPP_DEBUG(this->get_logger(), "dead_reckon_estimator node not active yet");
+    RCLCPP_INFO(this->get_logger(), "dead_reckon_estimator node not active yet");
     return;
   }
 
@@ -81,22 +103,38 @@ void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr
   cov[5 * 6 + 5] = -1;  // yaw
 
   pose_with_cov_out.pose.covariance = cov;
+
+  latest_est_pose_ = pose_with_cov_out;
+
+  // !TEMPORARY
+  // Publish the topic directly
+  est_pose_publisher_->publish(latest_est_pose_);
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
   const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr /* twist_with_cov_stamped */)
 {
   if (!estimator_is_active_) {
-    RCLCPP_DEBUG(this->get_logger(), "dead_reckon_estimator node not active yet");
+    RCLCPP_INFO(this->get_logger(), "dead_reckon_estimator node not active yet");
     return;
   }
 }
 
 void DeadReckonEstimator::EstPosePublisher(
-  const PoseWithCovarianceStamped & /* pose_with_cov_stamped */) const
+  const PoseWithCovarianceStamped & pose_with_cov_stamped) const
 {
+  if (!estimator_is_active_) {
+    RCLCPP_INFO(this->get_logger(), "dead_reckon_estimator node not active yet");
+    return;
+  }
+  est_pose_publisher_->publish(pose_with_cov_stamped);
 }
 
 }  // namespace turtle_nav_cpp
 
-int main() {}
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<turtle_nav_cpp::DeadReckonEstimator>());
+  rclcpp::shutdown();
+}

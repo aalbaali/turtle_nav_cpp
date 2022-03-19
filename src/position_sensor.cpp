@@ -70,6 +70,8 @@ void PositionSensor::MeasCallBack(const TurtlePose::SharedPtr true_pose)
   double var_x = noise_cov_(0, 0);
   double var_y = noise_cov_(1, 1);
   double var_z = -1.0;
+
+  // TODO(aalbaali): Create a utility function to matrices to arrays, etc.
   std::array<double, 9> cov{var_x, 0.0, 0.0, 0.0, var_y, 0.0, 0.0, 0.0, var_z};
   noisy_meas.vector.covariance = cov;
 
