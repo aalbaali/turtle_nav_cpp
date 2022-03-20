@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/ros_utils.hpp"
 
@@ -66,12 +67,12 @@ void PositionSensor::MeasCallBack(const TurtlePose::SharedPtr true_pose)
   noisy_meas.vector.vector.x += noise(0);
   noisy_meas.vector.vector.y += noise(1);
 
-  // Variance on x, y, theta
-  double var_x = noise_cov_(0, 0);
-  double var_y = noise_cov_(1, 1);
-  double var_z = -1.0;
-  std::array<double, 9> cov{var_x, 0.0, 0.0, 0.0, var_y, 0.0, 0.0, 0.0, var_z};
-  noisy_meas.vector.covariance = cov;
+  // Covariance on x, y
+  Eigen::Matrix3d cov = Eigen::Matrix3d::Zero();
+  cov.block<2, 2>(0, 0) = noise_cov_;
+  cov(2, 2) = -1;
+
+  noisy_meas.vector.covariance = eigen_utils::MatrixToStdArray(cov);
 
   noisy_meas_publisher_->publish(noisy_meas);
 }
