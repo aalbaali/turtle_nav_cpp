@@ -73,6 +73,14 @@ ament_target_dependencies(
   eigen_utils
   Eigen3
 )
+
+# Add pose utils
+add_library(nav_utils src/pose.cpp)
+ament_target_dependencies(
+  eigen_utils
+  Eigen3
+)
+
 #######################################################
 
 # Estimated pose broadcaster
