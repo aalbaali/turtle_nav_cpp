@@ -8,4 +8,14 @@
 #ifndef TURTLE_NAV_CPP_NAV_UTILS_HPP_
 #define TURTLE_NAV_CPP_NAV_UTILS_HPP_
 
+namespace nav_utils
+{
+/**
+ * @brief 2D Pose indices in 3D pose
+ *
+ */
+enum TwistIdx { x = 0, y = 1, th = 5 };
+
+}  // namespace nav_utils
+
 #endif  // TURTLE_NAV_CPP_NAV_UTILS_HPP_

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
+#include "turtle_nav_cpp/nav_utils.hpp"
 
 namespace turtle_nav_cpp
 {
@@ -81,9 +82,11 @@ void SteeringWheelEncoder::MeasCallBack(const Twist::SharedPtr true_meas)
   // Covariance on x, y, theta
   Eigen::Matrix<double, 6, 6> cov = Eigen::Matrix<double, 6, 6>::Zero();
 
-  cov(TwistIdx::x, TwistIdx::x) = std::pow(linear_speed_noise_gaussian_.stddev(), 2);
-  cov(TwistIdx::y, TwistIdx::y) = -1.0;
-  cov(TwistIdx::th, TwistIdx::th) = std::pow(angular_speed_noise_gaussian_.stddev(), 2);
+  cov(nav_utils::TwistIdx::x, nav_utils::TwistIdx::x) =
+    std::pow(linear_speed_noise_gaussian_.stddev(), 2);
+  cov(nav_utils::TwistIdx::y, nav_utils::TwistIdx::y) = -1.0;
+  cov(nav_utils::TwistIdx::th, nav_utils::TwistIdx::th) =
+    std::pow(angular_speed_noise_gaussian_.stddev(), 2);
 
   noisy_meas.twist.covariance = eigen_utils::MatrixToStdArray(cov);
 
