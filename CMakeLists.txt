@@ -73,6 +73,13 @@ ament_target_dependencies(
   eigen_utils
   Eigen3
 )
+
+# Add 2D navigation utils
+add_library(nav_utils src/nav_utils.cpp)
+ament_target_dependencies(
+  eigen_utils
+  Eigen3
+)
 #######################################################
 
 # Estimated pose broadcaster
@@ -88,6 +95,7 @@ ament_target_dependencies(
 
 # Estimated pose broadcaster
 add_executable(dead_reckon_estimator src/dead_reckon_estimator.cpp)
+target_link_libraries(dead_reckon_estimator nav_utils)
 ament_target_dependencies(
   dead_reckon_estimator
   rclcpp
