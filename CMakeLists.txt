@@ -86,6 +86,16 @@ ament_target_dependencies(
   geometry_msgs
 )
 
+# Estimated pose broadcaster
+add_executable(dead_reckon_estimator src/dead_reckon_estimator.cpp)
+ament_target_dependencies(
+  dead_reckon_estimator
+  rclcpp
+  turtlesim #TEMPORARY!
+  geometry_msgs
+  tf2
+)
+
 # Steering wheel encoder
 add_executable(steering_wheel_encoder src/steering_wheel_encoder.cpp)
 target_link_libraries(steering_wheel_encoder eigen_utils)
@@ -115,6 +125,7 @@ install(TARGETS
   turtle_est_broadcaster
   steering_wheel_encoder
   position_sensor
+  dead_reckon_estimator
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -5,6 +5,7 @@
   ros__parameters:
     # Name of the spawned turtle
     target_name: "est_turtle"
+
     # Estimated pose TF frame
     target_frame: "est_turtle"
 
@@ -13,24 +14,26 @@
 
     # Map TF frame
     map_frame: "map"
-    pose_subscribe_topic: "true_turtle/pose"
+
+    # Subscribe to this `turtle::msg::Pose`
+    pose_subscribe_topic: "/true_turtle/pose"
 
     #  Subscribe to this (temporarily subscribed to the true pose until the pose
     #  estimate topic is read)
     #  Request teleport service from this
-    teleport_service: "est_turtle/teleport_absolute"
+    teleport_service: "/est_turtle/teleport_absolute"
 
 /steering_wheel_encoder:
   ros__parameters:
     # [mean, std]
     angular_speed_noise_params:
-    - 0.0
-    - 0.01
+      - 0.0
+      - 0.01
 
     # [mean, std]
     linear_speed_noise_params:
-    - 0.0
-    - 0.1
+      - 0.0
+      - 0.1
 
     # Frame of measurement
     meas_frame: est_turtle
@@ -41,7 +44,6 @@
     # Subscribe to this topic
     true_meas_topic: true_turtle/cmd_vel
     # use_sim_time: false
-
 
 /position_sensor:
   ros__parameters:
@@ -57,3 +59,18 @@
     noisy_meas_topic: meas/position
     true_meas_topic: true_turtle/pose
     use_sim_time: false
+
+/dead_reckon_estimator:
+  ros__parameters:
+
+    # Initial pose set from rviz
+    initial_pose_topic: /initialpose
+
+    # Velocity measurements topic
+    cmd_vel_meas_topic: /meas/cmd_vel
+
+    # ! Temporary: subscribe to this topic
+    true_pose_topoic: /true_turtle/pose
+
+    # Pose to publish to
+    est_pose_topic: /est_turtle/est_pose
