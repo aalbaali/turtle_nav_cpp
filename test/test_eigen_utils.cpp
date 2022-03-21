@@ -159,4 +159,25 @@ TEST(HeadingToQuaternion, CheckRotationMatrix)
   EXPECT_DOUBLE_EQ(C(2, 2), 1);
 }
 
+TEST(QuaternionToHeading, ZeroHeadingQuaternion)
+{
+  Eigen::Quaterniond q;
+  q.x() = 0;
+  q.y() = 0;
+  q.z() = 0;
+  q.w() = 1;
+  q.normalize();
+
+  EXPECT_DOUBLE_EQ(QuaternionToHeading(q), 0);
+}
+
+TEST(QuaternionToHeading, NonZeroHeadingQuaternion)
+{
+  const double heading = M_PI_4;
+
+  Eigen::Quaterniond q(Eigen::AngleAxisd(heading, Eigen::Vector3d::UnitZ()));
+
+  EXPECT_DOUBLE_EQ(QuaternionToHeading(q), heading);
+}
+
 }  // namespace eigen_utils
