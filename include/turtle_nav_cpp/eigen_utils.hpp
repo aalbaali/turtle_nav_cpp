@@ -9,7 +9,11 @@
 #ifndef TURTLE_NAV_CPP_EIGEN_UTILS_HPP_
 #define TURTLE_NAV_CPP_EIGEN_UTILS_HPP_
 
+// Functions to add
+// - Converting heading to quaternion (one for tf2 and another for geometry_msgs)
+
 #include <Eigen/Dense>
+#include <array>
 #include <vector>
 
 namespace eigen_utils
@@ -41,6 +45,20 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToMatrix(const std::vector
   }
 
   return Eigen::Map<const Eigen::Matrix<double, row, col, storage_opt>>(vec.data());
+}
+
+template <int row, int col, int storage_opt = Eigen::StorageOptions::RowMajor>
+std::array<double, row * col> MatrixToStdArray(
+  const Eigen::Matrix<double, row, col, storage_opt> & mat)
+{
+  // For now, copy the data (since it's a const ref), but create another function with a move
+  // reference
+
+  // Answer from
+  // https://stackoverflow.com/questions/8443102/convert-eigen-matrix-to-c-array
+  std::array<double, row * col> arr;
+  Eigen::Map<Eigen::Matrix<double, row, col, storage_opt>>(arr.data()) = mat;
+  return arr;
 }
 
 /**

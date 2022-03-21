@@ -98,6 +98,7 @@ ament_target_dependencies(
 
 # Steering wheel encoder
 add_executable(steering_wheel_encoder src/steering_wheel_encoder.cpp)
+target_link_libraries(steering_wheel_encoder eigen_utils)
 ament_target_dependencies(
   steering_wheel_encoder
   rclcpp

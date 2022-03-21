@@ -18,6 +18,13 @@
 
 namespace turtle_nav_cpp
 {
+// TODO(aalbaali): Move to navigation utils
+/**
+ * @brief 2D Pose indices in 3D pose
+ *
+ */
+enum TwistIdx { x = 0, y = 1, th = 5 };
+
 using Twist = geometry_msgs::msg::Twist;
 using TwistWithCovStamped = geometry_msgs::msg::TwistWithCovarianceStamped;
 
