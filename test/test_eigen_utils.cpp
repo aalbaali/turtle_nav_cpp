@@ -128,4 +128,35 @@ TEST(MatrixToStdArray, EigVector)
   }
 }
 
+TEST(HeadingToQuaternion, CheckQuaternion)
+{
+  const double heading = M_PI_4;
+
+  // The online calculator has been used to calculate the quaternion matrix
+  // https://www.andre-gaschler.com/rotationconverter/
+  auto q = HeadingToQuaternion(heading);
+
+  EXPECT_DOUBLE_EQ(q.x(), 0);
+  EXPECT_DOUBLE_EQ(q.y(), 0);
+  EXPECT_DOUBLE_EQ(q.z(), sin(heading / 2));
+  EXPECT_DOUBLE_EQ(q.w(), cos(heading / 2));
+}
+
+TEST(HeadingToQuaternion, CheckRotationMatrix)
+{
+  const double heading = M_PI_4;
+
+  auto C = HeadingToQuaternion(heading).toRotationMatrix();
+
+  EXPECT_DOUBLE_EQ(C(0, 0), cos(heading));
+  EXPECT_DOUBLE_EQ(C(0, 1), -sin(heading));
+  EXPECT_DOUBLE_EQ(C(1, 0), sin(heading));
+  EXPECT_DOUBLE_EQ(C(1, 1), cos(heading));
+  EXPECT_DOUBLE_EQ(C(0, 2), 0);
+  EXPECT_DOUBLE_EQ(C(1, 2), 0);
+  EXPECT_DOUBLE_EQ(C(2, 0), 0);
+  EXPECT_DOUBLE_EQ(C(2, 1), 0);
+  EXPECT_DOUBLE_EQ(C(2, 2), 1);
+}
+
 }  // namespace eigen_utils
