@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
+
 namespace turtle_nav_cpp
 {
 using std::placeholders::_1;
@@ -76,19 +78,14 @@ void SteeringWheelEncoder::MeasCallBack(const Twist::SharedPtr true_meas)
   noisy_meas.twist.twist.linear.x += linear_speed_noise_gaussian_(rn_generator_);
   noisy_meas.twist.twist.angular.z += angular_speed_noise_gaussian_(rn_generator_);
 
-  // Variance on x, y, theta
-  double var_x = std::pow(linear_speed_noise_gaussian_.stddev(), 2);
-  double var_y = -1.0;
-  double var_theta = std::pow(angular_speed_noise_gaussian_.stddev(), 2);
-  std::array<double, 36> cov{
-    var_x, 0.0,   0.0,  0.0,  0.0,  0.0,        // x
-    0.0,   var_y, 0.0,  0.0,  0.0,  0.0,        // y
-    0.0,   0.0,   -1.0, 0.0,  0.0,  0.0,        // z
-    0.0,   0.0,   0.0,  -1.0, 0.0,  0.0,        // r.x
-    0.0,   0.0,   0.0,  0.0,  -1.0, 0.0,        // r.y
-    0.0,   0.0,   0.0,  0.0,  0.0,  var_theta,  // r.z
-  };
-  noisy_meas.twist.covariance = cov;
+  // Covariance on x, y, theta
+  Eigen::Matrix<double, 6, 6> cov = Eigen::Matrix<double, 6, 6>::Zero();
+
+  cov(PoseIdx::x, PoseIdx::x) = std::pow(linear_speed_noise_gaussian_.stddev(), 2);
+  cov(PoseIdx::y, PoseIdx::y) = -1.0;
+  cov(PoseIdx::th, PoseIdx::th) = std::pow(angular_speed_noise_gaussian_.stddev(), 2);
+
+  noisy_meas.twist.covariance = eigen_utils::MatrixToStdArray(cov);
 
   noisy_meas_publisher_->publish(noisy_meas);
 }
