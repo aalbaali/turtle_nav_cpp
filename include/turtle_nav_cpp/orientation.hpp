@@ -34,21 +34,21 @@ public:
    *
    * @details The heading is automatically wrapped to (-pi, pi]
    */
-  explicit Orientation(double heading);
+  Orientation(double heading);
 
   /**
    * @brief Construct a new Orientation object from an Eigen quaternion object
    *
    * @param[in] q Eigen quaternion
    */
-  explicit Orientation(const Eigen::Quaterniond q);
+  Orientation(const Eigen::Quaterniond q);
 
   /**
    * @brief Construct a new Orientation object
    *
    * @param[in] q ROS `geometry_msgs` quaternion object
    */
-  explicit Orientation(const geometry_msgs::msg::Quaternion q);
+  Orientation(const geometry_msgs::msg::Quaternion q);
 
   /**
    * @brief Return the heading angle wrapped to (-pi, pi]
@@ -114,12 +114,28 @@ public:
   Orientation operator+(const Orientation & other) const;
 
   /**
+   * @brief Add angle to self
+   *
+   * @param[in] other Orientation on the RHS
+   * @return Orientation&
+   */
+  Orientation & operator+=(const Orientation & other);
+
+  /**
    * @brief Compoud headings
    *
    * @param[in] other The heading in rhs
    * @return Orientation&
    */
   Orientation operator+(double other) const;
+
+  /**
+   * @brief Add angle to self
+   *
+   * @param[in] other Orientation/angle on the RHS
+   * @return Orientation&
+   */
+  Orientation & operator+=(double other);
 
   /**
    * @brief Subtract headings
@@ -137,7 +153,7 @@ public:
    */
   Orientation operator-(double other) const;
 
-  // TODO(aalbaali): Orientation(const turtle_nav_cpp::Pose)
+  // TODO(aalbaali): Export quaternion msg and Eigen quaternion
 private:
   Eigen::Rotation2Dd heading_;
 };

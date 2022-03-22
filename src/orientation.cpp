@@ -21,13 +21,11 @@ Orientation::Orientation() : heading_(0) {}
 
 Orientation::Orientation(double heading) : heading_(WrapToPi(heading)) {}
 
-Orientation::Orientation(const Eigen::Quaterniond q) : heading_(nav_utils::QuaternionToHeading(q))
-{
-}
+Orientation::Orientation(const Eigen::Quaterniond q) : heading_(QuaternionToHeading(q)) {}
 
 Orientation::Orientation(const geometry_msgs::msg::Quaternion q)
-: heading_(QuaternionMsgToHeading(q))
 {
+  heading_ = Eigen::Rotation2Dd(QuaternionMsgToHeading(q));
 }
 
 double Orientation::Angle() const { return heading_.angle(); }
@@ -44,15 +42,15 @@ Orientation & Orientation::operator=(double heading)
 
 Orientation & Orientation::operator=(const Eigen::Quaterniond q)
 {
-  heading_ = Eigen::Rotation2Dd(nav_utils::QuaternionToHeading(q));
+  heading_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
   return *this;
 }
 
 Orientation & Orientation::operator=(const geometry_msgs::msg::Quaternion q_msg)
 {
-  auto q = nav_utils::QuaternionMsgToQuaternion(q_msg);
+  auto q = QuaternionMsgToQuaternion(q_msg);
   q.normalize();
-  heading_ = Eigen::Rotation2Dd(nav_utils::QuaternionToHeading(q));
+  heading_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
   return *this;
 }
 
@@ -66,9 +64,21 @@ Orientation Orientation::operator+(const Orientation & other) const
   return Orientation(this->Angle() + other.Angle());
 }
 
+Orientation & Orientation::operator+=(const Orientation & other)
+{
+  *this = *this + other;
+  return *this;
+}
+
 Orientation Orientation::operator+(double other) const
 {
   return Orientation(this->Angle() + other);
+}
+
+Orientation & Orientation::operator+=(double other)
+{
+  *this = *this + other;
+  return *this;
 }
 
 Orientation Orientation::operator-(const Orientation & other) const
