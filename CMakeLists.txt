@@ -73,6 +73,15 @@ ament_target_dependencies(
   eigen_utils
   Eigen3
 )
+
+# Add navigation utils
+add_library(nav_utils src/orientation.cpp src/nav_utils.cpp)
+ament_target_dependencies(
+  nav_utils
+  Eigen3
+  turtlesim
+  geometry_msgs
+)
 #######################################################
 
 # Estimated pose broadcaster
