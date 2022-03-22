@@ -6,6 +6,7 @@
  * @date 2022-Mar-22
  */
 
+#include "geometry_msgs/msg/quaternion.hpp"
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/nav_utils.hpp"
 
@@ -63,6 +64,25 @@ TEST(QuaternionToHeading, NonZeroHeadingQuaternion)
   Eigen::Quaterniond q(Eigen::AngleAxisd(heading, Eigen::Vector3d::UnitZ()));
 
   EXPECT_DOUBLE_EQ(QuaternionToHeading(q), heading);
+}
+
+TEST(QuaternionMsgToQuaternion, EquateQuaternions)
+{
+  const double heading = M_PI_4;
+
+  geometry_msgs::msg::Quaternion q_msg;
+  q_msg.x = 0;
+  q_msg.y = 0;
+  q_msg.z = sin(heading / 2);
+  q_msg.w = cos(heading / 2);
+
+  auto q_eigen = QuaternionMsgToQuaternion(q_msg);
+  EXPECT_DOUBLE_EQ(q_msg.x, q_eigen.x());
+  EXPECT_DOUBLE_EQ(q_msg.y, q_eigen.y());
+  EXPECT_DOUBLE_EQ(q_msg.z, q_eigen.z());
+  EXPECT_DOUBLE_EQ(q_msg.w, q_eigen.w());
+
+  EXPECT_DOUBLE_EQ(QuaternionToHeading(QuaternionMsgToQuaternion(q_msg)), heading);
 }
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

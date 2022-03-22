@@ -9,6 +9,7 @@
 #define TURTLE_NAV_CPP_NAV_UTILS_HPP_
 
 #include <Eigen/Dense>
+#include <geometry_msgs/msg/quaternion.hpp>
 
 namespace turtle_nav_cpp
 {
@@ -33,6 +34,9 @@ T QuaternionToHeading(const Eigen::Quaternion<T> & q)
   // For planar rotation, the quaternion should have the form: (0, 0, cos(th/2)) + sin(th/2)
   return atan2(q.z(), q.w()) * 2;
 }
+
+Eigen::Quaterniond QuaternionMsgToQuaternion(const geometry_msgs::msg::Quaternion & q_msg);
+
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_NAV_UTILS_HPP_
