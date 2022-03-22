@@ -9,9 +9,3 @@ target_link_libraries(${PROJECT_NAME}_test_nav_utils nav_utils)
 
 ament_add_gtest(${PROJECT_NAME}_test_orientation test_orientation.cpp)
 target_link_libraries(${PROJECT_NAME}_test_orientation nav_utils)
-# ament_target_dependencies(
-#   ${PROJECT_NAME}_test_orientation
-#   Eigen3
-#   geometry_msgs
-#   turtlesim
-# )
