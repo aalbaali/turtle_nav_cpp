@@ -33,5 +33,13 @@ static std::normal_distribution<double> standard_normal_dist{0.0, 1.0};
  */
 double randn_gen(std::default_random_engine & rn_generator);
 
+/**
+ * @brief Wrap angle to (-pi, pi]
+ *
+ * @param angle To to wrap to (-pi, pi)
+ * @return double
+ */
+double WrapToPi(double angle);
+
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_MATH_UTILS_HPP_
