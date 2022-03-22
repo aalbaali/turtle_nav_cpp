@@ -44,7 +44,21 @@ T QuaternionToHeading(const Eigen::Quaternion<T> & q)
   return WrapToPi(atan2(q.z(), q.w()) * 2);
 }
 
+/**
+ * @brief Convert ROS geometry quaternion to Eigen quaternion
+ *
+ * @param[in] q_msg ROS geometry msg quaternion
+ * @return Eigen::Quaterniond
+ */
 Eigen::Quaterniond QuaternionMsgToQuaternion(const geometry_msgs::msg::Quaternion & q_msg);
+
+/**
+ * @brief Convert Eigen quaternion to ROS geometry quaternion
+ *
+ * @param[in] q Eigen quaternion
+ * @return geometry_msgs::msg::Quaternion
+ */
+geometry_msgs::msg::Quaternion QuaternionToQuaternionMsg(const Eigen::Quaterniond & q);
 
 /**
  * @brief Convert a ROS geometry msg to heading
@@ -53,6 +67,14 @@ Eigen::Quaterniond QuaternionMsgToQuaternion(const geometry_msgs::msg::Quaternio
  * @return double
  */
 double QuaternionMsgToHeading(const geometry_msgs::msg::Quaternion & q);
+
+/**
+ * @brief Convert heading to ROS geometry quaternion
+ *
+ * @param[in] heading Planar heading to convert
+ * @return geometry_msgs::msg::Quaternion
+ */
+geometry_msgs::msg::Quaternion HeadingToQuaternionMsg(double heading);
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_NAV_UTILS_HPP_

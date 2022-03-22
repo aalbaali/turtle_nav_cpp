@@ -21,10 +21,24 @@ Eigen::Quaterniond QuaternionMsgToQuaternion(const geometry_msgs::msg::Quaternio
   return q;
 }
 
+geometry_msgs::msg::Quaternion QuaternionToQuaternionMsg(const Eigen::Quaterniond & q)
+{
+  geometry_msgs::msg::Quaternion q_msg;
+  q_msg.x = q.x();
+  q_msg.y = q.y();
+  q_msg.z = q.z();
+  q_msg.w = q.w();
+  return q_msg;
+}
+
 double QuaternionMsgToHeading(const geometry_msgs::msg::Quaternion & q)
 {
   return WrapToPi(QuaternionToHeading(QuaternionMsgToQuaternion(q)));
 }
 
+geometry_msgs::msg::Quaternion HeadingToQuaternionMsg(double heading)
+{
+  return QuaternionToQuaternionMsg(HeadingToQuaternion(heading));
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

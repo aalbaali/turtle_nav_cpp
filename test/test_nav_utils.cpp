@@ -90,6 +90,19 @@ TEST(QuaternionMsgToQuaternion, EquateQuaternions)
   EXPECT_DOUBLE_EQ(q_msg.w, q_eigen.w());
 }
 
+TEST(QuaternionToQuaternionMsg, EquateQuaternions)
+{
+  const double heading = M_PI_4;
+  Eigen::Quaterniond q(cos(heading / 2), 0, 0, sin(heading / 2));
+
+  auto q_msg = QuaternionToQuaternionMsg(q);
+
+  EXPECT_DOUBLE_EQ(q_msg.x, q.x());
+  EXPECT_DOUBLE_EQ(q_msg.y, q.y());
+  EXPECT_DOUBLE_EQ(q_msg.z, q.z());
+  EXPECT_DOUBLE_EQ(q_msg.w, q.w());
+}
+
 TEST(QuaternionMsgToHeading, Headings)
 {
   const double heading = M_PI_4;
@@ -106,6 +119,18 @@ TEST(QuaternionMsgToHeading, Headings)
   q_msg.z = -q_msg.z;
   q_msg.w = -q_msg.w;
   EXPECT_DOUBLE_EQ(QuaternionMsgToHeading(q_msg), heading);
+}
+
+TEST(HeadingToQuaternionMsg, Headings)
+{
+  const double heading = M_PI_4;
+
+  auto q_msg = HeadingToQuaternionMsg(heading);
+
+  EXPECT_DOUBLE_EQ(q_msg.x, 0);
+  EXPECT_DOUBLE_EQ(q_msg.y, 0);
+  EXPECT_DOUBLE_EQ(q_msg.z, sin(heading / 2));
+  EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
