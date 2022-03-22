@@ -72,6 +72,20 @@ public:
   Eigen::Matrix2d RotationMatrix() const;
 
   /**
+   * @brief Return Eigen quaternion
+   *
+   * @return Eigen::Quaterniond
+   */
+  Eigen::Quaterniond Quaternion() const;
+
+  /**
+   * @brief Return ROS geometry quaternion msg
+   *
+   * @return geometry_msgs::msg::Quaternion
+   */
+  geometry_msgs::msg::Quaternion QuaternionMsg() const;
+
+  /**
    * @brief Wrap heading to pi and store rotation
    *
    * @param[in] heading Input heading
@@ -153,7 +167,6 @@ public:
    */
   Orientation operator-(double other) const;
 
-  // TODO(aalbaali): Export quaternion msg and Eigen quaternion
 private:
   Eigen::Rotation2Dd heading_;
 };

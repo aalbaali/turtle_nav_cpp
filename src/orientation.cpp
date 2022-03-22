@@ -34,6 +34,13 @@ Eigen::Rotation2Dd Orientation::Rotation() const { return heading_; }
 
 Eigen::Matrix2d Orientation::RotationMatrix() const { return heading_.toRotationMatrix(); }
 
+Eigen::Quaterniond Orientation::Quaternion() const { return HeadingToQuaternion(this->Angle()); }
+
+geometry_msgs::msg::Quaternion Orientation::QuaternionMsg() const
+{
+  return HeadingToQuaternionMsg(this->Angle());
+}
+
 Orientation & Orientation::operator=(double heading)
 {
   heading_ = Eigen::Rotation2Dd(WrapToPi(heading));

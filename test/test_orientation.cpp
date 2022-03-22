@@ -57,7 +57,7 @@ TEST_F(TestOrientation, Constructors)
   EXPECT_DOUBLE_EQ(Orientation(q_eigen).Angle(), heading);
 }
 
-TEST_F(TestOrientation, EigenMatrices)
+TEST_F(TestOrientation, Getters)
 {
   auto Rotation = Orientation(heading).Rotation();
   auto C_computed = Rotation.toRotationMatrix();
@@ -75,6 +75,20 @@ TEST_F(TestOrientation, EigenMatrices)
       EXPECT_DOUBLE_EQ(C_computed(i, j), C_member(i, j));
     }
   }
+
+  // Quaternions
+  Orientation rotation = heading;
+  auto q_eigen = rotation.Quaternion();
+  EXPECT_DOUBLE_EQ(q_eigen.x(), 0);
+  EXPECT_DOUBLE_EQ(q_eigen.y(), 0);
+  EXPECT_DOUBLE_EQ(q_eigen.z(), sin(heading / 2));
+  EXPECT_DOUBLE_EQ(q_eigen.w(), cos(heading / 2));
+
+  auto q_msg = rotation.QuaternionMsg();
+  EXPECT_DOUBLE_EQ(q_msg.x, 0);
+  EXPECT_DOUBLE_EQ(q_msg.y, 0);
+  EXPECT_DOUBLE_EQ(q_msg.z, sin(heading / 2));
+  EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
 
 TEST_F(TestOrientation, EqualityOperators)
