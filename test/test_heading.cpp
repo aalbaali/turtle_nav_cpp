@@ -93,7 +93,7 @@ TEST_F(TestHeading, Getters)
   EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
 
-TEST_F(TestHeading, EqualityOperators)
+TEST_F(TestHeading, AssignmentOperators)
 {
   Heading C;
 
