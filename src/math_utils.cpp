@@ -22,4 +22,20 @@ double randn_gen(std::default_random_engine & rn_generator)
 {
   return standard_normal_dist(rn_generator);
 }
+
+double WrapToPi(double angle)
+{
+  // Multiplying 2 by PI loses some precision, thus the `double` output loses some precision
+  // The remedy is to use `long double` and return a double
+  long double angle_l = angle;
+  while (angle_l > M_PI) {
+    angle_l -= 2 * M_PIl;
+  }
+  while (angle_l <= -M_PI) {
+    angle_l += 2 * M_PIl;
+  }
+
+  return angle_l;
+}
+
 }  // namespace turtle_nav_cpp
