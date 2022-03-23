@@ -36,9 +36,16 @@ Pose::Pose(const turtlesim::msg::Pose & pose) : position_{pose.x, pose.y}, headi
 // Getters
 //==================================================================================================
 
-// geometry_msgs::msg::Pose Pose::PoseMsg() const {
+geometry_msgs::msg::Pose Pose::PoseMsg() const
+{
+  geometry_msgs::msg::Pose pose_msg;
+  pose_msg.position.x = x();
+  pose_msg.position.y = y();
+  pose_msg.position.z = 0;
+  pose_msg.orientation = heading_.QuaternionMsg();
 
-// }
+  return pose_msg;
+}
 
 turtlesim::msg::Pose Pose::TurtlePose() const
 {
@@ -46,6 +53,7 @@ turtlesim::msg::Pose Pose::TurtlePose() const
   pose_turtle.x = x();
   pose_turtle.y = y();
   pose_turtle.theta = angle();
+
   return pose_turtle;
 }
 
@@ -53,6 +61,7 @@ Pose Pose::Inverse() const
 {
   const auto heading_inverse = this->heading().Inverse();
   const Vector2d position_inverse = -heading_inverse.RotationMatrix() * this->translation();
+
   return Pose(position_inverse, heading_inverse);
 }
 
@@ -110,6 +119,7 @@ Pose & Pose::operator*=(const Pose & other)
 {
   heading_ += other.heading();
   position_ += other.translation();
+
   return *this;
 }
 

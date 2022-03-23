@@ -85,5 +85,44 @@ TEST_F(TestPose, Constructors)
   EXPECT_FLOAT_EQ(T.y(), y_);
   EXPECT_FLOAT_EQ(T.angle(), theta_);
 }
+
+TEST_F(TestPose, Getters)
+{
+  Pose T(x_, y_, theta_);
+
+  // ROS geometry pose
+  const auto pose_msg = T.PoseMsg();
+  EXPECT_DOUBLE_EQ(pose_msg.position.x, x_);
+  EXPECT_DOUBLE_EQ(pose_msg.position.y, y_);
+  EXPECT_DOUBLE_EQ(pose_msg.position.z, 0);
+  EXPECT_DOUBLE_EQ(pose_msg.orientation.x, 0);
+  EXPECT_DOUBLE_EQ(pose_msg.orientation.y, 0);
+  EXPECT_DOUBLE_EQ(pose_msg.orientation.z, sin(theta_ / 2));
+  EXPECT_DOUBLE_EQ(pose_msg.orientation.w, cos(theta_ / 2));
+
+  // Turtlesim pose
+  const auto pose_turtle = T.TurtlePose();
+  EXPECT_FLOAT_EQ(pose_turtle.x, x_);
+  EXPECT_FLOAT_EQ(pose_turtle.y, y_);
+  EXPECT_FLOAT_EQ(pose_turtle.theta, theta_);
+
+  // Affine
+  const auto affine = T.Affine();
+  EXPECT_TRUE(affine.translation() == translation_);
+  EXPECT_TRUE(affine.linear() == T.heading().RotationMatrix());
+
+  // Translation
+  const auto translation_out = T.translation();
+  EXPECT_TRUE(translation_out == translation_);
+
+  // Heading
+  const auto heading_out = T.heading();
+  EXPECT_DOUBLE_EQ(heading_out.angle(), theta_);
+
+  // Scalars
+  EXPECT_DOUBLE_EQ(T.x(), x_);
+  EXPECT_DOUBLE_EQ(T.y(), y_);
+  EXPECT_DOUBLE_EQ(T.angle(), theta_);
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

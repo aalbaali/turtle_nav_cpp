@@ -111,13 +111,6 @@ public:
   turtlesim::msg::Pose TurtlePose() const;
 
   /**
-   * @brief Get the pose inverse
-   *
-   * @return Pose
-   */
-  Pose Inverse() const;
-
-  /**
    * @brief Get Eigen Affine2d object
    *
    * @return Affine2d
@@ -202,6 +195,17 @@ public:
    * @return Pose&
    */
   Pose & operator*=(const Pose & other);
+
+  //================================================================================================
+  // Other methods
+  //================================================================================================
+
+  /**
+   * @brief Get the pose inverse
+   *
+   * @return Pose
+   */
+  Pose Inverse() const;
 
 private:
   // Translational component of the pose. Named `position` for brevity
