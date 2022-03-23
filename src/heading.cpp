@@ -30,6 +30,8 @@ Heading::Heading(const geometry_msgs::msg::Quaternion q)
 
 double Heading::angle() const { return rotation_.angle(); }
 
+Heading Heading::Inverse() const { return Heading(-this->angle()); }
+
 Eigen::Rotation2Dd Heading::Rotation() const { return rotation_; }
 
 Eigen::Matrix2d Heading::RotationMatrix() const { return rotation_.toRotationMatrix(); }

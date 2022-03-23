@@ -93,6 +93,15 @@ TEST_F(TestHeading, Getters)
   EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
 
+TEST_F(TestHeading, Inverse)
+{
+  EXPECT_DOUBLE_EQ(Heading(heading).Inverse().angle(), -heading);
+
+  // Edge cases
+  EXPECT_DOUBLE_EQ(Heading(M_PI).Inverse().angle(), M_PI);
+  EXPECT_DOUBLE_EQ(Heading(-M_PI).Inverse().angle(), M_PI);
+}
+
 TEST_F(TestHeading, AssignmentOperators)
 {
   Heading C;

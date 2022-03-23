@@ -58,6 +58,13 @@ public:
   double angle() const;
 
   /**
+   * @brief Inverse element
+   *
+   * @return Heading Inverse heading
+   */
+  Heading Inverse() const;
+
+  /**
    * @brief Return Eigen's rotation object
    *
    * @return Eigen::Rotation2Dd
