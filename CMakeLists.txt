@@ -75,7 +75,7 @@ ament_target_dependencies(
 )
 
 # Add navigation utils
-add_library(nav_utils src/orientation.cpp src/nav_utils.cpp)
+add_library(nav_utils src/heading.cpp src/nav_utils.cpp)
 target_link_libraries(nav_utils math_utils eigen_utils ros_utils)
 ament_target_dependencies(
   nav_utils

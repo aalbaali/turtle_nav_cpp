@@ -1,12 +1,12 @@
 /**
  * Copyright 2022 Ⓒ Amro Al-Baali
- * @file orientation.hpp
+ * @file heading.hpp
  * @brief Class for dealing with SO(2) headings
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Mar-21
  */
-#ifndef TURTLE_NAV_CPP_ORIENTATION_HPP_
-#define TURTLE_NAV_CPP_ORIENTATION_HPP_
+#ifndef TURTLE_NAV_CPP_HEADING_HPP_
+#define TURTLE_NAV_CPP_HEADING_HPP_
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -18,37 +18,37 @@ namespace turtle_nav_cpp
 {
 namespace nav_utils
 {
-class Orientation
+class Heading
 {
 public:
   /**
    * @brief Default constructor
    *
    */
-  Orientation();
+  Heading();
 
   /**
-   * @brief Construct a new Orientation object
+   * @brief Construct a new Heading object
    *
-   * @param[in] heading Orientation to insert
+   * @param[in] heading Heading to insert
    *
    * @details The heading is automatically wrapped to (-pi, pi]
    */
-  Orientation(double heading);
+  Heading(double heading);
 
   /**
-   * @brief Construct a new Orientation object from an Eigen quaternion object
+   * @brief Construct a new Heading object from an Eigen quaternion object
    *
    * @param[in] q Eigen quaternion
    */
-  Orientation(const Eigen::Quaterniond q);
+  Heading(const Eigen::Quaterniond q);
 
   /**
-   * @brief Construct a new Orientation object
+   * @brief Construct a new Heading object
    *
    * @param[in] q ROS `geometry_msgs` quaternion object
    */
-  Orientation(const geometry_msgs::msg::Quaternion q);
+  Heading(const geometry_msgs::msg::Quaternion q);
 
   /**
    * @brief Return the heading angle wrapped to (-pi, pi]
@@ -89,17 +89,17 @@ public:
    * @brief Wrap heading to pi and store rotation
    *
    * @param[in] heading Input heading
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation & operator=(double heading);
+  Heading & operator=(double heading);
 
   /**
    * @brief Assign heading
    *
    * @param[in] q Eigen quaternion object
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation & operator=(const Eigen::Quaterniond q);
+  Heading & operator=(const Eigen::Quaterniond q);
 
   /**
    * @brief Assign heading
@@ -107,7 +107,7 @@ public:
    * @param[in] q ROS `geometry_msgs` quaternion object
    * @return Heading&
    */
-  Orientation & operator=(const geometry_msgs::msg::Quaternion q);
+  Heading & operator=(const geometry_msgs::msg::Quaternion q);
 
   /**
    * @brief Multiply angle by a constant
@@ -117,55 +117,55 @@ public:
    * @param[in] other The heading in rhs
    * @return Heading&
    */
-  Orientation operator*(double other) const;
+  Heading operator*(double other) const;
 
   /**
    * @brief Compoud headings
    *
    * @param[in] other The heading in rhs
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation operator+(const Orientation & other) const;
+  Heading operator+(const Heading & other) const;
 
   /**
    * @brief Add angle to self
    *
-   * @param[in] other Orientation on the RHS
-   * @return Orientation&
+   * @param[in] other Heading on the RHS
+   * @return Heading&
    */
-  Orientation & operator+=(const Orientation & other);
+  Heading & operator+=(const Heading & other);
 
   /**
    * @brief Compoud headings
    *
    * @param[in] other The heading in rhs
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation operator+(double other) const;
+  Heading operator+(double other) const;
 
   /**
    * @brief Add angle to self
    *
-   * @param[in] other Orientation/angle on the RHS
-   * @return Orientation&
+   * @param[in] other Heading/angle on the RHS
+   * @return Heading&
    */
-  Orientation & operator+=(double other);
+  Heading & operator+=(double other);
 
   /**
    * @brief Subtract headings
    *
    * @param[in] other The heading in rhs
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation operator-(const Orientation & other) const;
+  Heading operator-(const Heading & other) const;
 
   /**
    * @brief Subtract headings
    *
    * @param[in] other The heading in rhs
-   * @return Orientation&
+   * @return Heading&
    */
-  Orientation operator-(double other) const;
+  Heading operator-(double other) const;
 
 private:
   Eigen::Rotation2Dd heading_;
@@ -178,7 +178,7 @@ private:
  * @param[in] heading
  * @return std::ostream&
  */
-std::ostream & operator<<(std::ostream & os, const Orientation & heading);
+std::ostream & operator<<(std::ostream & os, const Heading & heading);
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
-#endif  // TURTLE_NAV_CPP_ORIENTATION_HPP_
+#endif  // TURTLE_NAV_CPP_HEADING_HPP_

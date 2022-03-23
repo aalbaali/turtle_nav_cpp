@@ -1,7 +1,7 @@
 /**
  * Copyright 2022 Ⓒ Amro Al-Baali
- * @file test_orientation.cpp
- * @brief Test orientation.{hpp, cpp}
+ * @file test_heading.cpp
+ * @brief Test heading.{hpp, cpp}
  * @author Amro Al-Baali (albaalia@live.com)
  * @date 2022-Mar-22
  */
@@ -11,7 +11,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "turtle_nav_cpp/orientation.hpp"
+#include "turtle_nav_cpp/heading.hpp"
 
 namespace turtle_nav_cpp
 {
@@ -19,7 +19,7 @@ namespace nav_utils
 {
 using ::testing::DoubleLE;
 
-class TestOrientation : public ::testing::Test
+class TestHeading : public ::testing::Test
 {
 protected:
   void SetUp() override
@@ -37,33 +37,33 @@ protected:
   geometry_msgs::msg::Quaternion q_msg;
 };
 
-TEST_F(TestOrientation, AnglesWithinBounds)
+TEST_F(TestHeading, AnglesWithinBounds)
 {
-  EXPECT_DOUBLE_EQ(Orientation(M_PI_4).Angle(), M_PI_4);
-  EXPECT_DOUBLE_EQ(Orientation(-M_PI_4).Angle(), -M_PI_4);
-  EXPECT_DOUBLE_EQ(Orientation(M_PI_4l + 4 * M_PIl).Angle(), M_PI_4);
-  EXPECT_DOUBLE_EQ(Orientation(-M_PI_4l - 4 * M_PIl).Angle(), -M_PI_4);
+  EXPECT_DOUBLE_EQ(Heading(M_PI_4).Angle(), M_PI_4);
+  EXPECT_DOUBLE_EQ(Heading(-M_PI_4).Angle(), -M_PI_4);
+  EXPECT_DOUBLE_EQ(Heading(M_PI_4l + 4 * M_PIl).Angle(), M_PI_4);
+  EXPECT_DOUBLE_EQ(Heading(-M_PI_4l - 4 * M_PIl).Angle(), -M_PI_4);
 }
 
-TEST_F(TestOrientation, Boundaries)
+TEST_F(TestHeading, Boundaries)
 {
   // Check that angle is within the bounds
-  EXPECT_DOUBLE_EQ(Orientation(M_PI).Angle(), M_PI);
-  EXPECT_DOUBLE_EQ(Orientation(-M_PI).Angle(), M_PI);
+  EXPECT_DOUBLE_EQ(Heading(M_PI).Angle(), M_PI);
+  EXPECT_DOUBLE_EQ(Heading(-M_PI).Angle(), M_PI);
 }
 
-TEST_F(TestOrientation, Constructors)
+TEST_F(TestHeading, Constructors)
 {
-  EXPECT_DOUBLE_EQ(Orientation(heading).Angle(), heading);
-  EXPECT_DOUBLE_EQ(Orientation(q_msg).Angle(), heading);
-  EXPECT_DOUBLE_EQ(Orientation(q_eigen).Angle(), heading);
+  EXPECT_DOUBLE_EQ(Heading(heading).Angle(), heading);
+  EXPECT_DOUBLE_EQ(Heading(q_msg).Angle(), heading);
+  EXPECT_DOUBLE_EQ(Heading(q_eigen).Angle(), heading);
 }
 
-TEST_F(TestOrientation, Getters)
+TEST_F(TestHeading, Getters)
 {
-  auto Rotation = Orientation(heading).Rotation();
+  auto Rotation = Heading(heading).Rotation();
   auto C_computed = Rotation.toRotationMatrix();
-  auto C_member = Orientation(heading).RotationMatrix();
+  auto C_member = Heading(heading).RotationMatrix();
 
   // Compare expected values
   EXPECT_DOUBLE_EQ(C_member(0, 0), cos(heading));
@@ -79,7 +79,7 @@ TEST_F(TestOrientation, Getters)
   }
 
   // Quaternions
-  Orientation rotation = heading;
+  Heading rotation = heading;
   auto q_eigen = rotation.Quaternion();
   EXPECT_DOUBLE_EQ(q_eigen.x(), 0);
   EXPECT_DOUBLE_EQ(q_eigen.y(), 0);
@@ -93,9 +93,9 @@ TEST_F(TestOrientation, Getters)
   EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
 
-TEST_F(TestOrientation, EqualityOperators)
+TEST_F(TestHeading, EqualityOperators)
 {
-  Orientation C;
+  Heading C;
 
   // Assignment operators
   //  Double
@@ -129,7 +129,7 @@ TEST_F(TestOrientation, EqualityOperators)
   EXPECT_DOUBLE_EQ(C.Angle(), heading);
 }
 
-TEST_F(TestOrientation, ArithmeticOperators)
+TEST_F(TestHeading, ArithmeticOperators)
 {
   double heading_1 = M_PI_2;
   const long double heading_1l = M_PI_2l;
@@ -145,7 +145,7 @@ TEST_F(TestOrientation, ArithmeticOperators)
   const Eigen::Quaterniond q_eigen_2 = q_eigen;
   const geometry_msgs::msg::Quaternion q_msg_2 = q_msg;
 
-  Orientation C_1 = heading_1;
+  Heading C_1 = heading_1;
   // Addition operators
   //  Double
   EXPECT_DOUBLE_EQ((C_1 + heading_2).Angle(), heading_1l + heading_2l);
@@ -155,20 +155,20 @@ TEST_F(TestOrientation, ArithmeticOperators)
 
   //  Quaternions
   EXPECT_DOUBLE_EQ((C_1 + q_eigen_2).Angle(), heading_1l + heading_2l);
-  EXPECT_DOUBLE_EQ((Orientation(q_eigen_1) + Orientation(q_eigen_2)).Angle(), heading_1l + heading);
+  EXPECT_DOUBLE_EQ((Heading(q_eigen_1) + Heading(q_eigen_2)).Angle(), heading_1l + heading);
   EXPECT_DOUBLE_EQ((C_1 + q_msg_2).Angle(), heading_1l + heading_2l);
-  EXPECT_DOUBLE_EQ((Orientation(q_msg_1) + Orientation(q_msg_2)).Angle(), heading_1l + heading);
+  EXPECT_DOUBLE_EQ((Heading(q_msg_1) + Heading(q_msg_2)).Angle(), heading_1l + heading);
 
   // Subtraction (Use `EXPECT_FLOAT_EQ` because some precision is lost when subtracting)
   EXPECT_FLOAT_EQ((C_1 - heading_2).Angle(), M_PI_4);
   EXPECT_FLOAT_EQ((C_1 - heading_2 - 4 * M_PIl).Angle(), M_PI_4);
-  EXPECT_FLOAT_EQ((C_1 - Orientation(heading_2)).Angle(), M_PI_4);
-  EXPECT_FLOAT_EQ((C_1 - Orientation(heading_2) - 4 * M_PIl).Angle(), M_PI_4);
+  EXPECT_FLOAT_EQ((C_1 - Heading(heading_2)).Angle(), M_PI_4);
+  EXPECT_FLOAT_EQ((C_1 - Heading(heading_2) - 4 * M_PIl).Angle(), M_PI_4);
 
   // Multiplication
   EXPECT_FLOAT_EQ((C_1 * 0.5).Angle(), heading_1 / 2);
-  EXPECT_PRED_FORMAT2(DoubleLE, (Orientation(M_PI_2) * (long double)(8)).Angle(), 1e-10);
-  EXPECT_PRED_FORMAT2(DoubleLE, -(Orientation(M_PI_2) * (long double)(8)).Angle(), 1e-10);
+  EXPECT_PRED_FORMAT2(DoubleLE, (Heading(M_PI_2) * (long double)(8)).Angle(), 1e-10);
+  EXPECT_PRED_FORMAT2(DoubleLE, -(Heading(M_PI_2) * (long double)(8)).Angle(), 1e-10);
 
   // Self addition
   auto C_1_original = C_1;
@@ -179,17 +179,17 @@ TEST_F(TestOrientation, ArithmeticOperators)
   EXPECT_DOUBLE_EQ(C_1.Angle(), heading_1);
 
   C_1 = C_1_original;
-  C_1 += Orientation(heading_2);
+  C_1 += Heading(heading_2);
   EXPECT_DOUBLE_EQ(C_1.Angle(), heading_1l + heading_2l);
 
   C_1 = C_1_original;
-  C_1 += Orientation(4 * M_PIl);
+  C_1 += Heading(4 * M_PIl);
   EXPECT_DOUBLE_EQ(C_1.Angle(), heading_1l);
 }
 
-TEST_F(TestOrientation, Ostream)
+TEST_F(TestHeading, Ostream)
 {
-  const Orientation C(heading);
+  const Heading C(heading);
   std::stringstream ss;
   ss << C;
 
