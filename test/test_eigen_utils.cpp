@@ -127,5 +127,4 @@ TEST(MatrixToStdArray, EigVector)
     EXPECT_DOUBLE_EQ(arr_col_major[i], mat_col_major(i));
   }
 }
-
 }  // namespace eigen_utils
