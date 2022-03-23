@@ -168,7 +168,7 @@ public:
   Heading operator-(double other) const;
 
 private:
-  Eigen::Rotation2Dd heading_;
+  Eigen::Rotation2Dd rotation_;
 };
 
 /**
