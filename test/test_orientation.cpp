@@ -8,7 +8,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <iostream>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/orientation.hpp"
@@ -187,7 +187,20 @@ TEST_F(TestOrientation, ArithmeticOperators)
   EXPECT_DOUBLE_EQ(C_1.Angle(), heading_1l);
 }
 
-TEST_F(TestOrientation, Ostream) {}
+TEST_F(TestOrientation, Ostream)
+{
+  const Orientation C(heading);
+  std::stringstream ss;
+  ss << C;
+
+  const std::string out_str = ss.str();
+
+  ss.str(std::string());
+  ss << heading;
+  const std::string expect_str = ss.str();
+
+  EXPECT_EQ(expect_str, out_str);
+}
 
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

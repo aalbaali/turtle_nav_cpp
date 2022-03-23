@@ -97,5 +97,10 @@ Orientation Orientation::operator-(double other) const
 {
   return Orientation(this->Angle() - other);
 }
+
+std::ostream & operator<<(std::ostream & os, const Orientation & heading)
+{
+  return os << heading.Angle();
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
