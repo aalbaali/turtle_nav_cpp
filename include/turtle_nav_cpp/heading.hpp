@@ -55,7 +55,7 @@ public:
    *
    * @return double
    */
-  double Angle() const;
+  double angle() const;
 
   /**
    * @brief Return Eigen's rotation object

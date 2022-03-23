@@ -9,8 +9,11 @@
 #define TURTLE_NAV_CPP_NAV_UTILS_HPP_
 
 #include <Eigen/Dense>
+#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <turtlesim/msg/pose.hpp>
 
+#include "turtle_nav_cpp/heading.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
 
 namespace turtle_nav_cpp
@@ -30,6 +33,9 @@ Eigen::Quaternion<T> HeadingToQuaternion(T heading)
   return Eigen::Quaternion<T>(Eigen::AngleAxis<T>(heading, Eigen::Matrix<T, 3, 1>::UnitZ()));
 }
 
+//==================================================================================================
+// Heading
+//==================================================================================================
 /**
  * @brief Convert an Eigen quaternion to a heading
  *
@@ -75,6 +81,27 @@ double QuaternionMsgToHeading(const geometry_msgs::msg::Quaternion & q);
  * @return geometry_msgs::msg::Quaternion
  */
 geometry_msgs::msg::Quaternion HeadingToQuaternionMsg(double heading);
+
+//==================================================================================================
+// Poses
+//==================================================================================================
+
+/**
+ * @brief Convert ROS geometry msg pose to turtlesim pose
+ *
+ * @param[in] pose ROS geometry msg pose
+ * @return turtlesim::msg::Pose Turtlesim pose
+ */
+turtlesim::msg::Pose PoseMsgToTurtlePose(const geometry_msgs::msg::Pose & pose);
+
+/**
+ * @brief Convert turtlesim pose to geometry msg pose
+ *
+ * @param[in] pose Turtlesim pose
+ * @return geometry_msgs::msg::Pose ROS geometry msg pose
+ */
+geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
+
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_NAV_UTILS_HPP_
