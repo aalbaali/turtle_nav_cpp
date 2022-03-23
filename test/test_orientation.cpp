@@ -17,6 +17,8 @@ namespace turtle_nav_cpp
 {
 namespace nav_utils
 {
+using ::testing::DoubleLE;
+
 class TestOrientation : public ::testing::Test
 {
 protected:
@@ -162,6 +164,11 @@ TEST_F(TestOrientation, ArithmeticOperators)
   EXPECT_FLOAT_EQ((C_1 - heading_2 - 4 * M_PIl).Angle(), M_PI_4);
   EXPECT_FLOAT_EQ((C_1 - Orientation(heading_2)).Angle(), M_PI_4);
   EXPECT_FLOAT_EQ((C_1 - Orientation(heading_2) - 4 * M_PIl).Angle(), M_PI_4);
+
+  // Multiplication
+  EXPECT_FLOAT_EQ((C_1 * 0.5).Angle(), heading_1 / 2);
+  EXPECT_PRED_FORMAT2(DoubleLE, (Orientation(M_PI_2) * (long double)(8)).Angle(), 1e-10);
+  EXPECT_PRED_FORMAT2(DoubleLE, -(Orientation(M_PI_2) * (long double)(8)).Angle(), 1e-10);
 
   // Self addition
   auto C_1_original = C_1;
