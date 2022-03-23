@@ -122,7 +122,7 @@ public:
   /**
    * @brief Compoud headings
    *
-   * @param[in] other The heading in rhs
+   * @param[in] other The heading on rhs
    * @return Heading&
    */
   Heading operator+(const Heading & other) const;
@@ -172,11 +172,11 @@ private:
 };
 
 /**
- * @brief
+* @brief Output stream for Heading object
  *
- * @param[in] os
- * @param[in] heading
- * @return std::ostream&
+* @param[in/out] os Output stream
+ * @param[in] heading Heading to feed into the output stream
+ * @return std::ostream& Resulting output stream
  */
 std::ostream & operator<<(std::ostream & os, const Heading & heading);
 }  // namespace nav_utils
