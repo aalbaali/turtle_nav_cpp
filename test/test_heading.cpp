@@ -195,7 +195,7 @@ TEST_F(TestHeading, ArithmeticOperators)
   C_1 += Heading(4 * M_PIl);
   EXPECT_DOUBLE_EQ(C_1.angle(), heading_1l);
 
-  C_1 = Heading(heading);
+  C_1 = Heading(theta_);
   EXPECT_TRUE(C_1 == C_1);
   EXPECT_FALSE(C_1 != C_1);
 

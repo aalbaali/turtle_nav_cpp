@@ -17,6 +17,8 @@
 #include <string>
 #include <turtlesim/msg/pose.hpp>
 
+#include "turtle_nav_cpp/pose.hpp"
+
 namespace turtle_nav_cpp
 {
 using geometry_msgs::msg::PoseWithCovarianceStamped;
@@ -108,8 +110,9 @@ private:
   // Flag indicating the estimator is active (this is kicked off in the `InitialPoseCallback`)
   bool estimator_is_active_ = false;
 
+  // TODO(aalbaali): To be replaced with a basic type (pose and covaraince)
   // Latest estimated pose
-  PoseWithCovarianceStamped latest_est_pose_;
+  PoseWithCovarianceStamped latest_est_pose_msg_;
 
   // Publishing frequency
   const double est_pose_pub_freq_;
