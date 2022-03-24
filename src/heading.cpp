@@ -91,6 +91,10 @@ Heading Heading::operator-(const Heading & other) const
 
 Heading Heading::operator-(double other) const { return Heading(this->angle() - other); }
 
+bool Heading::operator==(const Heading & other) const { return (this->angle() == other.angle()); }
+
+bool Heading::operator!=(const Heading & other) const { return !(*this == other); }
+
 std::ostream & operator<<(std::ostream & os, const Heading & heading)
 {
   return os << heading.angle();

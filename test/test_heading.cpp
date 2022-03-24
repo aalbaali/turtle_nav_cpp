@@ -194,6 +194,14 @@ TEST_F(TestHeading, ArithmeticOperators)
   C_1 = C_1_original;
   C_1 += Heading(4 * M_PIl);
   EXPECT_DOUBLE_EQ(C_1.angle(), heading_1l);
+
+  C_1 = Heading(heading);
+  EXPECT_TRUE(C_1 == C_1);
+  EXPECT_FALSE(C_1 != C_1);
+
+  auto C_2 = Heading(0);
+  EXPECT_FALSE(C_1 == C_2);
+  EXPECT_TRUE(C_1 != C_2);
 }
 
 TEST_F(TestHeading, Ostream)

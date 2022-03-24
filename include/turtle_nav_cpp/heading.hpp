@@ -174,6 +174,16 @@ public:
    */
   Heading operator-(double other) const;
 
+  /**
+   * @brief Compare two headings for angle equality
+   *
+   * @param[in] other
+   * @return bool
+   */
+  bool operator==(const Heading & other) const;
+
+  bool operator!=(const Heading & other) const;
+
 private:
   Eigen::Rotation2Dd rotation_;
 };
