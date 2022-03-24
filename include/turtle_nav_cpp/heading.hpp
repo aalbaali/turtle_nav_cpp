@@ -30,11 +30,11 @@ public:
   /**
    * @brief Construct a new Heading object
    *
-   * @param[in] heading Heading to insert
+   * @param[in] theta Heading to insert
    *
-   * @details The heading is automatically wrapped to (-pi, pi]
+   * @details The angle is automatically wrapped to (-pi, pi]
    */
-  Heading(double heading);
+  Heading(double theta);
 
   /**
    * @brief Construct a new Heading object from an Eigen quaternion object
@@ -95,10 +95,10 @@ public:
   /**
    * @brief Wrap heading to pi and store rotation
    *
-   * @param[in] heading Input heading
+   * @param[in] theta Input heading
    * @return Heading&
    */
-  Heading & operator=(double heading);
+  Heading & operator=(double theta);
 
   /**
    * @brief Assign heading
@@ -145,34 +145,34 @@ public:
   /**
    * @brief Compoud headings
    *
-   * @param[in] other The heading in rhs
+   * @param[in] theta The heading in rhs
    * @return Heading&
    */
-  Heading operator+(double other) const;
+  Heading operator+(double theta) const;
 
   /**
    * @brief Add angle to self
    *
-   * @param[in] other Heading/angle on the RHS
+   * @param[in] theta Heading/angle on the RHS
    * @return Heading&
    */
-  Heading & operator+=(double other);
+  Heading & operator+=(double theta);
 
   /**
    * @brief Subtract headings
    *
-   * @param[in] other The heading in rhs
+   * @param[in] theta The heading in rhs
    * @return Heading&
    */
-  Heading operator-(const Heading & other) const;
+  Heading operator-(const Heading & theta) const;
 
   /**
    * @brief Subtract headings
    *
-   * @param[in] other The heading in rhs
+   * @param[in] theta The heading in rhs
    * @return Heading&
    */
-  Heading operator-(double other) const;
+  Heading operator-(double theta) const;
 
 private:
   Eigen::Rotation2Dd rotation_;
