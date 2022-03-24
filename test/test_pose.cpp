@@ -177,6 +177,24 @@ TEST_F(TestPose, Operators)
   EXPECT_DOUBLE_EQ(T.x(), x_ + 5);
   EXPECT_DOUBLE_EQ(T.y(), y_ + 6);
   EXPECT_DOUBLE_EQ(T.angle(), theta_ - 0.1);
+
+  // Equality and non-equality operator
+  T = Pose(x_, y_, theta_);
+  EXPECT_TRUE(T == T);
+  EXPECT_FALSE(T != T);
+
+  // Function for checking the equalities and non-equalities for a given pose, where it is expected
+  // that the two poses are not equal
+  auto expect_not_equal = [&T](Pose T_in) {
+    EXPECT_FALSE(T == T_in);
+    EXPECT_TRUE(T != T_in);
+  };
+  expect_not_equal(Pose(x_, y_, 0));
+  expect_not_equal(Pose(x_, 0, theta_));
+  expect_not_equal(Pose(0, y_, 0));
+  expect_not_equal(Pose(0, 0, theta_));
+  expect_not_equal(Pose(0, y_, theta_));
+  expect_not_equal(Pose(0, 0, 0));
 }
 
 TEST_F(TestPose, Inverse)

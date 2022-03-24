@@ -123,6 +123,13 @@ Pose & Pose::operator*=(const Pose & other)
   return *this;
 }
 
+bool Pose::operator==(const Pose & pose_rhs) const
+{
+  return (this->translation() == pose_rhs.translation()) && (this->angle() == pose_rhs.angle());
+}
+
+bool Pose::operator!=(const Pose & pose_rhs) const { return !(*this == pose_rhs); }
+
 std::ostream & operator<<(std::ostream & os, const Pose & pose)
 {
   return os << "x: " << pose.x() << ", y: " << pose.y() << ", theta: " << pose.angle();

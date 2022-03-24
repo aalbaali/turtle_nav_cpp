@@ -196,6 +196,21 @@ public:
    */
   Pose & operator*=(const Pose & other);
 
+  /**
+   * @brief Compare two poses for equality on each of the scalar elements (i.e., x, y, and theta)
+   *
+   * @param[in] pose_rhs Pose on rhs
+   * @return bool
+   */
+  bool operator==(const Pose & pose_rhs) const;
+
+  /**
+   * @brief The negation of `operator==`
+   *
+   * @param[in] pose_rhs Pose on rhs
+   * @return bool
+   */
+  bool operator!=(const Pose & pose_rhs) const;
   //================================================================================================
   // Other methods
   //================================================================================================
@@ -223,6 +238,7 @@ private:
  * @return std::ostream& Resulting output stream
  */
 std::ostream & operator<<(std::ostream & os, const Pose & pose);
+
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_POSE_HPP_
