@@ -17,39 +17,41 @@ namespace turtle_nav_cpp
 {
 namespace nav_utils
 {
-Heading::Heading() : heading_(0) {}
+Heading::Heading() : rotation_(0) {}
 
-Heading::Heading(double heading) : heading_(WrapToPi(heading)) {}
+Heading::Heading(double heading) : rotation_(WrapToPi(heading)) {}
 
-Heading::Heading(const Eigen::Quaterniond q) : heading_(QuaternionToHeading(q)) {}
+Heading::Heading(const Eigen::Quaterniond q) : rotation_(QuaternionToHeading(q)) {}
 
 Heading::Heading(const geometry_msgs::msg::Quaternion q)
 {
-  heading_ = Eigen::Rotation2Dd(QuaternionMsgToHeading(q));
+  rotation_ = Eigen::Rotation2Dd(QuaternionMsgToHeading(q));
 }
 
-double Heading::Angle() const { return heading_.angle(); }
+double Heading::angle() const { return rotation_.angle(); }
 
-Eigen::Rotation2Dd Heading::Rotation() const { return heading_; }
+Heading Heading::Inverse() const { return Heading(-this->angle()); }
 
-Eigen::Matrix2d Heading::RotationMatrix() const { return heading_.toRotationMatrix(); }
+Eigen::Rotation2Dd Heading::Rotation() const { return rotation_; }
 
-Eigen::Quaterniond Heading::Quaternion() const { return HeadingToQuaternion(this->Angle()); }
+Eigen::Matrix2d Heading::RotationMatrix() const { return rotation_.toRotationMatrix(); }
+
+Eigen::Quaterniond Heading::Quaternion() const { return HeadingToQuaternion(this->angle()); }
 
 geometry_msgs::msg::Quaternion Heading::QuaternionMsg() const
 {
-  return HeadingToQuaternionMsg(this->Angle());
+  return HeadingToQuaternionMsg(this->angle());
 }
 
 Heading & Heading::operator=(double heading)
 {
-  heading_ = Eigen::Rotation2Dd(WrapToPi(heading));
+  rotation_ = Eigen::Rotation2Dd(WrapToPi(heading));
   return *this;
 }
 
 Heading & Heading::operator=(const Eigen::Quaterniond q)
 {
-  heading_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
+  rotation_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
   return *this;
 }
 
@@ -57,15 +59,15 @@ Heading & Heading::operator=(const geometry_msgs::msg::Quaternion q_msg)
 {
   auto q = QuaternionMsgToQuaternion(q_msg);
   q.normalize();
-  heading_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
+  rotation_ = Eigen::Rotation2Dd(QuaternionToHeading(q));
   return *this;
 }
 
-Heading Heading::operator*(double other) const { return Heading(this->Angle() * other); }
+Heading Heading::operator*(double other) const { return Heading(this->angle() * other); }
 
 Heading Heading::operator+(const Heading & other) const
 {
-  return Heading(this->Angle() + other.Angle());
+  return Heading(this->angle() + other.angle());
 }
 
 Heading & Heading::operator+=(const Heading & other)
@@ -74,7 +76,7 @@ Heading & Heading::operator+=(const Heading & other)
   return *this;
 }
 
-Heading Heading::operator+(double other) const { return Heading(this->Angle() + other); }
+Heading Heading::operator+(double other) const { return Heading(this->angle() + other); }
 
 Heading & Heading::operator+=(double other)
 {
@@ -84,14 +86,14 @@ Heading & Heading::operator+=(double other)
 
 Heading Heading::operator-(const Heading & other) const
 {
-  return Heading(this->Angle() - other.Angle());
+  return Heading(this->angle() - other.angle());
 }
 
-Heading Heading::operator-(double other) const { return Heading(this->Angle() - other); }
+Heading Heading::operator-(double other) const { return Heading(this->angle() - other); }
 
 std::ostream & operator<<(std::ostream & os, const Heading & heading)
 {
-  return os << heading.Angle();
+  return os << heading.angle();
 }
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

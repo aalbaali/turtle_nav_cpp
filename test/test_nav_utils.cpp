@@ -6,6 +6,9 @@
  * @date 2022-Mar-22
  */
 
+#include <geometry_msgs/msg/pose.hpp>
+#include <turtlesim/msg/pose.hpp>
+
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/nav_utils.hpp"
@@ -14,6 +17,10 @@ namespace turtle_nav_cpp
 {
 namespace nav_utils
 {
+//==================================================================================================
+// Heading
+//==================================================================================================
+
 TEST(HeadingToQuaternion, CheckQuaternion)
 {
   const double heading = M_PI_4;
@@ -132,5 +139,60 @@ TEST(HeadingToQuaternionMsg, Headings)
   EXPECT_DOUBLE_EQ(q_msg.z, sin(heading / 2));
   EXPECT_DOUBLE_EQ(q_msg.w, cos(heading / 2));
 }
+
+//==================================================================================================
+// Poses
+//==================================================================================================
+class TestPoseConversions : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    x = 1.0;
+    y = 2.0;
+    heading = M_PI_4;
+  }
+
+  double x;
+  double y;
+  double heading;
+};
+
+TEST_F(TestPoseConversions, PoseMsgToTurtlePose)
+{
+  geometry_msgs::msg::Pose pose_msg;
+  pose_msg.position.x = x;
+  pose_msg.position.y = y;
+  pose_msg.position.z = 0;
+  pose_msg.orientation.x = 0;
+  pose_msg.orientation.y = 0;
+  pose_msg.orientation.z = sin(heading / 2);
+  pose_msg.orientation.w = cos(heading / 2);
+
+  turtlesim::msg::Pose pose_turtle = PoseMsgToTurtlePose(pose_msg);
+
+  EXPECT_FLOAT_EQ(pose_turtle.x, x);
+  EXPECT_FLOAT_EQ(pose_turtle.y, y);
+  EXPECT_FLOAT_EQ(pose_turtle.theta, heading);
+}
+
+TEST_F(TestPoseConversions, TurtlePoseToPoseMsg)
+{
+  turtlesim::msg::Pose pose_turtle;
+  pose_turtle.x = x;
+  pose_turtle.y = y;
+  pose_turtle.theta = heading;
+
+  auto pose_msg = TurtlePoseToPoseMsg(pose_turtle);
+
+  EXPECT_FLOAT_EQ(pose_msg.position.x, x);
+  EXPECT_FLOAT_EQ(pose_msg.position.y, y);
+  EXPECT_FLOAT_EQ(pose_msg.position.z, 0);
+  EXPECT_FLOAT_EQ(pose_msg.orientation.x, 0);
+  EXPECT_FLOAT_EQ(pose_msg.orientation.y, 0);
+  EXPECT_FLOAT_EQ(pose_msg.orientation.z, sin(heading / 2));
+  EXPECT_FLOAT_EQ(pose_msg.orientation.w, cos(heading / 2));
+}
+
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
