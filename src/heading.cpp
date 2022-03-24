@@ -19,7 +19,7 @@ namespace nav_utils
 {
 Heading::Heading() : rotation_(0) {}
 
-Heading::Heading(double heading) : rotation_(WrapToPi(heading)) {}
+Heading::Heading(double theta) : rotation_(WrapToPi(theta)) {}
 
 Heading::Heading(const Eigen::Quaterniond q) : rotation_(QuaternionToHeading(q)) {}
 
@@ -43,9 +43,9 @@ geometry_msgs::msg::Quaternion Heading::QuaternionMsg() const
   return HeadingToQuaternionMsg(this->angle());
 }
 
-Heading & Heading::operator=(double heading)
+Heading & Heading::operator=(double theta)
 {
-  rotation_ = Eigen::Rotation2Dd(WrapToPi(heading));
+  rotation_ = Eigen::Rotation2Dd(WrapToPi(theta));
   return *this;
 }
 
