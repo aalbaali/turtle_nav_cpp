@@ -208,7 +208,7 @@ public:
    * @brief The negation of `operator==`
    *
    * @param[in] pose_rhs Pose on rhs
-   * @return bool
+   * @return bool True if all scalars are equal
    */
   bool operator!=(const Pose & pose_rhs) const;
   //================================================================================================
