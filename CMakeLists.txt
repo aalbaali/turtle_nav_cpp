@@ -74,11 +74,14 @@ ament_target_dependencies(
   Eigen3
 )
 
-# Add 2D navigation utils
-add_library(nav_utils src/nav_utils.cpp)
+# Add navigation utils
+add_library(nav_utils src/pose.cpp src/heading.cpp src/nav_utils.cpp)
+target_link_libraries(nav_utils math_utils eigen_utils ros_utils)
 ament_target_dependencies(
-  eigen_utils
+  nav_utils
   Eigen3
+  turtlesim
+  geometry_msgs
 )
 #######################################################
 

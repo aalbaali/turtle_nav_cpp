@@ -87,4 +87,29 @@ TEST_F(RandnTest, StatisticalTest)
   EXPECT_PRED_FORMAT2(DoubleLE, 1, (N - 1) * var_mean / chi2_quantile_upper);
   EXPECT_PRED_FORMAT2(DoubleLE, -1, -(N - 1) * var_mean / chi2_quantile_lower);
 }
+
+TEST(WrapToPi, WithinBounds)
+{
+  double heading = M_PI_4;
+  EXPECT_DOUBLE_EQ(WrapToPi(heading), M_PI_4);
+
+  // Negative numbers
+  heading = -M_PI_4;
+  EXPECT_DOUBLE_EQ(WrapToPi(heading), -M_PI_4);
+
+  // Beyond 2 * M_PI
+  heading = M_PI_4 + 4 * M_PI;
+  EXPECT_DOUBLE_EQ(WrapToPi(heading), M_PI_4);
+
+  // Below -2 * M_PI
+  heading = -M_PI_4 - 4 * M_PI;
+  EXPECT_DOUBLE_EQ(WrapToPi(heading), -M_PI_4);
+}
+
+TEST(WrapToPi, EdgeCases)
+{
+  EXPECT_DOUBLE_EQ(WrapToPi(M_PI), M_PI);
+  EXPECT_DOUBLE_EQ(WrapToPi(-M_PI), M_PI);
+}
+
 }  // namespace turtle_nav_cpp

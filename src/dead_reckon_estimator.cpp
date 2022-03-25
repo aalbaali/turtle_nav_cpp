@@ -56,10 +56,10 @@ DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_
 void DeadReckonEstimator::InitialPoseCallBack(
   const PoseWithCovarianceStamped::SharedPtr pose_with_cov_stamped)
 {
-  latest_est_pose_ = *pose_with_cov_stamped;
+  latest_est_pose_msg_ = *pose_with_cov_stamped;
   estimator_is_active_ = true;
 
-  est_pose_publisher_->publish(latest_est_pose_);
+  est_pose_publisher_->publish(latest_est_pose_msg_);
 
   const double x = pose_with_cov_stamped->pose.pose.position.x;
   const double y = pose_with_cov_stamped->pose.pose.position.y;
@@ -104,11 +104,11 @@ void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr
 
   pose_with_cov_out.pose.covariance = cov;
 
-  latest_est_pose_ = pose_with_cov_out;
+  latest_est_pose_msg_ = pose_with_cov_out;
 
   // !TEMPORARY
   // Publish the topic directly
-  est_pose_publisher_->publish(latest_est_pose_);
+  est_pose_publisher_->publish(latest_est_pose_msg_);
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
