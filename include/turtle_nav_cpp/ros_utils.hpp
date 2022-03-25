@@ -18,6 +18,8 @@
 
 namespace turtle_nav_cpp
 {
+namespace ros_utils
+{
 using Eigen::Matrix2d;
 using Eigen::Vector2d;
 
@@ -78,7 +80,7 @@ Eigen::Matrix<double, row, col> ImportParamAsEigen(
 
   return Eigen::Map<Eigen::Matrix<double, row, col>>(input.data());
 }
-
+}  // namespace ros_utils
 }  // namespace turtle_nav_cpp
 
 #endif  // TURTLE_NAV_CPP_ROS_UTILS_HPP_

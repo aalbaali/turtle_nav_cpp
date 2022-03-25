@@ -24,7 +24,7 @@ namespace turtle_nav_cpp
 {
 DeadReckonEstimator::DeadReckonEstimator()
 : Node("dead_reckon_estimator"),
-  est_pose_pub_freq_(DeclareAndImportParam(this, "publisher_est_pose_freq", 10))
+  est_pose_pub_freq_(ros_utils::DeclareAndImportParam(this, "publisher_est_pose_freq", 10))
 {
   // -- Declare and acquire parameters
   // Initial pose
