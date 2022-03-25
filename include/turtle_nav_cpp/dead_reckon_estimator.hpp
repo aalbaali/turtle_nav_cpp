@@ -13,6 +13,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <queue>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <turtlesim/msg/pose.hpp>
@@ -22,6 +23,7 @@
 namespace turtle_nav_cpp
 {
 using geometry_msgs::msg::PoseWithCovarianceStamped;
+using geometry_msgs::msg::TwistWithCovarianceStamped;
 
 class DeadReckonEstimator : public rclcpp::Node
 {
@@ -113,6 +115,12 @@ private:
   // TODO(aalbaali): To be replaced with a basic type (pose and covaraince)
   // Latest estimated pose
   PoseWithCovarianceStamped latest_est_pose_msg_;
+
+  // Latest estimated pose using the custom pose object
+  nav_utils::Pose latest_est_pose_;
+
+  // History of cmd_vel messages
+  std::queue<TwistWithCovarianceStamped> cmd_vel_history_;
 
   // Publishing frequency
   const double est_pose_pub_freq_;
