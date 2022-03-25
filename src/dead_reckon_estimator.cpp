@@ -16,11 +16,15 @@
 #include <memory>
 #include <string>
 
+#include "turtle_nav_cpp/ros_utils.hpp"
+
 using std::placeholders::_1;
 
 namespace turtle_nav_cpp
 {
-DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_pose_pub_freq_(0)
+DeadReckonEstimator::DeadReckonEstimator()
+: Node("dead_reckon_estimator"),
+  est_pose_pub_freq_(DeclareAndImportParam(this, "publisher_est_pose_freq", 10))
 {
   // -- Declare and acquire parameters
   // Initial pose
