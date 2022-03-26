@@ -9,9 +9,6 @@
 #ifndef TURTLE_NAV_CPP_EIGEN_UTILS_HPP_
 #define TURTLE_NAV_CPP_EIGEN_UTILS_HPP_
 
-// Functions to add
-// - Converting heading to quaternion (one for tf2 and another for geometry_msgs)
-
 #include <Eigen/Dense>
 #include <array>
 #include <vector>

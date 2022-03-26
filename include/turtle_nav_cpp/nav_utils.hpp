@@ -88,6 +88,14 @@ double QuaternionMsgToHeading(const geometry_msgs::msg::Quaternion & q);
  */
 geometry_msgs::msg::Quaternion HeadingToQuaternionMsg(double heading);
 
+/**
+ * @brief Extract angle from rotation matrix
+ *
+ * @param[in] rot SO(2) matrix
+ * @return double Angle
+ */
+double RotationMatrixToAngle(const Eigen::Matrix2d & rot);
+
 //==================================================================================================
 // Poses
 //==================================================================================================
