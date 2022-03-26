@@ -43,6 +43,15 @@ bool IsMatrixSpecialOrthogonal(const Eigen::Matrix<double, sz, sz> & mat, double
 }
 
 /**
+ * @brief Get angle from a 2x2 rotation matrix
+ *
+ * @param[in] rot 2x2 matrix that belongs to SO(2)
+ * @param[in] precision Precision for the comparison, defaults to 1e-10
+ * @return double Angle wrapped to (-pi, pi]
+ */
+double RotationMatrixToAngle(const Eigen::Matrix2d & rot, double precision = 1e-10);
+
+/**
  * @brief Convert std::vector<double> to an Eigen type (matrix or vector) with the appropriate
  * dimensions
  *

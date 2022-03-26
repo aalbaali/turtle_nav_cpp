@@ -10,8 +10,22 @@
 
 #include <vector>
 
+#include "turtle_nav_cpp/math_utils.hpp"
+
 namespace eigen_utils
 {
+double RotationMatrixToAngle(const Eigen::Matrix2d & rot, double precision /* = 1e-10 */)
+{
+  if (!IsMatrixSpecialOrthogonal(rot, precision)) {
+    throw std::invalid_argument("Matrix is not a SO(2) matrix");
+  }
+
+  double angle = atan2(rot(1, 0), rot(0, 0));
+
+  // Ensure it's wrapped to the same angle range
+  return turtle_nav_cpp::WrapToPi(angle);
+}
+
 const Matrix2d GetCholeskyLower(const Matrix2d & matrix)
 {
   // Cholesky factorization

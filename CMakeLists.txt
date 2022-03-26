@@ -69,6 +69,7 @@ ament_target_dependencies(
 
 # Add Eigen-tools library
 add_library(eigen_utils src/eigen_utils.cpp)
+target_link_libraries(eigen_utils math_utils)
 ament_target_dependencies(
   eigen_utils
   Eigen3
