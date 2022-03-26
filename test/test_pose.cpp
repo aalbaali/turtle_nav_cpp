@@ -42,6 +42,15 @@ TEST_F(TestPose, Constructors)
   EXPECT_DOUBLE_EQ(T.y(), 0);
   EXPECT_DOUBLE_EQ(T.angle(), 0);
 
+  // Construct from Eigen::Affine2D object
+  Eigen::Affine2d affine;
+  affine.linear() = Eigen::Rotation2Dd(theta_).toRotationMatrix();
+  affine.translation() = translation_;
+  T = Pose(affine);
+  EXPECT_DOUBLE_EQ(T.x(), x_);
+  EXPECT_DOUBLE_EQ(T.y(), y_);
+  EXPECT_DOUBLE_EQ(T.angle(), theta_);
+
   // Constructor using `Vector2d` and `Heading` objects
   T = Pose(translation_, Heading(theta_));
   EXPECT_DOUBLE_EQ(T.x(), x_);
@@ -130,6 +139,15 @@ TEST_F(TestPose, Operators)
   // Default pose
   Pose T;
 
+  // Assign affine object
+  Eigen::Affine2d affine;
+  affine.linear() = Heading(theta_).RotationMatrix();
+  affine.translation() = translation_;
+  T = affine;
+  EXPECT_DOUBLE_EQ(T.x(), x_);
+  EXPECT_DOUBLE_EQ(T.y(), y_);
+  EXPECT_DOUBLE_EQ(T.angle(), theta_);
+
   // Assign ROS geometry pose
   geometry_msgs::msg::Pose pose_msg;
   pose_msg.position.x = x_;
@@ -159,8 +177,10 @@ TEST_F(TestPose, Operators)
   auto T1 = Pose(x_, y_, theta_);
   Pose T2(1, 2, 0.1);
   auto T3 = T1 * T2;
-  EXPECT_DOUBLE_EQ(T3.x(), x_ + 1);
-  EXPECT_DOUBLE_EQ(T3.y(), y_ + 2);
+  auto x_3 = cos(theta_) * 1 - sin(theta_) * 2 + x_;
+  auto y_3 = sin(theta_) * 1 + sin(theta_) * 2 + y_;
+  EXPECT_DOUBLE_EQ(T3.x(), x_3);
+  EXPECT_DOUBLE_EQ(T3.y(), y_3);
   EXPECT_DOUBLE_EQ(T3.angle(), theta_ + 0.1);
 
   // Transforming a vector into new frame

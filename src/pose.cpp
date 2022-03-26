@@ -19,6 +19,8 @@ namespace nav_utils
 //==================================================================================================
 Pose::Pose() : position_{0, 0}, heading_(0) {}
 
+Pose::Pose(const Affine2d & affine) : position_(affine.translation()), heading_(affine.linear()) {}
+
 Pose::Pose(const Vector2d & pos, const Heading & heading) : position_(pos), heading_(heading) {}
 
 Pose::Pose(const Vector2d & pos, double heading) : position_(pos), heading_(heading) {}
@@ -89,6 +91,14 @@ double Pose::angle() const { return heading_.angle(); }
 //==================================================================================================
 // Operators
 //==================================================================================================
+Pose & Pose::operator=(const Eigen::Affine2d & affine)
+{
+  heading_ = Heading(affine.linear());
+  position_ = affine.translation();
+
+  return *this;
+}
+
 Pose & Pose::operator=(const geometry_msgs::msg::Pose & pose)
 {
   heading_ = pose.orientation;
@@ -105,21 +115,15 @@ Pose & Pose::operator=(const turtlesim::msg::Pose & pose_in)
   return *this;
 }
 
-Pose Pose::operator*(const Pose & other) const
-{
-  Heading heading_2 = heading_ + other.heading();
-  Vector2d position_2 = position_ + other.translation();
-
-  return Pose(position_2, heading_2);
-}
+Pose Pose::operator*(const Pose & other) const { return this->Affine() * other.Affine(); }
 
 Vector2d Pose::operator*(const Vector2d & v) const { return Affine() * v; }
 
 Pose & Pose::operator*=(const Pose & other)
 {
-  heading_ += other.heading();
-  position_ += other.translation();
-
+  Pose pose_out = *this * other;
+  position_ = pose_out.translation();
+  heading_ = pose_out.heading();
   return *this;
 }
 
