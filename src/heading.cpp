@@ -10,6 +10,7 @@
 
 #include <Eigen/Dense>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/nav_utils.hpp"
 
@@ -22,6 +23,11 @@ Heading::Heading() : rotation_(0) {}
 Heading::Heading(double theta) : rotation_(WrapToPi(theta)) {}
 
 Heading::Heading(const Eigen::Rotation2Dd & rot) : rotation_(rot) {}
+
+Heading::Heading(const Eigen::Matrix2d & rot, double precision /* = 1e-10 */)
+: rotation_(eigen_utils::RotationMatrixToAngle(rot, precision))
+{
+}
 
 Heading::Heading(const Eigen::Quaterniond q) : rotation_(QuaternionToHeading(q)) {}
 

@@ -44,6 +44,14 @@ public:
   Heading(const Eigen::Rotation2Dd & rot);
 
   /**
+   * @brief Construct a new Heading object from a valid rotation matrix
+   *
+   * @param[in] rot Rotation matrix that belongs to SO(2)
+   * @param[in] precision Precision for assessing how close the matrix is to SO(2)
+   */
+  Heading(const Eigen::Matrix2d & rot, double precision = 1e-10);
+
+  /**
    * @brief Construct a new Heading object from an Eigen quaternion object
    *
    * @param[in] q Eigen quaternion
