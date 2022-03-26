@@ -6,6 +6,7 @@
  * @date 2022-Mar-02
  */
 
+#include <Eigen/Dense>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -13,6 +14,40 @@
 
 namespace eigen_utils
 {
+class OrthogonalMatrices : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    angle_ = M_PI_4;
+    rot_ = Eigen::Rotation2Dd(angle_);
+    precision_ = 1e-15;
+  }
+  double angle_;
+  Eigen::Rotation2Dd rot_;
+  double precision_;
+};
+
+TEST_F(OrthogonalMatrices, IsMatrixSpecialOrthogonal)
+{
+  // SO(2) matrix
+  EXPECT_TRUE(IsMatrixSpecialOrthogonal(rot_.toRotationMatrix(), precision_));
+
+  // Orthogonal but det == -1 (so not SO(n))
+  Eigen::Matrix2d mat;
+  // clang-format off
+  mat << 0, 1,
+         1, 0;
+  // clang-format on
+
+  EXPECT_FALSE(IsMatrixSpecialOrthogonal(mat, precision_));
+
+  // Random matrix
+  mat(0, 0) = 10;
+  mat(1, 0) = -20;
+  EXPECT_FALSE(IsMatrixSpecialOrthogonal(mat, precision_));
+}
+
 TEST(StdVectorToMatrix, RowColMajor)
 {
   // Test for the row/column major of the matrix

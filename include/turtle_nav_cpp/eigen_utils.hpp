@@ -21,6 +21,28 @@ namespace eigen_utils
 using Eigen::Matrix2d;
 
 /**
+ * @brief Check if a symmetric matrix belongs to the special orthogonal group SO(n)
+ *
+ * @details Matrix should be unitary (or orthogonal since it's symmetric) and has determinant = 1
+ *
+ * @tparam sz Dimension of the matrix
+ * @param[in] mat Matrix to be assessed
+ * @param[in] precision Precision for the comparison
+ * @return bool
+ */
+template <int sz>
+bool IsMatrixSpecialOrthogonal(const Eigen::Matrix<double, sz, sz> & mat, double precision = 1e-10)
+{
+  // Matrix should be unitary
+  bool cond_1 = mat.isUnitary(precision);
+
+  // Determinant should be equal to 1 (a counter example is [0 1; 1 0])
+  bool cond_2 = abs(mat.determinant() - 1) < precision;
+
+  return cond_1 && cond_2;
+}
+
+/**
  * @brief Convert std::vector<double> to an Eigen type (matrix or vector) with the appropriate
  * dimensions
  *
