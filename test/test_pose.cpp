@@ -177,8 +177,10 @@ TEST_F(TestPose, Operators)
   auto T1 = Pose(x_, y_, theta_);
   Pose T2(1, 2, 0.1);
   auto T3 = T1 * T2;
-  EXPECT_DOUBLE_EQ(T3.x(), x_ + 1);
-  EXPECT_DOUBLE_EQ(T3.y(), y_ + 2);
+  auto x_3 = cos(theta_) * 1 - sin(theta_) * 2 + x_;
+  auto y_3 = sin(theta_) * 1 + sin(theta_) * 2 + y_;
+  EXPECT_DOUBLE_EQ(T3.x(), x_3);
+  EXPECT_DOUBLE_EQ(T3.y(), y_3);
   EXPECT_DOUBLE_EQ(T3.angle(), theta_ + 0.1);
 
   // Transforming a vector into new frame

@@ -115,21 +115,15 @@ Pose & Pose::operator=(const turtlesim::msg::Pose & pose_in)
   return *this;
 }
 
-Pose Pose::operator*(const Pose & other) const
-{
-  Heading heading_2 = heading_ + other.heading();
-  Vector2d position_2 = position_ + other.translation();
-
-  return Pose(position_2, heading_2);
-}
+Pose Pose::operator*(const Pose & other) const { return this->Affine() * other.Affine(); }
 
 Vector2d Pose::operator*(const Vector2d & v) const { return Affine() * v; }
 
 Pose & Pose::operator*=(const Pose & other)
 {
-  heading_ += other.heading();
-  position_ += other.translation();
-
+  Pose pose_out = *this * other;
+  position_ = pose_out.translation();
+  heading_ = pose_out.heading();
   return *this;
 }
 
