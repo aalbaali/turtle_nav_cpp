@@ -76,4 +76,4 @@
     est_pose_topic: /est_turtle/est_pose
 
     # Estimated pose publishing frequency
-    est_pose_pub_freq: 0.5   # Hz
+    est_pose_pub_freq: 1.0   # Hz
