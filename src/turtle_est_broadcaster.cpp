@@ -169,11 +169,7 @@ void EstimatorBroadcaster::TeleportPose(const turtlesim::msg::Pose::SharedPtr ms
   request->set__y(msg->y + 1.0);
   request->set__theta(msg->theta);
 
-  auto result = teleporter_->async_send_request(request);
-
-  std::stringstream ss;
-  ss << "x: " << msg->x << ", y: " << msg->y << ", theta: " << msg->theta;
-  RCLCPP_INFO(this->get_logger(), ss.str());
+  teleporter_->async_send_request(request);
 }
 
 bool EstimatorBroadcaster::SpawnTurtle(

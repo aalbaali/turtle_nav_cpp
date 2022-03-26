@@ -67,6 +67,19 @@ private:
    */
   void EstPosePublisher(const PoseWithCovarianceStamped & pose_with_cov_stamped) const;
 
+  /**
+   * @brief Dead-reckoning algorithm running on a timer
+   *
+   * @details When this function is called (by the timer), it checks the velocity queue and does the
+   *          following:
+   *          - If the queue is empty, then publish the latest stored pose (i.e., the robot didn't
+   *            move since the last pose)
+   *          - Otherwise, multiply out all previous poses and velocities similar to IMU
+   *            pre-integration
+   *          - Publish the estimated pose through the estimated pose publisher
+   */
+  void TimedDeadReckoning();
+
 private:
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // -- Topics to subscribe/publish to
@@ -105,6 +118,9 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr est_pose_publisher_{
     nullptr};
 
+  // Timer for estimated pose publisher
+  rclcpp::TimerBase::SharedPtr est_pose_publish_timer_;
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // -- Other vars
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,9 +131,6 @@ private:
   // TODO(aalbaali): To be replaced with a basic type (pose and covaraince)
   // Latest estimated pose
   PoseWithCovarianceStamped latest_est_pose_msg_;
-
-  // Latest estimated pose using the custom pose object
-  nav_utils::Pose latest_est_pose_;
 
   // History of cmd_vel messages
   std::queue<TwistWithCovarianceStamped> cmd_vel_history_;
