@@ -194,8 +194,10 @@ TEST_F(TestPose, Operators)
 
   // Self compounding
   T *= Pose(5, 6, -0.1);
-  EXPECT_DOUBLE_EQ(T.x(), x_ + 5);
-  EXPECT_DOUBLE_EQ(T.y(), y_ + 6);
+  x_3 = cos(theta_) * 5 - sin(theta_) * 6 + x_;
+  y_3 = sin(theta_) * 5 + sin(theta_) * 6 + y_;
+  EXPECT_DOUBLE_EQ(T.x(), x_3);
+  EXPECT_DOUBLE_EQ(T.y(), y_3);
   EXPECT_DOUBLE_EQ(T.angle(), theta_ - 0.1);
 
   // Equality and non-equality operator

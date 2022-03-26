@@ -10,16 +10,24 @@
 
 #include <Eigen/Dense>
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <queue>
+#include <rclcpp/time.hpp>
 #include <turtlesim/msg/pose.hpp>
 
 #include "turtle_nav_cpp/heading.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
+#include "turtle_nav_cpp/pose.hpp"
 
 namespace turtle_nav_cpp
 {
 namespace nav_utils
 {
+using geometry_msgs::msg::PoseWithCovarianceStamped;
+using geometry_msgs::msg::TwistWithCovarianceStamped;
+
 /**
  * @brief 2D Pose indices in 3D pose
  *
@@ -88,6 +96,14 @@ double QuaternionMsgToHeading(const geometry_msgs::msg::Quaternion & q);
  */
 geometry_msgs::msg::Quaternion HeadingToQuaternionMsg(double heading);
 
+/**
+ * @brief Extract angle from rotation matrix
+ *
+ * @param[in] rot SO(2) matrix
+ * @return double Angle
+ */
+double RotationMatrixToAngle(const Eigen::Matrix2d & rot);
+
 //==================================================================================================
 // Poses
 //==================================================================================================
@@ -107,6 +123,24 @@ turtlesim::msg::Pose PoseMsgToTurtlePose(const geometry_msgs::msg::Pose & pose);
  * @return geometry_msgs::msg::Pose ROS geometry msg pose
  */
 geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
+
+//==================================================================================================
+// Filtering
+//==================================================================================================
+
+// TODO(aalbaali): Test this function
+/**
+ * @brief Accumulate odometry data using SE(2) process model (similar to IMU pre-integration)
+ *
+ * @param[in] query_at  Time to query (or predict) the pose
+ * @param[in] initial_pose Initial pose to start the dead-reckoning (should have a stamp before one
+ *                         of the velocity measurements)
+ * @param[in] vel_history History of velocities
+ * @return PoseWithCovarianceStamped Final pose
+ */
+PoseWithCovarianceStamped AccumOdom(
+  const rclcpp::Time & query_at, const PoseWithCovarianceStamped & initial_pose,
+  std::queue<TwistWithCovarianceStamped> & vel_history);
 
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
