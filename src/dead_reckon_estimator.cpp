@@ -16,11 +16,15 @@
 #include <memory>
 #include <string>
 
+#include "turtle_nav_cpp/ros_utils.hpp"
+
 using std::placeholders::_1;
 
 namespace turtle_nav_cpp
 {
-DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_pose_pub_freq_(0)
+DeadReckonEstimator::DeadReckonEstimator()
+: Node("dead_reckon_estimator"),
+  est_pose_pub_freq_(ros_utils::DeclareAndImportParam(this, "publisher_est_pose_freq", 10))
 {
   // -- Declare and acquire parameters
   // Initial pose
@@ -48,6 +52,10 @@ DeadReckonEstimator::DeadReckonEstimator() : Node("dead_reckon_estimator"), est_
   // Subscribe to the true pose
   true_pose_subscriber_ = this->create_subscription<turtlesim::msg::Pose>(
     true_pose_topic_, 10, std::bind(&DeadReckonEstimator::TruePoseCallBack, this, _1));
+
+  // Measured velocity subscriber
+  cmd_vel_meas_subscriber_ = this->create_subscription<TwistWithCovarianceStamped>(
+    cmd_vel_meas_topic_, 10, std::bind(&DeadReckonEstimator::CmdVelCallBack, this, _1));
 
   // Estimated pose publisher
   est_pose_publisher_ = this->create_publisher<PoseWithCovarianceStamped>(est_pose_topic_, 10);
@@ -112,12 +120,14 @@ void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
-  const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr /* twist_with_cov_stamped */)
+  const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr twist_with_cov_stamped)
 {
   if (!estimator_is_active_) {
     RCLCPP_INFO(this->get_logger(), "dead_reckon_estimator node not active yet");
     return;
   }
+
+  cmd_vel_history_.push(*twist_with_cov_stamped);
 }
 
 void DeadReckonEstimator::EstPosePublisher(

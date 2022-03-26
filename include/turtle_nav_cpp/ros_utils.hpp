@@ -18,8 +18,33 @@
 
 namespace turtle_nav_cpp
 {
+namespace ros_utils
+{
 using Eigen::Matrix2d;
 using Eigen::Vector2d;
+
+/**
+ * @brief Declare and import ROS2 parameters
+ *
+ * @details This is especially useful for importing parameters into `const` variables in the
+ *          construction initialization list
+ *
+ * @tparam T                  Parameter type
+ * @param[in] nh              Node handle
+ * @param[in] param_name      Parameter name from the ROS2 parameter server
+ * @param[in] default_value   Default value
+ * @return T                  Imported value, if found, or default value otherwise
+ */
+template <typename T>
+T DeclareAndImportParam(
+  rclcpp::Node * const nh, const std::string & param_name, const T & default_value)
+{
+  T imported_value;
+  nh->declare_parameter<T>(param_name, default_value);
+  nh->get_parameter(param_name, imported_value);
+
+  return imported_value;
+}
 
 /**
  * @brief Declare and import a ROS2 parameter as an Eigen type
@@ -55,7 +80,7 @@ Eigen::Matrix<double, row, col> ImportParamAsEigen(
 
   return Eigen::Map<Eigen::Matrix<double, row, col>>(input.data());
 }
-
+}  // namespace ros_utils
 }  // namespace turtle_nav_cpp
 
 #endif  // TURTLE_NAV_CPP_ROS_UTILS_HPP_

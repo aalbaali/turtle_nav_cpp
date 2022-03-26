@@ -17,7 +17,9 @@
 
 namespace turtle_nav_cpp
 {
+using ros_utils::ImportParamAsEigen;
 using std::placeholders::_1;
+
 // `noise_biases` and `noise_cov_` are initialized in the initializer list because they are const
 // objects
 PositionSensor::PositionSensor()

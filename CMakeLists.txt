@@ -69,6 +69,7 @@ ament_target_dependencies(
 
 # Add Eigen-tools library
 add_library(eigen_utils src/eigen_utils.cpp)
+target_link_libraries(eigen_utils math_utils)
 ament_target_dependencies(
   eigen_utils
   Eigen3
@@ -109,7 +110,7 @@ ament_target_dependencies(
 
 # Steering wheel encoder
 add_executable(steering_wheel_encoder src/steering_wheel_encoder.cpp)
-target_link_libraries(steering_wheel_encoder eigen_utils)
+target_link_libraries(steering_wheel_encoder eigen_utils nav_utils)
 ament_target_dependencies(
   steering_wheel_encoder
   rclcpp

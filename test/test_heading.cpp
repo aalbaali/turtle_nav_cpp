@@ -54,8 +54,21 @@ TEST_F(TestHeading, Boundaries)
 
 TEST_F(TestHeading, Constructors)
 {
+  Eigen::Rotation2Dd rot(theta_);
+
+  // Construct from Eigen Rotation2Dd
+  EXPECT_DOUBLE_EQ(Heading(rot).angle(), theta_);
+
+  // Construct from 2x2 SO(2) matrix
+  EXPECT_DOUBLE_EQ(Heading(rot.toRotationMatrix()).angle(), theta_);
+
+  // Construct from scalar
   EXPECT_DOUBLE_EQ(Heading(theta_).angle(), theta_);
+
+  // Construct from geometry_msgs quaternion
   EXPECT_DOUBLE_EQ(Heading(q_msg_).angle(), theta_);
+
+  // Construct from Eigen quaternion
   EXPECT_DOUBLE_EQ(Heading(q_eigen_).angle(), theta_);
 }
 

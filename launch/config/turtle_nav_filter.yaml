@@ -74,3 +74,6 @@
 
     # Pose to publish to
     est_pose_topic: /est_turtle/est_pose
+
+    # Publishing frequency
+    publisher_est_pose_freq: 10   # Hz
