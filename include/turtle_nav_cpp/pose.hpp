@@ -56,6 +56,13 @@ public:
   /**
    * @brief Construct a new Pose object
    *
+   * @param[in] affine Eigen affine transformation
+   */
+  Pose(const Affine2d & affine);
+
+  /**
+   * @brief Construct a new Pose object
+   *
    * @param[in] pos Translation resolved in the arbitrary frame `a`
    * @param[in] heading Heading of frame `a` to frame `b`
    */

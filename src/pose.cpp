@@ -19,6 +19,8 @@ namespace nav_utils
 //==================================================================================================
 Pose::Pose() : position_{0, 0}, heading_(0) {}
 
+Pose::Pose(const Affine2d & affine) : position_(affine.translation()), heading_(affine.linear()) {}
+
 Pose::Pose(const Vector2d & pos, const Heading & heading) : position_(pos), heading_(heading) {}
 
 Pose::Pose(const Vector2d & pos, double heading) : position_(pos), heading_(heading) {}

@@ -42,6 +42,15 @@ TEST_F(TestPose, Constructors)
   EXPECT_DOUBLE_EQ(T.y(), 0);
   EXPECT_DOUBLE_EQ(T.angle(), 0);
 
+  // Construct from Eigen::Affine2D object
+  Eigen::Affine2d affine;
+  affine.linear() = Eigen::Rotation2Dd(theta_).toRotationMatrix();
+  affine.translation() = translation_;
+  T = Pose(affine);
+  EXPECT_DOUBLE_EQ(T.x(), x_);
+  EXPECT_DOUBLE_EQ(T.y(), y_);
+  EXPECT_DOUBLE_EQ(T.angle(), theta_);
+
   // Constructor using `Vector2d` and `Heading` objects
   T = Pose(translation_, Heading(theta_));
   EXPECT_DOUBLE_EQ(T.x(), x_);
