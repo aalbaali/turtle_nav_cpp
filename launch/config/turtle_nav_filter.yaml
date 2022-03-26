@@ -70,7 +70,7 @@
     cmd_vel_meas_topic: /meas/wheel_encoder
 
     # ! Temporary: subscribe to this topic
-    true_pose_topoic: /true_turtle/pose
+    true_pose_topic: /true_turtle/pose
 
     # Pose to publish to
     est_pose_topic: /est_turtle/est_pose
