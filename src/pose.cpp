@@ -91,6 +91,14 @@ double Pose::angle() const { return heading_.angle(); }
 //==================================================================================================
 // Operators
 //==================================================================================================
+Pose & Pose::operator=(const Eigen::Affine2d & affine)
+{
+  heading_ = Heading(affine.linear());
+  position_ = affine.translation();
+
+  return *this;
+}
+
 Pose & Pose::operator=(const geometry_msgs::msg::Pose & pose)
 {
   heading_ = pose.orientation;

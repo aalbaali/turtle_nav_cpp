@@ -139,6 +139,15 @@ TEST_F(TestPose, Operators)
   // Default pose
   Pose T;
 
+  // Assign affine object
+  Eigen::Affine2d affine;
+  affine.linear() = Heading(theta_).RotationMatrix();
+  affine.translation() = translation_;
+  T = affine;
+  EXPECT_DOUBLE_EQ(T.x(), x_);
+  EXPECT_DOUBLE_EQ(T.y(), y_);
+  EXPECT_DOUBLE_EQ(T.angle(), theta_);
+
   // Assign ROS geometry pose
   geometry_msgs::msg::Pose pose_msg;
   pose_msg.position.x = x_;

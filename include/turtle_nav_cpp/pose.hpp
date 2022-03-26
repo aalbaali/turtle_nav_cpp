@@ -164,6 +164,14 @@ public:
   //================================================================================================
 
   /**
+   * @brief Assign pose from affine object
+   *
+   * @param[in] affine Eigen affine object
+   * @return Pose& Assigned pose
+   */
+  Pose & operator=(const Eigen::Affine2d & affine);
+
+  /**
    * @brief Assign pose
    *
    * @param[in] pose_in ROS geometry pose type
