@@ -37,6 +37,13 @@ public:
   Heading(double theta);
 
   /**
+   * @brief Construct a new Heading object
+   *
+   * @param[in] rot Eigen rotation object
+   */
+  Heading(const Eigen::Rotation2Dd & rot);
+
+  /**
    * @brief Construct a new Heading object from an Eigen quaternion object
    *
    * @param[in] q Eigen quaternion
@@ -50,6 +57,7 @@ public:
    */
   Heading(const geometry_msgs::msg::Quaternion q);
 
+  // TODO(aalbaali): Construct from `Eigen::Rotation2Dd` and rotation matrix
   /**
    * @brief Return the heading angle wrapped to (-pi, pi]
    *

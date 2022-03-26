@@ -21,6 +21,8 @@ Heading::Heading() : rotation_(0) {}
 
 Heading::Heading(double theta) : rotation_(WrapToPi(theta)) {}
 
+Heading::Heading(const Eigen::Rotation2Dd & rot) : rotation_(rot) {}
+
 Heading::Heading(const Eigen::Quaterniond q) : rotation_(QuaternionToHeading(q)) {}
 
 Heading::Heading(const geometry_msgs::msg::Quaternion q)

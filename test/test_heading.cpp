@@ -54,6 +54,8 @@ TEST_F(TestHeading, Boundaries)
 
 TEST_F(TestHeading, Constructors)
 {
+  Eigen::Rotation2Dd rot(theta_);
+  EXPECT_DOUBLE_EQ(Heading(rot).angle(), theta_);
   EXPECT_DOUBLE_EQ(Heading(theta_).angle(), theta_);
   EXPECT_DOUBLE_EQ(Heading(q_msg_).angle(), theta_);
   EXPECT_DOUBLE_EQ(Heading(q_eigen_).angle(), theta_);
