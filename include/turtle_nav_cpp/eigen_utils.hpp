@@ -75,6 +75,13 @@ Eigen::Matrix<double, row, col, storage_opt> StdVectorToMatrix(const std::vector
   return Eigen::Map<const Eigen::Matrix<double, row, col, storage_opt>>(vec.data());
 }
 
+template <int row, int col = 1, int storage_opt = Eigen::StorageOptions::RowMajor>
+Eigen::Matrix<double, row, col, storage_opt> StdArrayToMatrix(
+  const std::array<double, row * col> & arr)
+{
+  return Eigen::Map<const Eigen::Matrix<double, row, col, storage_opt>>(arr.data());
+}
+
 /**
  * @brief Convert Eigen matrix to a std::array<double>
  *
