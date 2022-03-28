@@ -29,7 +29,7 @@ using geometry_msgs::msg::PoseWithCovarianceStamped;
 using geometry_msgs::msg::TwistWithCovarianceStamped;
 
 /**
- * @brief 2D Pose indices in 3D pose
+ * @brief 2D Pose indices in 3D twist variable
  *
  */
 enum TwistIdx { x = 0, y = 1, th = 5 };

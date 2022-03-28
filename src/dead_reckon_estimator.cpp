@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/nav_utils.hpp"
 #include "turtle_nav_cpp/pose.hpp"
 #include "turtle_nav_cpp/ros_utils.hpp"
@@ -140,14 +141,24 @@ void DeadReckonEstimator::TimedDeadReckoning()
 
   rclcpp::Time now = this->get_clock()->now();
 
-  latest_est_pose_msg_ = nav_utils::AccumOdom(now, latest_est_pose_msg_, cmd_vel_history_);
+  try {
+    latest_est_pose_msg_ = nav_utils::AccumOdom(now, latest_est_pose_msg_, cmd_vel_history_);
+  } catch (const std::string & e) {
+    RCLCPP_WARN(this->get_logger(), e);
+  }
 
   // Log info
   std::stringstream ss;
-  ss << "Pose at \033[96;1m" << rclcpp::Time(latest_est_pose_msg_.header.stamp).seconds()
-     << "\033[0m ";
-  ss << "estimated to be \033[96;1m" << nav_utils::Pose(latest_est_pose_msg_.pose.pose)
-     << "\033[0m";
+  ss << "Pose estimate: \033[96;1m" << nav_utils::Pose(latest_est_pose_msg_.pose.pose)
+     << "\033[0m\n";
+
+  auto cov_T_se3_k = eigen_utils::StdArrayToMatrix<6, 6>(latest_est_pose_msg_.pose.covariance);
+  Eigen::Matrix3d cov_T_k;
+  cov_T_k.block<2, 2>(0, 0) = cov_T_se3_k.block<2, 2>(0, 0);
+  cov_T_k(2, 2) = cov_T_se3_k(5, 5);
+  cov_T_k.block<2, 1>(0, 2) = cov_T_se3_k.block<2, 1>(0, 5);
+  cov_T_k.block<1, 2>(2, 0) = cov_T_se3_k.block<1, 2>(5, 0);
+  ss << "Pose cov:\033[96;1m\n" << cov_T_k << "\033[0m";
   RCLCPP_INFO(this->get_logger(), ss.str());
 
   EstPosePublisher(latest_est_pose_msg_);
