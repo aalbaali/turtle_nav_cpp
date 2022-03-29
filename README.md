@@ -3,6 +3,9 @@
 # In this repo
 The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
 
+# Testing
+The unit tests can be run using [colcon_test_tools](https://github.com/aalbaali/colcon_test_tools).
+
 # Nodes
 ## `turtle_est_broadcaster`
 This node spawns a new turtle to the turtlesim and broadcasts the estimated pose.
