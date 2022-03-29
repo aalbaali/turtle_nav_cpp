@@ -74,6 +74,32 @@ TEST(StdVectorToMatrix, RowColMajor)
   }
 }
 
+TEST(StdArrayToMatrix, RowColMajor)
+{
+  // Test for the row/column major of the matrix
+  std::array<double, 4> arr{1.0, 2.0, 3.0, 4.0};
+
+  // Row-major (default storage option)
+  auto mat_row_major = StdArrayToMatrix<2, 2>(arr);
+
+  for (int row = 0; row < 2; row++) {
+    for (int col = 0; col < 2; col++) {
+      auto idx = row * 2 + col;
+      EXPECT_DOUBLE_EQ(arr[idx], mat_row_major(row, col));
+    }
+  }
+
+  // Column-major
+  auto mat_col_major = StdArrayToMatrix<2, 2, Eigen::StorageOptions::ColMajor>(arr);
+
+  for (int row = 0; row < 2; row++) {
+    for (int col = 0; col < 2; col++) {
+      auto idx = row + col * 2;
+      EXPECT_DOUBLE_EQ(arr[idx], mat_col_major(row, col));
+    }
+  }
+}
+
 /**
  * @brief Array shape should match the row major matrix data type
  *
