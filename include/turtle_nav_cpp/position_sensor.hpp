@@ -39,11 +39,12 @@ public:
 
 private:
   /**
-   * @brief Measurement call-back function that publishes a noise measured position
+   * @brief True-pose call-back function that extracts the translation component of the pose and
+   *        corrupts it with white noise
    *
    * @param[in] true_pose The true pose from which the true position is extracted
    */
-  void MeasCallBack(const TurtlePose::SharedPtr true_pose);
+  void GetMeasurement(const TurtlePose::SharedPtr true_pose);
 
   // Topic to subscribe to
   std::string true_meas_topic_;

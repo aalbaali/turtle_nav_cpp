@@ -44,7 +44,7 @@ PositionSensor::PositionSensor()
 
   // Subscribe to true pose topic
   true_meas_subscriber_ = this->create_subscription<TurtlePose>(
-    true_meas_topic_, 10, std::bind(&PositionSensor::MeasCallBack, this, _1));
+    true_meas_topic_, 10, std::bind(&PositionSensor::GetMeasurement, this, _1));
 
   // Set up publisher
   noisy_meas_publisher_ = this->create_publisher<Vec3WithCovStamped>(noisy_meas_topic_, 10);
@@ -54,7 +54,7 @@ PositionSensor::PositionSensor()
   randn_ = [this]() { return randn_gen(rn_generator_); };
 }
 
-void PositionSensor::MeasCallBack(const TurtlePose::SharedPtr true_pose)
+void PositionSensor::GetMeasurement(const TurtlePose::SharedPtr true_pose)
 {
   Vec3WithCovStamped noisy_meas;
   noisy_meas.header.frame_id = meas_frame_;
