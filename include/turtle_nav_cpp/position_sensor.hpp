@@ -75,6 +75,9 @@ private:
 
   // Publishing frequency in Hz
   const double publishing_freq_;
+
+  // Storing latest measurement, if available
+  Vec3WithCovStamped latest_meas_;
 };
 }  // namespace turtle_nav_cpp
 

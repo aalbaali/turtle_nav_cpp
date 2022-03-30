@@ -77,6 +77,8 @@ void PositionSensor::MeasCallBack(const TurtlePose::SharedPtr true_pose)
 
   noisy_meas.vector.covariance = eigen_utils::MatrixToStdArray(cov);
 
+  // Store latest measurement
+  latest_meas_ = noisy_meas;
   noisy_meas_publisher_->publish(noisy_meas);
 }
 }  // namespace turtle_nav_cpp
