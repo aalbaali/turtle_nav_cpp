@@ -59,6 +59,7 @@
     noisy_meas_topic: meas/position
     true_meas_topic: true_turtle/pose
     use_sim_time: false
+    publishing_freq: 1.0
 
 /dead_reckon_estimator:
   ros__parameters:

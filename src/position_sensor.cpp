@@ -26,7 +26,8 @@ PositionSensor::PositionSensor()
 : Node("position_sensor"),
   noise_biases_(ImportParamAsEigen<2, 1>(this, "biases", Vector2d::Zero())),
   noise_cov_(ImportParamAsEigen<2, 2>(this, "covariance", Matrix2d::Identity())),
-  noise_cov_chol_L_(eigen_utils::GetCholeskyLower(noise_cov_))
+  noise_cov_chol_L_(eigen_utils::GetCholeskyLower(noise_cov_)),
+  publishing_freq_(ros_utils::DeclareAndImportParam(this, "publishing_freq", 1.0))
 {
   // Declare and acquire parameters
   //  Topic to subscribe to

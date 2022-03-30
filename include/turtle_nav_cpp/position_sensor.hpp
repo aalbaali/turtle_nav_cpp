@@ -72,6 +72,9 @@ private:
 
   // Covariance cholesky decomposition, lower triangular matrix
   Matrix2d noise_cov_chol_L_;
+
+  // Publishing frequency in Hz
+  const double publishing_freq_;
 };
 }  // namespace turtle_nav_cpp
 
