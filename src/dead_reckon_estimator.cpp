@@ -28,7 +28,7 @@ namespace turtle_nav_cpp
 {
 DeadReckonEstimator::DeadReckonEstimator()
 : Node("dead_reckon_estimator"),
-  est_pose_pub_freq_(ros_utils::DeclareAndImportParam(this, "est_pose_pub_freq", 10.0))
+  publishing_freq_(ros_utils::DeclareAndImportParam(this, "publishing_freq", 10.0))
 {
   // -- Declare and acquire parameters
   // Initial pose
@@ -59,7 +59,7 @@ DeadReckonEstimator::DeadReckonEstimator()
   // Time-based pose estimate publisher
   est_pose_publisher_ = this->create_publisher<PoseWithCovarianceStamped>(est_pose_topic_, 10);
   est_pose_publish_timer_ = this->create_wall_timer(
-    std::chrono::duration<double>(1 / est_pose_pub_freq_),
+    std::chrono::duration<double>(1 / publishing_freq_),
     std::bind(&DeadReckonEstimator::TimedDeadReckoning, this));
 }
 
