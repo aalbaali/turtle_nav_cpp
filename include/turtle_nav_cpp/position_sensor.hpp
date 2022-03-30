@@ -14,6 +14,7 @@
 #include <functional>
 #include <random>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/timer.hpp>
 #include <string>
 #include <turtlesim/msg/pose.hpp>
 #include <vector>
@@ -45,6 +46,14 @@ private:
    * @param[in] true_pose The true pose from which the true position is extracted
    */
   void GetMeasurement(const TurtlePose::SharedPtr true_pose);
+
+  /**
+   * @brief Time-based measurement publisher (at `publishing_freq_` Hz) that publishes the latest
+   *        position measurement
+   *
+   * @param[in] noisy_meas Noisy position measurement to be published
+   */
+  void TimedPublisher();
 
   // Topic to subscribe to
   std::string true_meas_topic_;
@@ -78,7 +87,10 @@ private:
   const double publishing_freq_;
 
   // Storing latest measurement, if available
-  Vec3WithCovStamped latest_meas_;
+  std::vector<Vec3WithCovStamped> latest_meas_;
+
+  // Timer for publishing measurements at a constant rate
+  rclcpp::TimerBase::SharedPtr meas_publish_timer_;
 };
 }  // namespace turtle_nav_cpp
 

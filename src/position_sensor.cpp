@@ -52,6 +52,14 @@ PositionSensor::PositionSensor()
   // Set the random number generators and the randn_ lambda function
   rn_generator_ = std::default_random_engine();
   randn_ = [this]() { return randn_gen(rn_generator_); };
+
+  // Time-based measurement publisher
+  meas_publish_timer_ = this->create_wall_timer(
+    std::chrono::duration<double>(1 / publishing_freq_),
+    std::bind(&PositionSensor::TimedPublisher, this));
+
+  // Only the last measurement is needed; the older measurements will be ignored
+  latest_meas_.reserve(1);
 }
 
 void PositionSensor::GetMeasurement(const TurtlePose::SharedPtr true_pose)
@@ -78,8 +86,21 @@ void PositionSensor::GetMeasurement(const TurtlePose::SharedPtr true_pose)
   noisy_meas.vector.covariance = eigen_utils::MatrixToStdArray(cov);
 
   // Store latest measurement
-  latest_meas_ = noisy_meas;
-  noisy_meas_publisher_->publish(noisy_meas);
+  if (latest_meas_.empty()) {
+    latest_meas_.push_back(noisy_meas);
+  } else {
+    latest_meas_[0] = noisy_meas;
+  }
+}
+
+void PositionSensor::TimedPublisher()
+{
+  if (latest_meas_.empty()) {
+    return;
+  }
+
+  noisy_meas_publisher_->publish(latest_meas_.back());
+  latest_meas_.clear();
 }
 }  // namespace turtle_nav_cpp
 
