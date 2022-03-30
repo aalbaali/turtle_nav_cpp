@@ -136,7 +136,7 @@ private:
   std::queue<TwistWithCovarianceStamped> cmd_vel_history_;
 
   // Publishing frequency
-  const double est_pose_pub_freq_;
+  const double publishing_freq_;
 };
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_DEAD_RECKON_ESTIMATOR_HPP_

@@ -176,15 +176,16 @@ PoseWithCovarianceStamped AccumOdom(
     // because it's assumed that the provided covariance is a power spectral density (PSD) matrix.
     // If that's not the case, then use `dt^2`.
     Eigen::Matrix3d cov_v_km1;
-    cov_v_km1.block<2, 2>(0, 0) = dt * cov_earliest_vel.block<2, 2>(TwistIdx::x, TwistIdx::x);
-    cov_v_km1(2, 2) = dt * cov_earliest_vel(TwistIdx::th, TwistIdx::th);
-    cov_v_km1.block<2, 1>(0, 2) = dt * cov_earliest_vel.block<2, 1>(TwistIdx::x, TwistIdx::th);
-    cov_v_km1.block<1, 2>(2, 0) = dt * cov_earliest_vel.block<1, 2>(TwistIdx::th, TwistIdx::x);
+    const double eta = dt * dt;
+    cov_v_km1.block<2, 2>(0, 0) = eta * cov_earliest_vel.block<2, 2>(TwistIdx::x, TwistIdx::x);
+    cov_v_km1(2, 2) = eta * cov_earliest_vel(TwistIdx::th, TwistIdx::th);
+    cov_v_km1.block<2, 1>(0, 2) = eta * cov_earliest_vel.block<2, 1>(TwistIdx::x, TwistIdx::th);
+    cov_v_km1.block<1, 2>(2, 0) = eta * cov_earliest_vel.block<1, 2>(TwistIdx::th, TwistIdx::x);
 
     // If covariance on the y-component of the velocity is negative, then replace it with process
     // noise
     if (cov_v_km1(1, 1) < 0) {
-      cov_v_km1(1, 1) = 1e-5;
+      cov_v_km1(1, 1) = 1e-15;
     }
 
     if (Eigen::LLT<Eigen::Matrix3d>(cov_v_km1).info() == Eigen::NumericalIssue) {

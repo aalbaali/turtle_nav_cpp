@@ -59,6 +59,7 @@
     noisy_meas_topic: meas/position
     true_meas_topic: true_turtle/pose
     use_sim_time: false
+    publishing_freq: 1.0
 
 /dead_reckon_estimator:
   ros__parameters:
@@ -76,4 +77,4 @@
     est_pose_topic: /est_turtle/est_pose
 
     # Estimated pose publishing frequency
-    est_pose_pub_freq: 1.0   # Hz
+    publishing_freq: 50.0   # Hz
