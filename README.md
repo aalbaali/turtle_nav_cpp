@@ -1,4 +1,7 @@
-[![codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/devel/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
+![Linting](https://github.com/aalbaali/turtle_nav_cpp/actions/workflows/lint.yml/badge.svg)
+![Unit tests](https://github.com/aalbaali/turtle_nav_cpp/actions/workflows/tests.yml/badge.svg)
+
+[![Codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/devel/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
 
 # In this repo
 The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
