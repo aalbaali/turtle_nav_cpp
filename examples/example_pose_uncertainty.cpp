@@ -20,6 +20,11 @@
 
 namespace turtle_nav_cpp
 {
+/**
+ * @brief Plot x-y positions of a vector of posee
+ *
+ * @param[in] poses Vector of poses to plot
+ */
 void PlotPoses(const std::vector<nav_utils::Pose> & poses)
 {
   // Get x and y values
@@ -35,6 +40,13 @@ void PlotPoses(const std::vector<nav_utils::Pose> & poses)
   matplot::grid(matplot::on);
 }
 
+/**
+ * @brief Generate a dead-reckoning trajectory
+ *
+ * @param[in] T_0 Initial/starting pose
+ * @param[in] dT_vecs Vector of pose differences (i.e., T_1 = T_0 * dT_0)
+ * @return std::vector<nav_utils::Pose>
+ */
 std::vector<nav_utils::Pose> GenerateTrajectory(
   const nav_utils::Pose & T_0, const std::vector<nav_utils::Pose> & dT_vecs)
 {
@@ -48,6 +60,20 @@ std::vector<nav_utils::Pose> GenerateTrajectory(
 
   return poses;
 }
+
+std::vector<nav_utils::Pose> GenerateStraightLine(
+  const nav_utils::Pose & T_0, const size_t num_poses, const double dt, const double speed,
+  const double yaw_rate, const bool generate_noise = false)
+{
+  // The incremental change transformation matrix
+  const nav_utils::Pose dT(dt * speed, 0, dt * yaw_rate);
+  std::vector<nav_utils::Pose> dT_vecs;
+  dT_vecs.assign(num_poses - 1, dT);
+
+  // Generate trajectory
+  return turtle_nav_cpp::GenerateTrajectory(T_0, dT_vecs);
+}
+
 }  // namespace turtle_nav_cpp
 
 using turtle_nav_cpp::nav_utils::Pose;
@@ -64,12 +90,8 @@ int main()
   const double speed = 1;     // m/s
   const double yaw_rate = 0;  // rad/s
 
-  // The incremental change transformation matrix
-  const Pose dT(dt * speed, 0, dt * yaw_rate);
-  std::vector<Pose> dT_vecs;
-  dT_vecs.assign(num_poses - 1, dT);
-
-  const auto poses = turtle_nav_cpp::GenerateTrajectory(T_0, dT_vecs);
+  // Generate straight-line trajectory
+  auto poses = turtle_nav_cpp::GenerateStraightLine(T_0, num_poses, dt, speed, yaw_rate, false);
 
   for (const auto & p : poses) {
     std::cout << p << std::endl;
