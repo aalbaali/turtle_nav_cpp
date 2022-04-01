@@ -34,13 +34,30 @@ void PlotPoses(const std::vector<nav_utils::Pose> & poses)
   matplot::plot(xvals, yvals);
   matplot::grid(matplot::on);
 }
+
+std::vector<nav_utils::Pose> GenerateTrajectory(
+  const nav_utils::Pose & T_0, const std::vector<nav_utils::Pose> & dT_vecs)
+{
+  std::vector<nav_utils::Pose> poses;
+  poses.reserve(dT_vecs.size() + 1);
+  poses.assign(100, nav_utils::Pose(0, 0, 0));
+  poses[0] = T_0;
+  for (size_t i = 1; i < dT_vecs.size(); i++) {
+    poses[i] = poses[i - 1] * dT_vecs[i - 1];
+  }
+
+  return poses;
+}
 }  // namespace turtle_nav_cpp
 
 using turtle_nav_cpp::nav_utils::Pose;
 
 int main()
 {
-  Pose T_1(0, 0, 0);
+  Pose T_0(0, 0, 0);
+
+  // Number of states
+  const int num_poses = 100;
 
   // Let the robot drive in a straight line with constant speed
   const double dt = 0.01;     // sec
@@ -49,17 +66,10 @@ int main()
 
   // The incremental change transformation matrix
   const Pose dT(dt * speed, 0, dt * yaw_rate);
+  std::vector<Pose> dT_vecs;
+  dT_vecs.assign(num_poses - 1, dT);
 
-  // Number of states
-  const int num_poses = 100;
-
-  std::vector<Pose> poses;
-  poses.reserve(num_poses);
-  poses.assign(100, Pose(0, 0, 0));
-  poses[0] = T_1;
-  for (int i = 1; i < num_poses; i++) {
-    poses[i] = poses[i - 1] * dT;
-  }
+  const auto poses = turtle_nav_cpp::GenerateTrajectory(T_0, dT_vecs);
 
   for (const auto & p : poses) {
     std::cout << p << std::endl;
