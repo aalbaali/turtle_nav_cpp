@@ -1,0 +1,2 @@
+add_executable(example_pose_uncertainty example_pose_uncertainty.cpp)
+target_link_libraries(example_pose_uncertainty nav_utils matplot)
