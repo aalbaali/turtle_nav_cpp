@@ -15,6 +15,7 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "turtle_nav_cpp/math_utils.hpp"
@@ -22,6 +23,7 @@
 
 using turtle_nav_cpp::nav_utils::Pose;
 using Trajectory = std::vector<Pose>;
+using StdVector2Double = std::vector<std::vector<double>>;
 
 namespace turtle_nav_cpp
 {
@@ -151,23 +153,30 @@ std::vector<double> GenerateNoisyVector(
   return noisy_vals;
 }
 
-std::vector<Trajectory> GenerateTrajectories(
+auto GenerateTrajectories(
   const size_t num_trajectories, const size_t num_poses, const Pose & T_0, const double dt,
   const GaussianRV & speed_rv, const GaussianRV & yaw_rate_rv,
   std::default_random_engine & rn_generator)
 {
   std::vector<Trajectory> trajectories;
+  std::vector<std::vector<double>> speeds_bundle;
+  std::vector<std::vector<double>> yaw_rates_bundle;
+
   for (size_t i = 0; i < num_trajectories; i++) {
     // Sample odometry measurements
     // Noisy speeds
-    auto speeds = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, speed_rv, rn_generator);
-    auto yaw_rates = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate_rv, rn_generator);
+    speeds_bundle.push_back(
+      turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, speed_rv, rn_generator));
+    yaw_rates_bundle.push_back(
+      turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate_rv, rn_generator));
 
     // Generate straight-line trajectory
-    trajectories.push_back(DeadReckonTrajectory(T_0, dt, speeds, yaw_rates));
+    trajectories.push_back(
+      DeadReckonTrajectory(T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back()));
   }
 
-  return trajectories;
+  return std::tuple<std::vector<Trajectory>, StdVector2Double, StdVector2Double>(
+    trajectories, speeds_bundle, yaw_rates_bundle);
 }
 
 }  // namespace turtle_nav_cpp
@@ -189,7 +198,7 @@ int main()
   // Random number generator
   std::default_random_engine rn_generator = std::default_random_engine();
 
-  auto trajectories = turtle_nav_cpp::GenerateTrajectories(
+  auto [trajectories, speeds_bundle, yaw_rates_bundle] = turtle_nav_cpp::GenerateTrajectories(
     num_trajs, num_poses, T_0, dt, speed_rv, yaw_rate_rv, rn_generator);
 
   matplot::figure();
