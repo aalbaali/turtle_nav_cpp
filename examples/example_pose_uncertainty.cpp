@@ -25,6 +25,19 @@ using Trajectory = std::vector<Pose>;
 namespace turtle_nav_cpp
 {
 /**
+ * @brief Parameters of a Gaussian random variable
+ *
+ */
+struct GaussianRV
+{
+  // Mean of the RV
+  double mean;
+
+  // Standard deviation of the RV
+  double stddev;
+};
+
+/**
  * @brief Plot x-y positions of a vector of pose
  *
  * @param[in] poses Vector of poses to plot
@@ -78,19 +91,19 @@ Trajectory DeadReckonTrajectory(
  *        deviation
  *
  * @param[in] num_vals          Number of values/samples to generate
- * @param[in] mean              Mean of the Gaussian random variable
- * @param[in] stddev            Standard deviation of the Gaussian random variable
+ * @param[in] rv_params         Gaussian random variable parameters (i.e., mean and std deviation)
  * @param[in] rn_generator      Random number generator
  * @return std::vector<double>  Vector of realizations
  */
 std::vector<double> GenerateNoisyVector(
-  const size_t num_vals, const double mean, const double stddev,
-  std::default_random_engine & rn_generator)
+  const size_t num_vals, const GaussianRV & rv_params, std::default_random_engine & rn_generator)
 {
   auto randn = [&rn_generator]() { return turtle_nav_cpp::randn_gen(rn_generator); };
 
   std::vector<double> noisy_vals(num_vals);
-  std::generate(noisy_vals.begin(), noisy_vals.end(), [&]() { return mean + stddev * randn(); });
+  std::generate(noisy_vals.begin(), noisy_vals.end(), [&]() {
+    return rv_params.mean + rv_params.stddev * randn();
+  });
 
   return noisy_vals;
 }
@@ -104,15 +117,16 @@ int main()
   const int num_poses = 100;
 
   // Let the robot drive in a straight line with constant speed
-  const double dt = 0.1;      // sec
-  const double speed = 1;     // m/s
-  const double yaw_rate = 0;  // rad/s
+  const double dt = 0.1;  // sec
+  // Speed rv params
+  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.01};     // [m/s]
+  const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 0.01};  // [rad/s]
 
   std::default_random_engine rn_generator = std::default_random_engine();
 
   // Noisy speeds
-  auto speeds = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, speed, 0.01, rn_generator);
-  auto yaw_rates = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate, 1, rn_generator);
+  auto speeds = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, speed_rv, rn_generator);
+  auto yaw_rates = turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate_rv, rn_generator);
 
   // Generate straight-line trajectory
   auto poses = turtle_nav_cpp::DeadReckonTrajectory(T_0, dt, speeds, yaw_rates);
