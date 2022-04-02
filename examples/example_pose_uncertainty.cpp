@@ -19,6 +19,9 @@
 #include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/pose.hpp"
 
+using turtle_nav_cpp::nav_utils::Pose;
+using Trajectory = std::vector<Pose>;
+
 namespace turtle_nav_cpp
 {
 /**
@@ -26,7 +29,7 @@ namespace turtle_nav_cpp
  *
  * @param[in] poses Vector of poses to plot
  */
-void PlotPoses(const std::vector<nav_utils::Pose> & poses)
+void PlotPoses(const Trajectory & poses)
 {
   // Get x and y values
   std::vector<double> xvals;
@@ -48,18 +51,18 @@ void PlotPoses(const std::vector<nav_utils::Pose> & poses)
  * @param[in] dt        Sampling period [s]
  * @param[in] speeds    Vector of speeds [m/s]
  * @param[in] yaw_rates Vector of yaw rates [rad/s]
- * @return std::vector<nav_utils::Pose> Vector of poses (i.e., the trajectory)
+ * @return Trajectory Vector of poses (i.e., the trajectory)
  */
-std::vector<nav_utils::Pose> DeadReckonTrajectory(
+Trajectory DeadReckonTrajectory(
   const nav_utils::Pose & T_0, const double dt, const std::vector<double> & speeds,
   const std::vector<double> & yaw_rates)
 {
   const size_t num_poses = speeds.size() + 1;
-  std::vector<nav_utils::Pose> poses;
+  Trajectory poses;
   poses.reserve(num_poses);
   poses.push_back(T_0);
 
-  std::vector<nav_utils::Pose> dT_vecs(num_poses);
+  Trajectory dT_vecs(num_poses);
   for (size_t i = 1; i < speeds.size(); i++) {
     nav_utils::Pose dT_km1(dt * speeds[i - 1], 0, dt * yaw_rates[i - 1]);
     auto T_k = poses[i - 1] * dT_km1;
@@ -92,8 +95,6 @@ std::vector<double> GenerateNoisyVector(
   return noisy_vals;
 }
 }  // namespace turtle_nav_cpp
-
-using turtle_nav_cpp::nav_utils::Pose;
 
 int main()
 {
