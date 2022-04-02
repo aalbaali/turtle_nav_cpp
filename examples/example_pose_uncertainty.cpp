@@ -175,16 +175,16 @@ std::vector<Trajectory> GenerateTrajectories(
 int main()
 {
   // Number of trajectgories to generate
-  const size_t num_trajs = 10;
+  const size_t num_trajs = 1000;
 
   // Numbers of poses per trajectory
   const int num_poses = 100;
 
   // Dead-reckoning parameters
   Pose T_0(0, 0, 0);
-  const double dt = 0.1;                                 // sec
-  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.001};   // [m/s]
-  const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 0.1};  // [rad/s]
+  const double dt = 0.01;                                 // [sec]
+  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.0};      // [m/s]
+  const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 10.0};  // [rad/s]
 
   // Random number generator
   std::default_random_engine rn_generator = std::default_random_engine();
@@ -194,7 +194,6 @@ int main()
 
   matplot::figure();
   turtle_nav_cpp::PlotTrajectoryEndPoints(trajectories, 5);
-  matplot::xlim(matplot::gca(), {0.0, dt * num_poses * speed_rv.mean});
   matplot::axis(matplot::square);
   matplot::grid(true);
   matplot::show();
