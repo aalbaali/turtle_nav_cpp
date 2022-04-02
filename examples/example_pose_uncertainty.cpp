@@ -198,7 +198,7 @@ int main()
   // Random number generator
   std::default_random_engine rn_generator = std::default_random_engine();
 
-  auto [trajectories, speeds_bundle, yaw_rates_bundle] = turtle_nav_cpp::GenerateTrajectories(
+  const auto [trajectories, speeds_bundle, yaw_rates_bundle] = turtle_nav_cpp::GenerateTrajectories(
     num_trajs, num_poses, T_0, dt, speed_rv, yaw_rate_rv, rn_generator);
 
   matplot::figure();
