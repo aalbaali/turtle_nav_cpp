@@ -170,24 +170,66 @@ std::pair<std::vector<double>, std::vector<double>> GetXYPoints(
  * @param[in] yaw_rates Vector of yaw rates [rad/s]
  * @return Trajectory Vector of poses (i.e., the trajectory)
  */
-Trajectory DeadReckonTrajectory(
+std::pair<Trajectory, std::vector<Eigen::Matrix3d>> DeadReckonTrajectory(
   const nav_utils::Pose & T_0, const double dt, const std::vector<double> & speeds,
-  const std::vector<double> & yaw_rates)
+  const std::vector<double> & yaw_rates, const Eigen::Matrix3d & cov_T_0,
+  const GaussianRV & speed_rv, const GaussianRV & yaw_rate_rv)
 {
   const size_t num_poses = speeds.size() + 1;
   Trajectory poses;
   poses.reserve(num_poses);
   poses.push_back(T_0);
 
+  // Process model Jacobian w.r.t. error (161 in Sola)
+  auto jac_A = [](const Pose & /* T_km1 */, const Pose & dT_km1) {
+    // Adjoint matrix of [-]_km1
+    Eigen::Matrix3d Xi_km1 = Eigen::Matrix3d::Zero();
+
+    // Inverse rotation
+    const auto R_inv = dT_km1.heading().Inverse().RotationMatrix();
+    Eigen::Matrix2d cross = Eigen::Matrix2d::Zero();
+    cross(0, 1) = -1;
+    cross(1, 0) = 1;
+
+    Xi_km1.block<2, 2>(0, 0) = R_inv;
+    Xi_km1.block<2, 1>(0, 2) = R_inv * cross * dT_km1.translation();
+    Xi_km1(2, 2) = 1;
+
+    return Xi_km1;
+  };
+
+  // Process model Jacobian w.r.t. measurement
+  auto jac_L = [](const Pose & /* T_km1 */, const Pose & /* dT_km1 */) {
+    return Eigen::Matrix3d::Identity();
+  };
+
+  // Covariances on the left-invariant errors
+  std::vector<Eigen::Matrix3d> covs;
+  covs.reserve(num_poses);
+  covs.push_back(cov_T_0);
+
+  // Measurement covariances
+  //  Let the measurements be [x; y; theta]
+  Eigen::Matrix3d cov_meas = Eigen::Matrix3d::Zero();
+  cov_meas(0, 0) = dt * dt * speed_rv.stddev * speed_rv.stddev;
+  cov_meas(2, 2) = dt * dt * yaw_rate_rv.stddev * yaw_rate_rv.stddev;
+
   Trajectory dT_vecs(num_poses);
   for (size_t i = 1; i < speeds.size(); i++) {
     nav_utils::Pose dT_km1(dt * speeds[i - 1], 0, dt * yaw_rates[i - 1]);
     auto T_k = poses[i - 1] * dT_km1;
     poses.push_back(T_k);
+
+    // Compute left-invariant covariance
+    const Eigen::Matrix3d A = jac_A(poses[i - 1], dT_km1);
+    const Eigen::Matrix3d L = jac_L(poses[i - 1], dT_km1);
+    const Eigen::Matrix3d cov_pose_k =
+      A * covs.back() * A.transpose() + L * cov_meas * L.transpose();
+    covs.push_back(cov_pose_k);
   }
 
   // Generate trajectory
-  return poses;
+  return {poses, covs};
 }
 
 /**
@@ -212,12 +254,13 @@ std::vector<double> GenerateNoisyVector(
   return noisy_vals;
 }
 
-std::tuple<std::vector<Trajectory>, StdVector2Double, StdVector2Double> GenerateTrajectories(
+std::tuple<std::vector<Trajectory>, std::vector<std::vector<Eigen::Matrix3d>>> GenerateTrajectories(
   const size_t num_trajectories, const size_t num_poses, const Pose & T_0, const double dt,
-  const GaussianRV & speed_rv, const GaussianRV & yaw_rate_rv,
+  const Eigen::Matrix3d & cov_T_0, const GaussianRV & speed_rv, const GaussianRV & yaw_rate_rv,
   std::default_random_engine & rn_generator)
 {
   std::vector<Trajectory> trajectories;
+  std::vector<std::vector<Eigen::Matrix3d>> pose_covariances;
   std::vector<std::vector<double>> speeds_bundle;
   std::vector<std::vector<double>> yaw_rates_bundle;
 
@@ -230,11 +273,15 @@ std::tuple<std::vector<Trajectory>, StdVector2Double, StdVector2Double> Generate
       turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate_rv, rn_generator));
 
     // Generate straight-line trajectory
-    trajectories.push_back(
-      DeadReckonTrajectory(T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back()));
+    // trajectories.push_back(
+    //   DeadReckonTrajectory(T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back()));
+    const auto [traj, covs] = DeadReckonTrajectory(
+      T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back(), cov_T_0, speed_rv, yaw_rate_rv);
+    trajectories.push_back(traj);
+    pose_covariances.push_back(covs);
   }
 
-  return {trajectories, speeds_bundle, yaw_rates_bundle};
+  return {trajectories, pose_covariances};
 }
 
 }  // namespace turtle_nav_cpp
@@ -249,32 +296,28 @@ int main()
 
   // Dead-reckoning parameters
   Pose T_0(0, 0, 0);
+  const Eigen::Matrix3d cov_T_0 = Eigen::Vector3d{1, 1, 1}.asDiagonal();
   const double dt = 0.01;                                 // [sec]
-  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.0};      // [m/s]
+  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.01};     // [m/s]
   const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 10.0};  // [rad/s]
 
   // Random number generator
   std::default_random_engine rn_generator = std::default_random_engine();
 
-  const auto [trajectories, speeds_bundle, yaw_rates_bundle] = turtle_nav_cpp::GenerateTrajectories(
-    num_trajs, num_poses, T_0, dt, speed_rv, yaw_rate_rv, rn_generator);
+  const auto [trajectories, pose_covariances] = turtle_nav_cpp::GenerateTrajectories(
+    num_trajs, num_poses, T_0, dt, cov_T_0, speed_rv, yaw_rate_rv, rn_generator);
 
   matplot::figure();
   turtle_nav_cpp::PlotTrajectoryEndPoints(trajectories, 5);
   matplot::axis(matplot::square);
   matplot::grid(true);
 
-  // Generate and plot ellipse
-  Eigen::Matrix2d A;
-  A << 5, 3, 3, 4;
-
-  auto ellipse_points = turtle_nav_cpp::GetEllipsePoints(A, 1e3);
-  auto [ellipse_points_x, ellipse_points_y] = turtle_nav_cpp::GetXYPoints(ellipse_points);
-
-  // Plot ellipse
-  matplot::figure();
-  matplot::plot(ellipse_points_x, ellipse_points_y)->line_width(1.5);
-  matplot::grid(true);
+  // Plot ellipse of last pose estimate (in the Lie algebra for now)
+  auto cov_ellipse_points =
+    turtle_nav_cpp::GetEllipsePoints(pose_covariances.back().back().block<2, 2>(0, 0), 100);
+  auto [cov_ellipse_points_x, cov_ellipse_points_y] =
+    turtle_nav_cpp::GetXYPoints(cov_ellipse_points);
+  matplot::plot(cov_ellipse_points_x, cov_ellipse_points_y)->line_width(1.5);
 
   matplot::show();
 
