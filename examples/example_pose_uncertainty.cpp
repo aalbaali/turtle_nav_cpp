@@ -9,6 +9,7 @@
 #include <matplot/matplot.h>
 
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -16,6 +17,7 @@
 #include <random>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "turtle_nav_cpp/math_utils.hpp"
@@ -100,6 +102,26 @@ void PlotTrajectoryEndPoints(const std::vector<Trajectory> & trajectories, Args.
   matplot::xlabel("x [m]");
   matplot::ylabel("y [m]");
   matplot::title("Trajectory end points");
+}
+
+/**
+ * @brief Get x and y vectors from a vector of Eigen::Vector2d
+ *
+ * @param[in] points Vector of Eigen::Vector2d
+ * @return auto Pair of x and y vectors
+ */
+std::pair<std::vector<double>, std::vector<double>> GetXYPoints(
+  const std::vector<Eigen::Vector2d> & points)
+{
+  // Get x-y points
+  std::vector<double> pts_x(points.size());
+  std::vector<double> pts_y(points.size());
+  std::transform(
+    points.begin(), points.end(), pts_x.begin(), [](const Eigen::Vector2d & v) { return v(0); });
+  std::transform(
+    points.begin(), points.end(), pts_y.begin(), [](const Eigen::Vector2d & v) { return v(1); });
+
+  return {pts_x, pts_y};
 }
 
 /**
@@ -205,6 +227,40 @@ int main()
   turtle_nav_cpp::PlotTrajectoryEndPoints(trajectories, 5);
   matplot::axis(matplot::square);
   matplot::grid(true);
+
+  // Generate and plot ellipse
+  Eigen::Matrix2d A;
+  A << 5, 3, 3, 4;
+
+  // Check for positive definiteness
+  const Eigen::LLT<Eigen::Matrix2d> matrix_llt(A);
+  // Check for covariance positive semi-definiteness
+  if (matrix_llt.info() == Eigen::NumericalIssue) {
+    throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
+  }
+
+  // Get eigenvalues and eigenvectors
+  const Eigen::EigenSolver<Eigen::Matrix2d> eigs(A);
+  const Eigen::Matrix2d eig_vectors = eigs.eigenvectors().real();
+  Eigen::Matrix2d eig_sqrt_vals = eigs.eigenvalues().real().unaryExpr(&sqrt).asDiagonal();
+
+  // Compute contour
+  const size_t num_points = 1e3;
+  std::vector<Eigen::Vector2d> ellipse_points(num_points);
+  std::vector<double> thetas = matplot::linspace(0, 2 * M_PI, num_points);
+  std::transform(thetas.begin(), thetas.end(), ellipse_points.begin(), [&](const double th) {
+    const Eigen::Vector2d v{cos(th), sin(th)};
+    Eigen::Vector2d p = eig_vectors * eig_sqrt_vals * v;
+    return p;
+  });
+
+  auto [ellipse_points_x, ellipse_points_y] = turtle_nav_cpp::GetXYPoints(ellipse_points);
+
+  // Plot ellipse
+  matplot::figure();
+  matplot::plot(ellipse_points_x, ellipse_points_y)->line_width(1.5);
+  matplot::grid(true);
+
   matplot::show();
 
   return 0;
