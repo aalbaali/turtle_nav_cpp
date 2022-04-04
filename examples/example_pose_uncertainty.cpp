@@ -105,6 +105,43 @@ void PlotTrajectoryEndPoints(const std::vector<Trajectory> & trajectories, Args.
 }
 
 /**
+ * @brief Plot a 2D ellipse from a symmetric positive definite matrix
+ *
+ * @param[in] mat         Square symmetric positive definite matrix
+ * @param[in] num_points  Number of points to plot on the ellipse
+ * @return std::vector<Eigen::Vector2d> Points of 2D ellipse
+ */
+std::vector<Eigen::Vector2d> GetEllipsePoints(
+  const Eigen::Matrix2d & mat, const int num_points = 100)
+{
+  // Ensure symmetry
+  if (!mat.isApprox(mat.transpose())) {
+    throw std::runtime_error("Non symmetric matrix");
+  }
+
+  // Check for covariance positive semi-definiteness
+  if (Eigen::LLT<Eigen::Matrix2d>(mat).info() == Eigen::NumericalIssue) {
+    throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
+  }
+
+  // Get eigenvalues and eigenvectors
+  const Eigen::EigenSolver<Eigen::Matrix2d> eigs(mat);
+  const Eigen::Matrix2d eig_vectors = eigs.eigenvectors().real();
+  const Eigen::Matrix2d eig_sqrt_vals = eigs.eigenvalues().real().unaryExpr(&sqrt).asDiagonal();
+
+  // Compute points
+  std::vector<Eigen::Vector2d> ellipse_points(num_points);
+  const std::vector<double> thetas = matplot::linspace(0, 2 * M_PI, num_points);
+  std::transform(thetas.begin(), thetas.end(), ellipse_points.begin(), [&](const double th) {
+    const Eigen::Vector2d v{cos(th), sin(th)};
+    Eigen::Vector2d p = eig_vectors * eig_sqrt_vals * v;
+    return p;
+  });
+
+  return ellipse_points;
+}
+
+/**
  * @brief Get x and y vectors from a vector of Eigen::Vector2d
  *
  * @param[in] points Vector of Eigen::Vector2d
@@ -232,28 +269,7 @@ int main()
   Eigen::Matrix2d A;
   A << 5, 3, 3, 4;
 
-  // Check for positive definiteness
-  const Eigen::LLT<Eigen::Matrix2d> matrix_llt(A);
-  // Check for covariance positive semi-definiteness
-  if (matrix_llt.info() == Eigen::NumericalIssue) {
-    throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
-  }
-
-  // Get eigenvalues and eigenvectors
-  const Eigen::EigenSolver<Eigen::Matrix2d> eigs(A);
-  const Eigen::Matrix2d eig_vectors = eigs.eigenvectors().real();
-  Eigen::Matrix2d eig_sqrt_vals = eigs.eigenvalues().real().unaryExpr(&sqrt).asDiagonal();
-
-  // Compute contour
-  const size_t num_points = 1e3;
-  std::vector<Eigen::Vector2d> ellipse_points(num_points);
-  std::vector<double> thetas = matplot::linspace(0, 2 * M_PI, num_points);
-  std::transform(thetas.begin(), thetas.end(), ellipse_points.begin(), [&](const double th) {
-    const Eigen::Vector2d v{cos(th), sin(th)};
-    Eigen::Vector2d p = eig_vectors * eig_sqrt_vals * v;
-    return p;
-  });
-
+  auto ellipse_points = turtle_nav_cpp::GetEllipsePoints(A, 1e3);
   auto [ellipse_points_x, ellipse_points_y] = turtle_nav_cpp::GetXYPoints(ellipse_points);
 
   // Plot ellipse
