@@ -212,7 +212,7 @@ std::vector<double> GenerateNoisyVector(
   return noisy_vals;
 }
 
-auto GenerateTrajectories(
+std::tuple<std::vector<Trajectory>, StdVector2Double, StdVector2Double> GenerateTrajectories(
   const size_t num_trajectories, const size_t num_poses, const Pose & T_0, const double dt,
   const GaussianRV & speed_rv, const GaussianRV & yaw_rate_rv,
   std::default_random_engine & rn_generator)
@@ -234,8 +234,7 @@ auto GenerateTrajectories(
       DeadReckonTrajectory(T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back()));
   }
 
-  return std::tuple<std::vector<Trajectory>, StdVector2Double, StdVector2Double>(
-    trajectories, speeds_bundle, yaw_rates_bundle);
+  return {trajectories, speeds_bundle, yaw_rates_bundle};
 }
 
 }  // namespace turtle_nav_cpp
