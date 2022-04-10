@@ -8,8 +8,10 @@
 
 #include "turtle_nav_cpp/nav_utils.hpp"
 
+#include <algorithm>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
@@ -243,6 +245,42 @@ PoseWithCovarianceStamped AccumOdom(
   }
 
   return latest_pose;
+}
+
+const std::vector<Eigen::Vector2d> RetractSe2CovarianceEllipse(
+  const Pose & pose, const Eigen::Matrix3d & cov, const double scale /* = 1 */,
+  const double num_points /* = 100 */)
+{
+  if (scale <= 0) {
+    throw std::invalid_argument("Scale must be a positive number");
+  }
+
+  if (num_points < 2) {
+    throw std::invalid_argument("Number of points must be greater than 1");
+  }
+
+  // Get poitns of a circle
+  const std::vector<Eigen::Vector2d> unit_circle_pts =
+    eigen_utils::GetEllipsePoints(Eigen::Matrix2d::Identity(), 1, num_points);
+
+  // Cholesky factor and lower matrix
+  const auto cov_llt = cov.llt();
+  if (cov_llt.info() == Eigen::NumericalIssue) {
+    throw std::invalid_argument("Provided matrix is not positive definite");
+  }
+  const Eigen::Matrix3d cov_L = cov_llt.matrixL();
+
+  // Retracted points
+  std::vector<Eigen::Vector2d> retracted_pts(num_points);
+  std::transform(
+    unit_circle_pts.begin(), unit_circle_pts.end(), retracted_pts.begin(),
+    [&scale, &cov_L, &pose](const Eigen::Vector2d & pt_2d) -> Eigen::Vector2d {
+      const Eigen::Vector3d ell_se2_vec = scale * cov_L * Eigen::Vector3d{pt_2d(0), pt_2d(1), 0};
+      Pose T_pt_global = pose * Pose::Exp(ell_se2_vec.block<2, 1>(0, 0), ell_se2_vec(2));
+      return Eigen::Vector2d{T_pt_global.x(), T_pt_global.y()};
+    });
+
+  return retracted_pts;
 }
 
 }  // namespace nav_utils

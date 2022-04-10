@@ -8,6 +8,7 @@
 
 #include <geometry_msgs/msg/pose.hpp>
 #include <turtlesim/msg/pose.hpp>
+#include <vector>
 
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "gtest/gtest.h"
@@ -143,7 +144,7 @@ TEST(HeadingToQuaternionMsg, Headings)
 //==================================================================================================
 // Poses
 //==================================================================================================
-class TestPoseConversions : public ::testing::Test
+class TestPoseFuncs : public ::testing::Test
 {
 protected:
   void SetUp() override
@@ -158,7 +159,7 @@ protected:
   double heading;
 };
 
-TEST_F(TestPoseConversions, PoseMsgToTurtlePose)
+TEST_F(TestPoseFuncs, PoseMsgToTurtlePose)
 {
   geometry_msgs::msg::Pose pose_msg;
   pose_msg.position.x = x;
@@ -176,7 +177,7 @@ TEST_F(TestPoseConversions, PoseMsgToTurtlePose)
   EXPECT_FLOAT_EQ(pose_turtle.theta, heading);
 }
 
-TEST_F(TestPoseConversions, TurtlePoseToPoseMsg)
+TEST_F(TestPoseFuncs, TurtlePoseToPoseMsg)
 {
   turtlesim::msg::Pose pose_turtle;
   pose_turtle.x = x;
@@ -194,5 +195,23 @@ TEST_F(TestPoseConversions, TurtlePoseToPoseMsg)
   EXPECT_FLOAT_EQ(pose_msg.orientation.w, cos(heading / 2));
 }
 
+TEST_F(TestPoseFuncs, RetractSe2CovarianceEllipse)
+{
+  // When theta is nonzero, the mapped points for a "banana shape", which is nontrivial to compute,
+  // thus difficult to test for.
+  // Therefore, a heading angle of 0 will be used, which results in a regular ellipse shape, except
+  // that it's centered at the pose location instead of the origin (0, 0).
+  const Pose pose(x, y, 0.0);
+
+  const auto retracted_pts = RetractSe2CovarianceEllipse(pose, Eigen::Matrix3d::Identity(), 1, 5);
+
+  // Angles
+  const std::vector<double> angles{-M_PI, -M_PI_2, 0, M_PI_2, M_PI};
+
+  for (int i = 0; i < 5; i++) {
+    EXPECT_DOUBLE_EQ(retracted_pts[i](0), x + cos(angles[i]));
+    EXPECT_DOUBLE_EQ(retracted_pts[i](1), y + sin(angles[i]));
+  }
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
