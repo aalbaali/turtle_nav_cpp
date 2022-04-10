@@ -226,8 +226,9 @@ public:
    * @return bool True if all scalars are equal
    */
   bool operator!=(const Pose & pose_rhs) const;
+
   //================================================================================================
-  // Other methods
+  // Lie group operations
   //================================================================================================
 
   /**
@@ -236,6 +237,13 @@ public:
    * @return Pose
    */
   Pose Inverse() const;
+
+  /**
+   * @brief Return adjoint matrix
+   *
+   * @return Eigen::Matrix3d Adjoint matrix
+   */
+  Eigen::Matrix3d Adjoint() const;
 
 private:
   // Translational component of the pose. Named `position` for brevity

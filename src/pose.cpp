@@ -67,6 +67,11 @@ Pose Pose::Inverse() const
   return Pose(position_inverse, heading_inverse);
 }
 
+Eigen::Matrix3d Pose::Adjoint() const
+{
+  return Pose(this->y(), -this->x(), this->angle()).Affine().matrix();
+}
+
 Affine2d Pose::Affine() const
 {
   Affine2d T;

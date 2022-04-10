@@ -134,6 +134,26 @@ TEST_F(TestPose, Getters)
   EXPECT_DOUBLE_EQ(T.angle(), theta_);
 }
 
+TEST_F(TestPose, LieGroupOperations)
+{
+  // Adjoint
+  const Pose T(x_, y_, theta_);
+  const auto adj = T.Adjoint();
+
+  // Construct true Adjoint matrix using (159) in Sola
+  Eigen::Matrix3d adj_true = Eigen::Matrix3d::Zero();
+  // clang-format off
+  adj_true << cos(theta_), -sin(theta_),  y_,
+              sin(theta_),  cos(theta_), -x_,
+                  0      ,      0      ,  1;
+  // clang-format on
+
+  // Compare
+  for (int i = 0; i < adj.size(); i++) {
+    EXPECT_DOUBLE_EQ(adj(i), adj_true(i));
+  }
+}
+
 TEST_F(TestPose, Operators)
 {
   // Default pose
