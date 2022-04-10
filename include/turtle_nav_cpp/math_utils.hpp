@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <random>
-#include <stdexcept>
 #include <vector>
 
 namespace turtle_nav_cpp

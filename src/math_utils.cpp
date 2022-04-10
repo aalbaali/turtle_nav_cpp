@@ -9,6 +9,7 @@
 #include "turtle_nav_cpp/math_utils.hpp"
 
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 namespace turtle_nav_cpp
@@ -50,9 +51,8 @@ std::vector<double> linspace(const double val_first, const double val_last, cons
 
   const double dv = (val_last - val_first) / static_cast<double>(num_points - 1);
   std::vector<double> vals(num_points);
-
-  // Using v = val_first - dv so that the first returned value `val_first`
-  std::generate(vals.begin(), vals.end(), [v = val_first - dv, dv]() mutable { return v += dv; });
+  std::generate(
+    vals.begin(), vals.end(), [i = 0, dv, val_first]() mutable { return val_first + dv * i++; });
 
   return vals;
 }
