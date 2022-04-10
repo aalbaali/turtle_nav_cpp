@@ -143,6 +143,14 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
 //==================================================================================================
 // Covariances
 //==================================================================================================
+/**
+ * @brief Convert covariance on SE(3) poses/twists (i.e., 3 degrees-of-freedom) to covariance on
+ * SE(2) poses/twists (i.e., 2 degrees-of-freedom). This is basically marginalizing the variables
+ * not available in SE(2).
+ *
+ * @param[in] cov_3dof      Covariance to convert
+ * @return Eigen::Matrix3d  Marginalized covariance
+ */
 Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof);
 
 //==================================================================================================
