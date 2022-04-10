@@ -357,7 +357,6 @@ std::tuple<std::vector<Trajectory>, std::vector<std::vector<Eigen::Matrix3d>>> G
 
   return {trajectories, pose_covariances};
 }
-
 }  // namespace turtle_nav_cpp
 
 int main()
@@ -366,7 +365,7 @@ int main()
   const size_t num_trajs = 1000;
 
   // Numbers of poses per trajectory
-  const int num_poses = 100;
+  const int num_poses = 300;
 
   // Dead-reckoning parameters
   Pose T_0(0, 0, 0);
@@ -398,7 +397,6 @@ int main()
   const Eigen::Matrix3d cov_L = pose_covariances.back().back().llt().matrixL();
 
   // Get the last pose of trajectory
-  // const auto T_end = Pose(dt * speed_rv.mean * num_poses, 0, 0);
   const auto T_end = trajectories.back().back();
 
   // Points to plot
