@@ -8,6 +8,8 @@
 
 #include "turtle_nav_cpp/pose.hpp"
 
+#include <limits>
+
 #include "turtle_nav_cpp/heading.hpp"
 
 namespace turtle_nav_cpp
@@ -145,6 +147,11 @@ Eigen::Matrix3d Pose::Adjoint() const
 
 Pose Pose::Exp(const Eigen::Vector2d & rho, const double theta)
 {
+  // If theta == 0, then rho == r
+  if (abs(theta) <= std::numeric_limits<double>::min()) {
+    return Pose(rho, theta);
+  }
+
   // From (156) and (158) of Sola
   const Eigen::Matrix2d V =
     sin(theta) / theta * Eigen::Matrix2d::Identity() + (1 - cos(theta)) / theta * Heading::cross(1);
