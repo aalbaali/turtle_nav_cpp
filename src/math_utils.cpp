@@ -50,11 +50,9 @@ std::vector<double> linspace(const double val_first, const double val_last, cons
 
   const double dv = (val_last - val_first) / static_cast<double>(num_points - 1);
   std::vector<double> vals(num_points);
-  std::generate(vals.begin(), vals.end(), [v = val_first, dv]() mutable {
-    const auto current_val = v;
-    v += dv;
-    return current_val;
-  });
+
+  // Using v = val_first - dv so that the first returned value `val_first`
+  std::generate(vals.begin(), vals.end(), [v = val_first - dv, dv]() mutable { return v += dv; });
 
   return vals;
 }
