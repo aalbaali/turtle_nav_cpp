@@ -65,7 +65,7 @@ private:
    *
    * @param[in] pose_with_cov_stamped Pose to be published
    */
-  void EstPosePublisher(const PoseWithCovarianceStamped & pose_with_cov_stamped) const;
+  void PublishEstimatedPose(const PoseWithCovarianceStamped & pose_with_cov_stamped) const;
 
   /**
    * @brief Dead-reckoning algorithm running on a timer

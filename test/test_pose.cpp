@@ -155,10 +155,31 @@ TEST_F(TestPose, AdjointMatrix)
   }
 }
 
-TEST_F(TestPose, ExpMap)
+TEST_F(TestPose, ExpMapNonZeroTheta)
 {
   // Exponential map
   const double theta = 0.5;
+  const Pose pose = Pose::Exp({1, 2}, theta);
+  const Eigen::Matrix3d T = pose.Affine().matrix();
+
+  // The matrix should be approximately close to the exponential map computed numerically
+  Eigen::Matrix3d Xi;
+  // clang-format off
+  Xi <<     0   ,  -theta , 1,
+          theta ,     0   , 2,
+            0   ,     0   , 0;
+  // clang-format on
+  const Eigen::Matrix3d T_approx = Xi.exp();
+
+  for (int i = 0; i < T.size(); i++) {
+    EXPECT_NEAR(T(i), T_approx(i), 1e-5);
+  }
+}
+
+TEST_F(TestPose, ExpMapZeroTheta)
+{
+  // Exponential map
+  const double theta = 0.0;
   const Pose pose = Pose::Exp({1, 2}, theta);
   const Eigen::Matrix3d T = pose.Affine().matrix();
 

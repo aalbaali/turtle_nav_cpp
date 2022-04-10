@@ -8,8 +8,11 @@
 
 #include "turtle_nav_cpp/nav_utils.hpp"
 
+#include <algorithm>
+#include <limits>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
@@ -73,6 +76,60 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose)
 }
 
 //==================================================================================================
+// Covariances
+//==================================================================================================
+
+Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
+{
+  // Get the relevant covariances
+  Eigen::Matrix3d cov_2dof;
+  cov_2dof.block<2, 2>(0, 0) = cov_3dof.block<2, 2>(0, 0);
+  cov_2dof.block<2, 2>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::x) =
+    cov_3dof.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x);
+  cov_2dof(TwoDof::PoseIdx::th, TwoDof::PoseIdx::th) =
+    cov_3dof(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th);
+  cov_2dof.block<2, 1>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::th) =
+    cov_3dof.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th);
+  cov_2dof.block<1, 2>(TwoDof::PoseIdx::th, TwoDof::PoseIdx::x) =
+    cov_3dof.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x);
+
+  // Ensure symmetry
+  cov_2dof = 0.5 * (cov_2dof.eval() + cov_2dof.transpose().eval());
+
+  return cov_2dof;
+}
+
+Eigen::Matrix3d Cov3dofMsgToCov2dof(const std::array<double, 36> & cov_3dof_msg)
+{
+  return Cov3dofToCov2dof(eigen_utils::StdArrayToMatrix<6, 6, Eigen::RowMajor>(cov_3dof_msg));
+}
+
+Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
+{
+  // Get the relevant covariances
+  Eigen::Matrix<double, 6, 6> cov_3dof;
+  cov_3dof.setZero();
+  cov_3dof.block<2, 2>(0, 0) = cov_2dof.block<2, 2>(0, 0);
+  cov_3dof.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x) =
+    cov_2dof.block<2, 2>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::x);
+  cov_3dof(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th) =
+    cov_2dof(TwoDof::PoseIdx::th, TwoDof::PoseIdx::th);
+  cov_3dof.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th) =
+    cov_2dof.block<2, 1>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::th);
+  cov_3dof.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x) =
+    cov_2dof.block<1, 2>(TwoDof::PoseIdx::th, TwoDof::PoseIdx::x);
+
+  // Ensure symmetry
+  cov_3dof = 0.5 * (cov_3dof.eval() + cov_3dof.transpose().eval());
+
+  return cov_3dof;
+}
+
+std::array<double, 36> Cov2dofToCov3dofMsg(const Eigen::Matrix3d & cov_2dof)
+{
+  return eigen_utils::MatrixToStdArray<6, 6, Eigen::RowMajor>(Cov2dofToCov3dof(cov_2dof));
+}
+//==================================================================================================
 // Filtering
 //==================================================================================================
 
@@ -118,7 +175,9 @@ PoseWithCovarianceStamped AccumOdom(
     return latest_pose;
   }
 
-  // Predict poses until the last velocity time stamp
+  // Predict poses and covariances until the last velocity time stamp
+  // Each pose is predicted to the next time stamp. That is, pose at T(t_km1) is predicted until the
+  // time of the nearest velocity measurement that is after t_km1
   while (!vel_history.empty() && !is_predicted_to_query_time) {
     earliest_vel = vel_history.back();
     vel_history.pop();
@@ -126,7 +185,7 @@ PoseWithCovarianceStamped AccumOdom(
     // Query time to predict to
     rclcpp::Time time_to_predict_to = earliest_vel.header.stamp;
 
-    // Deal with measurements earlier than latest pose
+    // Ignore measurements earlier than latest pose
     if (time_to_predict_to < latest_pose.header.stamp) {
       continue;
     }
@@ -137,12 +196,11 @@ PoseWithCovarianceStamped AccumOdom(
       is_predicted_to_query_time = true;
     }
 
-    // Time difference between latest velocity and latest pose
+    // Time difference from the latest pose to the time to predict to (basically dt)
     auto duration_latest_pose_to_query_time = time_to_predict_to - latest_pose.header.stamp;
-
-    // * Ignore covariances for now
-    // Dead-reckon poses using SE(2) model
     double dt = duration_latest_pose_to_query_time.seconds();
+
+    // Dead-reckon poses using SE(2) model
     Pose T_km1 = latest_pose.pose.pose;
     Vector2d linear_vel_km1 =
       Vector2d(earliest_vel.twist.twist.linear.x, earliest_vel.twist.twist.linear.y);
@@ -155,63 +213,37 @@ PoseWithCovarianceStamped AccumOdom(
     //==============================================================================================
     // Covariance propagation
     //==============================================================================================
-    auto cov_latest_pose = eigen_utils::StdArrayToMatrix<6, 6>(latest_pose.pose.covariance);
-    auto cov_earliest_vel = eigen_utils::StdArrayToMatrix<6, 6>(earliest_vel.twist.covariance);
+    // Covariance on latest pose
+    Eigen::Matrix3d cov_T_km1 = Cov3dofMsgToCov2dof(latest_pose.pose.covariance);
+    Eigen::Matrix3d cov_v_km1 = Cov3dofMsgToCov2dof(earliest_vel.twist.covariance);
 
-    // Get the relevant covariances
-    Eigen::Matrix3d cov_T_km1;
-    cov_T_km1.block<2, 2>(0, 0) = cov_latest_pose.block<2, 2>(0, 0);
-    cov_T_km1(2, 2) = cov_latest_pose(5, 5);
-    cov_T_km1.block<2, 1>(0, 2) = cov_latest_pose.block<2, 1>(0, 5);
-    cov_T_km1.block<1, 2>(2, 0) = cov_latest_pose.block<1, 2>(5, 0);
-
-    // Check symmetry
+    // Check positive definiteness
     if (Eigen::LLT<Eigen::Matrix3d>(cov_T_km1).info() == Eigen::NumericalIssue) {
       std::stringstream ss;
       ss << "State covariance is not symmetric positive (semi) definite" << cov_T_km1;
       throw ss.str();
     }
 
-    // The dt is a multiplcation factor due to sampling. Note that `dt` is used instead of `dt^2`
-    // because it's assumed that the provided covariance is a power spectral density (PSD) matrix.
-    // If that's not the case, then use `dt^2`.
-    Eigen::Matrix3d cov_v_km1;
-    const double eta = dt * dt;
-    cov_v_km1.block<2, 2>(0, 0) = eta * cov_earliest_vel.block<2, 2>(TwistIdx::x, TwistIdx::x);
-    cov_v_km1(2, 2) = eta * cov_earliest_vel(TwistIdx::th, TwistIdx::th);
-    cov_v_km1.block<2, 1>(0, 2) = eta * cov_earliest_vel.block<2, 1>(TwistIdx::x, TwistIdx::th);
-    cov_v_km1.block<1, 2>(2, 0) = eta * cov_earliest_vel.block<1, 2>(TwistIdx::th, TwistIdx::x);
-
-    // If covariance on the y-component of the velocity is negative, then replace it with process
-    // noise
-    if (cov_v_km1(1, 1) < 0) {
-      cov_v_km1(1, 1) = 1e-15;
+    // If covariance on the y-component of the velocity is negative (which is used to imply that
+    // there's NO variance on the variable), then replace it with process noise
+    if (cov_v_km1(TwoDof::y, TwoDof::y) < 0) {
+      cov_v_km1(1, 1) = 1e-10;
     }
 
     if (Eigen::LLT<Eigen::Matrix3d>(cov_v_km1).info() == Eigen::NumericalIssue) {
       std::stringstream ss;
-      ss << "Measurement covariance is not symmetric positive (semi) definite: " << cov_v_km1;
+      ss << "Measurement covariance is not symmetric positive definite: " << cov_v_km1;
       throw ss.str();
     }
 
-    // Jacobians of the process model w.r.t. vars
-    // Check Sola (Micro Lie Theory) equations (99)-(100), (161), and (163)
-
     // Jacobian of the process model w.r.t. the state (T_km1 = Exp(xi_km1))
     // Adj_{Exp(-u_j)}. Check (100) and (161) from Sola.
-    Eigen::Matrix3d jac_xi_km1;
-    jac_xi_km1.block<2, 2>(0, 0) = dT_km1.heading().RotationMatrix().transpose();
-    Eigen::Matrix2d one_cross;
-    one_cross << 0, -1, 1, 0;
-    jac_xi_km1.block<2, 1>(0, 2) = jac_xi_km1.block<2, 2>(0, 0) * one_cross * dT_km1.translation();
-    jac_xi_km1(2, 0) = 0;
-    jac_xi_km1(2, 1) = 0;
-    jac_xi_km1(2, 2) = 1;
+    Eigen::Matrix3d jac_xi_km1 = dT_km1.Inverse().Adjoint();
 
     // Jacobian of the process model w.r.t. the control input
     // J_r_{u_j} from (163) in Sola.
     // For now, assume it's an identity matrix, which is not far off.
-    Eigen::Matrix3d jac_v_km1 = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3d jac_v_km1 = dt * Eigen::Matrix3d::Identity();
 
     // Compute the covariance
     auto cov_xi_k_xi_km1 = jac_xi_km1 * cov_T_km1 * jac_xi_km1.transpose();
@@ -227,7 +259,7 @@ PoseWithCovarianceStamped AccumOdom(
     cov_msg.block<1, 2>(5, 0) = cov_xi_k.block<1, 2>(2, 0);
 
     // Assign the covariance to the pose message
-    latest_pose.pose.covariance = eigen_utils::MatrixToStdArray(cov_msg);
+    latest_pose.pose.covariance = Cov2dofToCov3dofMsg(cov_xi_k);
   }
 
   // Now predict pose from latest pose to query time
@@ -243,6 +275,42 @@ PoseWithCovarianceStamped AccumOdom(
   }
 
   return latest_pose;
+}
+
+const std::vector<Eigen::Vector2d> RetractSe2CovarianceEllipse(
+  const Pose & pose, const Eigen::Matrix3d & cov, const double scale /* = 1 */,
+  const double num_points /* = 100 */)
+{
+  if (scale <= 0) {
+    throw std::invalid_argument("Scale must be a positive number");
+  }
+
+  if (num_points < 2) {
+    throw std::invalid_argument("Number of points must be greater than 1");
+  }
+
+  // Get poitns of a circle
+  const std::vector<Eigen::Vector2d> unit_circle_pts =
+    eigen_utils::GetEllipsePoints(Eigen::Matrix2d::Identity(), 1, num_points);
+
+  // Cholesky factor and lower matrix
+  const auto cov_llt = cov.llt();
+  if (cov_llt.info() == Eigen::NumericalIssue) {
+    throw std::invalid_argument("Provided matrix is not positive definite");
+  }
+  const Eigen::Matrix3d cov_L = cov_llt.matrixL();
+
+  // Retracted points
+  std::vector<Eigen::Vector2d> retracted_pts(num_points);
+  std::transform(
+    unit_circle_pts.begin(), unit_circle_pts.end(), retracted_pts.begin(),
+    [&scale, &cov_L, &pose](const Eigen::Vector2d & pt_2d) -> Eigen::Vector2d {
+      const Eigen::Vector3d ell_se2_vec = scale * cov_L * Eigen::Vector3d{pt_2d(0), pt_2d(1), 0};
+      Pose T_pt_global = pose * Pose::Exp(ell_se2_vec.block<2, 1>(0, 0), ell_se2_vec(2));
+      return Eigen::Vector2d{T_pt_global.x(), T_pt_global.y()};
+    });
+
+  return retracted_pts;
 }
 
 }  // namespace nav_utils

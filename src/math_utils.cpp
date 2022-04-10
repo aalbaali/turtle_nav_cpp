@@ -9,6 +9,8 @@
 #include "turtle_nav_cpp/math_utils.hpp"
 
 #include <random>
+#include <stdexcept>
+#include <vector>
 
 namespace turtle_nav_cpp
 {
@@ -36,6 +38,23 @@ double WrapToPi(double angle)
   }
 
   return angle_l;
+}
+
+std::vector<double> linspace(const double val_first, const double val_last, const size_t num_points)
+{
+  if (num_points < 2) {
+    throw std::invalid_argument("Number of points should be greater than 1");
+  }
+  if (val_last <= val_first) {
+    throw std::invalid_argument("val_last should be greater than the val_first");
+  }
+
+  const double dv = (val_last - val_first) / static_cast<double>(num_points - 1);
+  std::vector<double> vals(num_points);
+  std::generate(
+    vals.begin(), vals.end(), [i = 0, dv, val_first]() mutable { return val_first + dv * i++; });
+
+  return vals;
 }
 
 }  // namespace turtle_nav_cpp

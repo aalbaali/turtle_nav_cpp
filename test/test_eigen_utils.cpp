@@ -241,4 +241,42 @@ TEST(QuaternionToHeading, NonZeroHeadingQuaternion)
   EXPECT_DOUBLE_EQ(QuaternionToHeading(q), heading);
 }
 
+TEST(GetEllipsePoitns, GenerateEllipsePts)
+{
+  const double radius = 2;
+
+  // The 5 points should be around a circle
+  const auto pts = GetEllipsePoints(Eigen::Matrix2d::Identity(), radius, 5);
+
+  // Angles
+  const std::vector<double> angles{-M_PI, -M_PI_2, 0, M_PI_2, M_PI};
+
+  for (int i = 0; i < 5; i++) {
+    EXPECT_DOUBLE_EQ(pts[i](0), radius * cos(angles[i]));
+    EXPECT_DOUBLE_EQ(pts[i](1), radius * sin(angles[i]));
+  }
+}
+
+TEST(GetEllipsePoitns, DefaultArguments)
+{
+  // Number of points
+  const auto pts_1 = GetEllipsePoints(Eigen::Matrix2d::Identity(), 1);
+  EXPECT_EQ(pts_1.size(), static_cast<std::size_t>(100));
+
+  // Scale
+  const auto pts_2 = GetEllipsePoints(Eigen::Matrix2d::Identity());
+  EXPECT_DOUBLE_EQ(pts_2[0](0), -1);
+}
+
+TEST(GetEllipsePoitns, Exceptions)
+{
+  // Non-positive definite matrix exception
+  EXPECT_THROW(GetEllipsePoints(Eigen::Matrix2d::Random(), 1, 5), std::invalid_argument);
+
+  // Wrong number of points
+  EXPECT_THROW(GetEllipsePoints(Eigen::Matrix2d::Identity(), 1, 0), std::invalid_argument);
+
+  // Negative scaling value
+  EXPECT_THROW(GetEllipsePoints(Eigen::Matrix2d::Identity(), 0, 5), std::invalid_argument);
+}
 }  // namespace eigen_utils
