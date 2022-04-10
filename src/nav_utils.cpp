@@ -100,7 +100,7 @@ Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
 
 Eigen::Matrix3d Cov3dofMsgToCov2dof(const std::array<double, 36> & cov_3dof_msg)
 {
-  return Cov3dofToCov2dof(eigen_utils::StdArrayToMatrix<6, 6>(cov_3dof_msg));
+  return Cov3dofToCov2dof(eigen_utils::StdArrayToMatrix<6, 6, Eigen::RowMajor>(cov_3dof_msg));
 }
 
 Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
@@ -126,7 +126,7 @@ Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
 
 std::array<double, 36> Cov2dofToCov3dofMsg(const Eigen::Matrix3d & cov_2dof)
 {
-  return eigen_utils::MatrixToStdArray(Cov2dofToCov3dof(cov_2dof));
+  return eigen_utils::MatrixToStdArray<6, 6, Eigen::RowMajor>(Cov2dofToCov3dof(cov_2dof));
 }
 //==================================================================================================
 // Filtering
