@@ -4,21 +4,18 @@
 [![Codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/devel/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
 
 - [In this repo](#in-this-repo)
-- [Testing](#testing)
 - [Nodes](#nodes)
   - [`turtle_est_broadcaster`](#turtle_est_broadcaster)
     - [Parameters](#parameters)
+- [Running the dead-reckoning filter](#running-the-dead-reckoning-filter)
+  - [Moving turtle using teleop](#moving-turtle-using-teleop)
 - [Setting parameters](#setting-parameters)
-  - [Starting teleop](#starting-teleop)
-- [Running tests](#running-tests)
+- [Testing](#testing)
 - [Pre-commits](#pre-commits)
 - [Examples](#examples)
 
 # In this repo
 The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
-
-# Testing
-The unit tests can be run using [colcon_test_tools](https://github.com/aalbaali/colcon_test_tools).
 
 # Nodes
 ## `turtle_est_broadcaster`
@@ -35,12 +32,17 @@ The node takes multiple (optional) parameters
 - `odom_frame`: Odometry frame name
 - `map_frame`: Map frame name
 
-# Setting parameters
+# Running the dead-reckoning filter
+- Start the launch file by running
 ```bash
-ros2 run <package-name> <node-name> --ros-args -p <param_name>:=<param_value>
+ros2 launch turtle_nav_cpp turtle_nav_filter.launch.py
 ```
-
-## Starting teleop
+- Start the dead-reckoning estimator by setting the pose:
+  - From the launched RVIZ window, set a pose by clicking on the **2D Pose Estimate** button on the top of the screen.
+  - Choose an appropriate pose estimate to kick-off the dead-reckoning estimator with (note: without this step, the estimator will not start)
+- To move the robot around, run a [teleop session](#moving-turtle-using-teleop)
+- A screenshot of RVIZ and turtlesim windows are presented in the [images below](#dead_reckoning_rviz)
+## Moving turtle using teleop
 Starting teleop using
 ```bash
 ros2 run turtlesim turtle_teleop
@@ -56,7 +58,18 @@ To run the turtle in a circle, publish a twist message at a constant rate, which
 ros2 topic pub --rate 1 /true_turtle/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 1.8}}"
 ```
 
-# Running tests
+RVIZ output             |  Turtlesim output
+:-------------------------:|:-------------------------:
+![dead_reckoning_rviz](images/dead_reckoning_rviz.png)  |  ![turtlesim_dead_reckon](images/turtlesim_dead_reckon.png)
+
+# Setting parameters
+```bash
+ros2 run <package-name> <node-name> --ros-args -p <param_name>:=<param_value>
+```
+
+# Testing
+The unit tests can be run using [colcon_test_tools](https://github.com/aalbaali/colcon_test_tools).
+
 To run the tests locally, run the `.devcontainer/run_all.sh` script
 
 # Pre-commits
@@ -77,4 +90,9 @@ Check [pre-commit](https://pre-commit.com/) for further details on `pre-commit`.
 # Examples
 The `examples` directory includes stand-alone examples that are not necessarily directly related to the package.
 For example, it may have examples about propagating uncertainties.
-To build the examples, pass `-DBUILD_EXAMPLES=ON` as a CMake argument
+To build the examples, pass `-DBUILD_EXAMPLES=ON` as a CMake argument.
+
+The image below is the output of the *SE(2) dead-reckoning* example, where the "banana curve" is the 99% uncertainty bounds.
+<p align="center">
+  <img src="images/example_se2_dead_reckoning.png" />
+</p>
