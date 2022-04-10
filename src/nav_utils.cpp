@@ -97,6 +97,26 @@ Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
   return cov_2dof;
 }
 
+Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
+{
+  // Get the relevant covariances
+  Eigen::Matrix<double, 6, 6> cov_3dof;
+  cov_3dof.setZero();
+  cov_3dof.block<2, 2>(0, 0) = cov_2dof.block<2, 2>(0, 0);
+  cov_3dof.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x) =
+    cov_2dof.block<2, 2>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::x);
+  cov_3dof(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th) =
+    cov_2dof(TwoDof::PoseIdx::th, TwoDof::PoseIdx::th);
+  cov_3dof.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th) =
+    cov_2dof.block<2, 1>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::th);
+  cov_3dof.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x) =
+    cov_2dof.block<1, 2>(TwoDof::PoseIdx::th, TwoDof::PoseIdx::x);
+
+  // Ensure symmetry
+  cov_3dof = 0.5 * (cov_3dof.eval() + cov_3dof.transpose().eval());
+
+  return cov_3dof;
+}
 //==================================================================================================
 // Filtering
 //==================================================================================================

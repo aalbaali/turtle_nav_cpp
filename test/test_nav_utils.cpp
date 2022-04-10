@@ -267,5 +267,40 @@ TEST_F(TestPoseCov, ThreeDofToTwoDof)
   EXPECT_DOUBLE_EQ(cov_2dof(2, 1), cov_yth_);
   EXPECT_DOUBLE_EQ(cov_2dof(2, 2), var_th_);
 }
+
+TEST_F(TestPoseCov, TwoDofToThreeDof)
+{
+  Eigen::Matrix3d cov_2dof;
+  // clang-format off
+  cov_2dof << var_x_  , cov_xy_ , cov_xth_,
+              cov_xy_ , var_y_  , cov_yth_,
+              cov_xth_, cov_yth_, var_th_ ;
+  // clang-format on
+
+  const auto cov_3dof = Cov2dofToCov3dof(cov_2dof);
+
+  // Ensure symmetry
+  EXPECT_TRUE(cov_3dof.isApprox(cov_3dof.transpose()));
+
+  // Elements
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 0), var_x_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 1), cov_xy_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 2), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 3), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 4), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::x, 5), cov_xth_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 0), cov_xy_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 1), var_y_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 2), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 3), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 4), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::y, 5), cov_yth_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 0), cov_xth_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 1), cov_yth_);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 2), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 3), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 4), 0);
+  EXPECT_DOUBLE_EQ(cov_3dof(ThreeDof::th, 5), var_th_);
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
