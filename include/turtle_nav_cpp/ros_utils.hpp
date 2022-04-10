@@ -95,11 +95,9 @@ geometry_msgs::msg::Point32 PointToPoint32Msg(const Eigen::Vector2d & point);
  * @brief Convert a vector of points to a Polygon geometry msg
  *
  * @param[in] points      Points to set to a polygon message
- * @param[in] num_points  Number of points to generate
  * @return geometry_msgs::msg::Polygon
  */
-geometry_msgs::msg::Polygon PointsToPolygon(
-  const std::vector<Vector2d> & points, const int num_points);
+geometry_msgs::msg::Polygon PointsToPolygon(const std::vector<Vector2d> & points);
 
 }  // namespace ros_utils
 }  // namespace turtle_nav_cpp

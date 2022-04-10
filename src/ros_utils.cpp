@@ -8,6 +8,9 @@
 
 #include "turtle_nav_cpp/ros_utils.hpp"
 
+#include <algorithm>
+#include <vector>
+
 namespace turtle_nav_cpp
 {
 namespace ros_utils
@@ -22,12 +25,15 @@ geometry_msgs::msg::Point32 PointToPoint32Msg(const Eigen::Vector2d & point)
   return point_msg;
 }
 
-// geometry_msgs::msg::Polygon PointsToPolygon(
-//   const std::vector<Vector2d> & points, const int num_points)
-// {
-//   geometry_msgs::msg::Polygon polygon;
-//   polygon.points.back()
-// }
+geometry_msgs::msg::Polygon PointsToPolygon(const std::vector<Vector2d> & points)
+{
+  geometry_msgs::msg::Polygon polygon;
+  polygon.points.reserve(points.size());
+
+  std::transform(points.begin(), points.end(), polygon.points.begin(), PointToPoint32Msg);
+
+  return polygon;
+}
 
 }  // namespace ros_utils
 }  // namespace turtle_nav_cpp
