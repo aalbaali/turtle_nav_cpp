@@ -208,6 +208,7 @@ PoseWithCovarianceStamped AccumOdom(
  * @brief Retract 3D covariance ellipse points (on \xi from se(2))  onto the SE(2) group, and
  * extract the points from the poses (i.e., ignore the angles).
  *
+ * @details Covariance is computed on the Lie group using right-perturbation
  * @param[in] pose        Pose to retract covariance points at
  * @param[in] cov         Covariance on \xi (i.e., Log(pose))
  * @param[in] scale       Factor to scale the covariance points

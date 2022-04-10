@@ -9,6 +9,7 @@
 #include "turtle_nav_cpp/nav_utils.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <queue>
 #include <string>
 #include <vector>
@@ -212,66 +213,37 @@ PoseWithCovarianceStamped AccumOdom(
     //==============================================================================================
     // Covariance propagation
     //==============================================================================================
-    auto cov_latest_pose = eigen_utils::StdArrayToMatrix<6, 6>(latest_pose.pose.covariance);
-    auto cov_earliest_vel = eigen_utils::StdArrayToMatrix<6, 6>(earliest_vel.twist.covariance);
+    // Covariance on latest pose
+    Eigen::Matrix3d cov_T_km1 = Cov3dofMsgToCov2dof(latest_pose.pose.covariance);
+    Eigen::Matrix3d cov_v_km1 = Cov3dofMsgToCov2dof(earliest_vel.twist.covariance);
 
-    // Get the relevant covariances
-    Eigen::Matrix3d cov_T_km1;
-    cov_T_km1.block<2, 2>(0, 0) = cov_latest_pose.block<2, 2>(0, 0);
-    cov_T_km1(2, 2) = cov_latest_pose(5, 5);
-    cov_T_km1.block<2, 1>(0, 2) = cov_latest_pose.block<2, 1>(0, 5);
-    cov_T_km1.block<1, 2>(2, 0) = cov_latest_pose.block<1, 2>(5, 0);
-
-    // Check symmetry
+    // Check positive definiteness
     if (Eigen::LLT<Eigen::Matrix3d>(cov_T_km1).info() == Eigen::NumericalIssue) {
       std::stringstream ss;
       ss << "State covariance is not symmetric positive (semi) definite" << cov_T_km1;
       throw ss.str();
     }
 
-    // The dt is a multiplcation factor due to sampling. Note that `dt` is used instead of `dt^2`
-    // because it's assumed that the provided covariance is a power spectral density (PSD) matrix.
-    // If that's not the case, then use `dt^2`.
-    Eigen::Matrix3d cov_v_km1;
-    const double eta = dt * dt;
-    cov_v_km1.block<2, 2>(0, 0) =
-      eta * cov_earliest_vel.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x);
-    cov_v_km1(2, 2) = eta * cov_earliest_vel(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th);
-    cov_v_km1.block<2, 1>(0, 2) =
-      eta * cov_earliest_vel.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th);
-    cov_v_km1.block<1, 2>(2, 0) =
-      eta * cov_earliest_vel.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x);
-
-    // If covariance on the y-component of the velocity is negative, then replace it with process
-    // noise
-    if (cov_v_km1(1, 1) < 0) {
-      cov_v_km1(1, 1) = 1e-15;
+    // If covariance on the y-component of the velocity is negative (which is used to imply that
+    // there's NO variance on the variable), then replace it with process noise
+    if (cov_v_km1(TwoDof::y, TwoDof::y) < 0) {
+      cov_v_km1(1, 1) = 1e-10;
     }
 
     if (Eigen::LLT<Eigen::Matrix3d>(cov_v_km1).info() == Eigen::NumericalIssue) {
       std::stringstream ss;
-      ss << "Measurement covariance is not symmetric positive (semi) definite: " << cov_v_km1;
+      ss << "Measurement covariance is not symmetric positive definite: " << cov_v_km1;
       throw ss.str();
     }
 
-    // Jacobians of the process model w.r.t. vars
-    // Check Sola (Micro Lie Theory) equations (99)-(100), (161), and (163)
-
     // Jacobian of the process model w.r.t. the state (T_km1 = Exp(xi_km1))
     // Adj_{Exp(-u_j)}. Check (100) and (161) from Sola.
-    Eigen::Matrix3d jac_xi_km1;
-    jac_xi_km1.block<2, 2>(0, 0) = dT_km1.heading().RotationMatrix().transpose();
-    Eigen::Matrix2d one_cross;
-    one_cross << 0, -1, 1, 0;
-    jac_xi_km1.block<2, 1>(0, 2) = jac_xi_km1.block<2, 2>(0, 0) * one_cross * dT_km1.translation();
-    jac_xi_km1(2, 0) = 0;
-    jac_xi_km1(2, 1) = 0;
-    jac_xi_km1(2, 2) = 1;
+    Eigen::Matrix3d jac_xi_km1 = dT_km1.Inverse().Adjoint();
 
     // Jacobian of the process model w.r.t. the control input
     // J_r_{u_j} from (163) in Sola.
     // For now, assume it's an identity matrix, which is not far off.
-    Eigen::Matrix3d jac_v_km1 = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3d jac_v_km1 = dt * Eigen::Matrix3d::Identity();
 
     // Compute the covariance
     auto cov_xi_k_xi_km1 = jac_xi_km1 * cov_T_km1 * jac_xi_km1.transpose();
@@ -287,7 +259,7 @@ PoseWithCovarianceStamped AccumOdom(
     cov_msg.block<1, 2>(5, 0) = cov_xi_k.block<1, 2>(2, 0);
 
     // Assign the covariance to the pose message
-    latest_pose.pose.covariance = eigen_utils::MatrixToStdArray(cov_msg);
+    latest_pose.pose.covariance = Cov2dofToCov3dofMsg(cov_xi_k);
   }
 
   // Now predict pose from latest pose to query time
