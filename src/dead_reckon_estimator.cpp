@@ -126,7 +126,7 @@ void DeadReckonEstimator::CmdVelCallBack(
   RCLCPP_INFO(this->get_logger(), ss.str());
 }
 
-void DeadReckonEstimator::EstPosePublisher(
+void DeadReckonEstimator::PublishEstimatedPose(
   const PoseWithCovarianceStamped & pose_with_cov_stamped) const
 {
   est_pose_publisher_->publish(pose_with_cov_stamped);
@@ -161,7 +161,7 @@ void DeadReckonEstimator::TimedDeadReckoning()
   ss << "Pose cov:\033[96;1m\n" << cov_T_k << "\033[0m";
   RCLCPP_INFO(this->get_logger(), ss.str());
 
-  EstPosePublisher(latest_est_pose_msg_);
+  PublishEstimatedPose(latest_est_pose_msg_);
 }
 
 }  // namespace turtle_nav_cpp
