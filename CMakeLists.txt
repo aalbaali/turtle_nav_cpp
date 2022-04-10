@@ -53,12 +53,12 @@ include_directories(
 )
 
 # Add ros utils library
-add_library(ros_utils INTERFACE)
+add_library(ros_utils src/ros_utils.cpp)
 ament_target_dependencies(
   ros_utils
-  INTERFACE
   rclcpp
   Eigen3
+  geometry_msgs
 )
 
 # Add math-tools library
