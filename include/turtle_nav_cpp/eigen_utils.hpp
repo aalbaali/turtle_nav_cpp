@@ -134,6 +134,17 @@ T QuaternionToHeading(const Eigen::Quaternion<T> & q)
   return atan2(q.z(), q.w()) * 2;
 }
 
+/**
+ * @brief Get 2D Ellipse points from a positive 2x2 definite (covariance) matrix
+ *
+ * @param[in] mat         Positive definite matrix
+ * @param[in] scale       Factor to scale points from origin
+ * @param[in] num_points  Number of points to generate
+ * @return const std::vector<Eigen::Vector2d> Vector of 2D points
+ */
+const std::vector<Eigen::Vector2d> GetEllipsePoints(
+  const Eigen::Matrix2d & mat, const double scale = 1, const int num_points = 100);
+
 }  // namespace eigen_utils
 
 #endif  // TURTLE_NAV_CPP_EIGEN_UTILS_HPP_
