@@ -16,6 +16,7 @@
 #include <queue>
 #include <rclcpp/time.hpp>
 #include <turtlesim/msg/pose.hpp>
+#include <vector>
 
 #include "turtle_nav_cpp/heading.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
@@ -141,6 +142,20 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
 PoseWithCovarianceStamped AccumOdom(
   const rclcpp::Time & query_at, const PoseWithCovarianceStamped & initial_pose,
   std::queue<TwistWithCovarianceStamped> & vel_history);
+
+/**
+ * @brief Retract 3D covariance ellipse points (on \xi from se(2))  onto the SE(2) group, and
+ * extract the points from the poses (i.e., ignore the angles).
+ *
+ * @param[in] pose        Pose to retract covariance points at
+ * @param[in] cov         Covariance on \xi (i.e., Log(pose))
+ * @param[in] scale       Factor to scale the covariance points
+ * @param[in] num_points  Number of points to generate
+ * @return const std::vector<Eigen::Vector2d> 2D points representing the uncertainty ellipse
+ */
+const std::vector<Eigen::Vector2d> RetractSe2CovarianceEllipse(
+  const Pose & pose, const Eigen::Matrix3d & cov, const double scale = 1,
+  const double num_points = 100);
 
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
