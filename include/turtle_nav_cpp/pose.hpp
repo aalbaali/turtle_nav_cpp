@@ -245,6 +245,15 @@ public:
    */
   Eigen::Matrix3d Adjoint() const;
 
+  /**
+   * @brief Exponential map from a the Euclidean space isomorphic to the Lie algebra
+   *
+   * @param[in] rho    The translational component of the vector
+   * @param[in] theta  The heading
+   * @return Pose&     Pose constructed using a closed form of exp(\xi^{\wedge})
+   */
+  static Pose Exp(const Eigen::Vector2d & rho, const double theta);
+
 private:
   // Translational component of the pose. Named `position` for brevity
   Vector2d position_;

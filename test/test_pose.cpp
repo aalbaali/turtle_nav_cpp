@@ -9,6 +9,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <string>
 #include <turtlesim/msg/pose.hpp>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include "gtest/gtest.h"
 #include "turtle_nav_cpp/pose.hpp"
@@ -134,7 +135,7 @@ TEST_F(TestPose, Getters)
   EXPECT_DOUBLE_EQ(T.angle(), theta_);
 }
 
-TEST_F(TestPose, LieGroupOperations)
+TEST_F(TestPose, AdjointMatrix)
 {
   // Adjoint
   const Pose T(x_, y_, theta_);
@@ -151,6 +152,27 @@ TEST_F(TestPose, LieGroupOperations)
   // Compare
   for (int i = 0; i < adj.size(); i++) {
     EXPECT_DOUBLE_EQ(adj(i), adj_true(i));
+  }
+}
+
+TEST_F(TestPose, ExpMap)
+{
+  // Exponential map
+  const double theta = 0.5;
+  const Pose pose = Pose::Exp({1, 2}, theta);
+  const Eigen::Matrix3d T = pose.Affine().matrix();
+
+  // The matrix should be approximately close to the exponential map computed numerically
+  Eigen::Matrix3d Xi;
+  // clang-format off
+  Xi <<     0   ,  -theta , 1,
+          theta ,     0   , 2,
+            0   ,     0   , 0;
+  // clang-format on
+  const Eigen::Matrix3d T_approx = Xi.exp();
+
+  for (int i = 0; i < T.size(); i++) {
+    EXPECT_NEAR(T(i), T_approx(i), 1e-5);
   }
 }
 
