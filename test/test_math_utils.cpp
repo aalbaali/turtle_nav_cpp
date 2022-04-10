@@ -112,4 +112,20 @@ TEST(WrapToPi, EdgeCases)
   EXPECT_DOUBLE_EQ(WrapToPi(-M_PI), M_PI);
 }
 
+TEST(Linspace, PointGeneration)
+{
+  const size_t num_pts = 21;
+  const double val_first = 0;
+  const double val_last = 10;
+  const auto vals = linspace(val_first, val_last, num_pts);
+  for (size_t i = 0; i < num_pts; i++) {
+    EXPECT_DOUBLE_EQ(vals[i], (val_last - val_first) / (num_pts - 1) * i);
+  }
+
+  // Exception for minimul number of points
+  EXPECT_THROW(linspace(0.0, 10.0, 0), std::invalid_argument);
+
+  // Exception for having val_first == val_last
+  EXPECT_THROW(linspace(0.0, 0.0, 10), std::invalid_argument);
+}
 }  // namespace turtle_nav_cpp

@@ -8,7 +8,10 @@
 #ifndef TURTLE_NAV_CPP_MATH_UTILS_HPP_
 #define TURTLE_NAV_CPP_MATH_UTILS_HPP_
 
+#include <algorithm>
 #include <random>
+#include <stdexcept>
+#include <vector>
 
 namespace turtle_nav_cpp
 {
@@ -40,6 +43,19 @@ double randn_gen(std::default_random_engine & rn_generator);
  * @return double
  */
 double WrapToPi(double angle);
+
+/**
+ * @brief Generate a vector of linearly spaced points
+ *
+ * @details Uses `std::generate`, which requires C++17
+ *
+ * @param[in] val_first   First value of the range
+ * @param[in] val_last    Last value of the range > val_first
+ * @param[in] num_points  Number of points to generate > 1
+ * @return std::vector<T> Vector of points
+ */
+std::vector<double> linspace(
+  const double val_first, const double val_last, const size_t num_points);
 
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_MATH_UTILS_HPP_
