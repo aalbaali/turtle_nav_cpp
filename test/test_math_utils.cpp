@@ -121,7 +121,10 @@ TEST(Linspace, PointGeneration)
   for (size_t i = 0; i < num_pts; i++) {
     EXPECT_DOUBLE_EQ(vals[i], (val_last - val_first) / (num_pts - 1) * i);
   }
+}
 
+TEST(Linspace, Exceptions)
+{
   // Exception for minimul number of points
   EXPECT_THROW(linspace(0.0, 10.0, 0), std::invalid_argument);
 
