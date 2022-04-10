@@ -200,6 +200,14 @@ public:
 
   bool operator!=(const Heading & other) const;
 
+  /**
+   * @brief Cross operator mapping SO(2) Lie algebra coordinates to the Lie algebra
+   *
+   * @param[in] v Value in the Euclidean space
+   * @return Eigen::Matrix2d v^{\cross}
+   */
+  static Eigen::Matrix2d cross(const double v);
+
 private:
   Eigen::Rotation2Dd rotation_;
 };

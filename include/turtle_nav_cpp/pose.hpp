@@ -226,8 +226,9 @@ public:
    * @return bool True if all scalars are equal
    */
   bool operator!=(const Pose & pose_rhs) const;
+
   //================================================================================================
-  // Other methods
+  // Lie group operations
   //================================================================================================
 
   /**
@@ -236,6 +237,22 @@ public:
    * @return Pose
    */
   Pose Inverse() const;
+
+  /**
+   * @brief Return adjoint matrix
+   *
+   * @return Eigen::Matrix3d Adjoint matrix
+   */
+  Eigen::Matrix3d Adjoint() const;
+
+  /**
+   * @brief Exponential map from a the Euclidean space isomorphic to the Lie algebra
+   *
+   * @param[in] rho    The translational component of the vector
+   * @param[in] theta  The heading
+   * @return Pose&     Pose constructed using a closed form of exp(\xi^{\wedge})
+   */
+  static Pose Exp(const Eigen::Vector2d & rho, const double theta);
 
 private:
   // Translational component of the pose. Named `position` for brevity
