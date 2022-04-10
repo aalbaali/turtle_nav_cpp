@@ -9,6 +9,7 @@
 #define TURTLE_NAV_CPP_NAV_UTILS_HPP_
 
 #include <Eigen/Dense>
+#include <array>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
@@ -143,6 +144,7 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
 //==================================================================================================
 // Covariances
 //==================================================================================================
+
 /**
  * @brief Convert covariance on SE(3) poses/twists (i.e., 3 degrees-of-freedom) to covariance on
  * SE(2) poses/twists (i.e., 2 degrees-of-freedom). This is basically marginalizing the variables
@@ -154,6 +156,17 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
 Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof);
 
 /**
+ * @brief Wrapper around `Cov3dofToCov2dof` for geometry_msgs::msg::Covariance on SE(3) poses/twists
+ *
+ * @details Converts covariance on SE(3) poses/twists, described using a row-major array into
+ * covariance on SE(2) described using matrix
+ *
+ * @param[in] cov_3dof_msg Covariance on SE(2) poses/twists, as an array (message)
+ * @return Eigen::Matrix3d Covariance on SE(2) poses/twists, as a matrix
+ */
+Eigen::Matrix3d Cov3dofMsgToCov2dof(const std::array<double, 36> & cov_3dof_msg);
+
+/**
  * @brief Convert covariance on SE(2) poses/twists (i.e., 2 degrees-of-freedom) to covariance on
  * SE(3) poses/twists (i.e., 3 degrees-of-freedom).
  *
@@ -161,6 +174,17 @@ Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof);
  * @return Eigen::Matrix2d
  */
 Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof);
+
+/**
+ * @brief Wrapper around `Cov2dofToCov3dof` for geometry_msgs::msg::Covariance on SE(3) poses/twists
+ *
+ * @details Converts covariance on SE(2) poses/twists, described using a matrix into covariance on
+ * SE(3) described using a row-major array
+ *
+ * @param[in] cov_2dof Covariance on SE(2) poses/twists, as a matrix
+ * @return std::array<double, 36> Covariance on SE(3) poses/twists, as a row-major array
+ */
+std::array<double, 36> Cov2dofToCov3dofMsg(const Eigen::Matrix3d & cov_2dof);
 
 //==================================================================================================
 // Filtering

@@ -77,6 +77,7 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose)
 //==================================================================================================
 // Covariances
 //==================================================================================================
+
 Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
 {
   // Get the relevant covariances
@@ -95,6 +96,11 @@ Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
   cov_2dof = 0.5 * (cov_2dof.eval() + cov_2dof.transpose().eval());
 
   return cov_2dof;
+}
+
+Eigen::Matrix3d Cov3dofMsgToCov2dof(const std::array<double, 36> & cov_3dof_msg)
+{
+  return Cov3dofToCov2dof(eigen_utils::StdArrayToMatrix<6, 6>(cov_3dof_msg));
 }
 
 Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
@@ -116,6 +122,11 @@ Eigen::Matrix<double, 6, 6> Cov2dofToCov3dof(const Eigen::Matrix3d & cov_2dof)
   cov_3dof = 0.5 * (cov_3dof.eval() + cov_3dof.transpose().eval());
 
   return cov_3dof;
+}
+
+std::array<double, 36> Cov2dofToCov3dofMsg(const Eigen::Matrix3d & cov_2dof)
+{
+  return eigen_utils::MatrixToStdArray(Cov2dofToCov3dof(cov_2dof));
 }
 //==================================================================================================
 // Filtering
