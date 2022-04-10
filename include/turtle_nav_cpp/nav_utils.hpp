@@ -18,6 +18,7 @@
 #include <turtlesim/msg/pose.hpp>
 #include <vector>
 
+#include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/heading.hpp"
 #include "turtle_nav_cpp/math_utils.hpp"
 #include "turtle_nav_cpp/pose.hpp"
@@ -29,11 +30,25 @@ namespace nav_utils
 using geometry_msgs::msg::PoseWithCovarianceStamped;
 using geometry_msgs::msg::TwistWithCovarianceStamped;
 
+namespace ThreeDof
 /**
- * @brief 2D Pose indices in 3D twist variable
+ * @brief 2D Pose indices in 3D pose variables
+ *
+ * @details This is mostly used in to extract SE(2) covariances from planar SE(3) covariances
  *
  */
-enum TwistIdx { x = 0, y = 1, th = 5 };
+{
+enum PoseIdx { x = 0, y = 1, th = 5 };
+}  // namespace ThreeDof
+
+namespace TwoDof
+{
+/**
+ * @brief 2D pose variable indices used in covarainces
+ *
+ */
+enum PoseIdx { x = 0, y = 1, th = 2 };
+}  // namespace TwoDof
 
 /**
  * @brief Convert heading to Eigen quaternion
@@ -124,6 +139,11 @@ turtlesim::msg::Pose PoseMsgToTurtlePose(const geometry_msgs::msg::Pose & pose);
  * @return geometry_msgs::msg::Pose ROS geometry msg pose
  */
 geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose);
+
+//==================================================================================================
+// Covariances
+//==================================================================================================
+Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof);
 
 //==================================================================================================
 // Filtering

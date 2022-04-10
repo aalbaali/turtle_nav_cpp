@@ -82,10 +82,10 @@ void SteeringWheelEncoder::MeasCallBack(const Twist::SharedPtr true_meas)
   // Covariance on x, y, theta
   Eigen::Matrix<double, 6, 6> cov = Eigen::Matrix<double, 6, 6>::Zero();
 
-  cov(nav_utils::TwistIdx::x, nav_utils::TwistIdx::x) =
+  cov(nav_utils::ThreeDof::PoseIdx::x, nav_utils::ThreeDof::PoseIdx::x) =
     std::pow(linear_speed_noise_gaussian_.stddev(), 2);
-  cov(nav_utils::TwistIdx::y, nav_utils::TwistIdx::y) = -1.0;
-  cov(nav_utils::TwistIdx::th, nav_utils::TwistIdx::th) =
+  cov(nav_utils::ThreeDof::PoseIdx::y, nav_utils::ThreeDof::PoseIdx::y) = -1.0;
+  cov(nav_utils::ThreeDof::PoseIdx::th, nav_utils::ThreeDof::PoseIdx::th) =
     std::pow(angular_speed_noise_gaussian_.stddev(), 2);
 
   noisy_meas.twist.covariance = eigen_utils::MatrixToStdArray(cov);

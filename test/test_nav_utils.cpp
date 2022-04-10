@@ -213,5 +213,59 @@ TEST_F(TestPoseFuncs, RetractSe2CovarianceEllipse)
     EXPECT_DOUBLE_EQ(retracted_pts[i](1), y + sin(angles[i]));
   }
 }
+
+//==================================================================================================
+// Covarainces
+//==================================================================================================
+class TestPoseCov : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    var_x_ = 1.0;
+    var_y_ = 2.0;
+    var_th_ = 3.0;
+    cov_xy_ = 0.1;
+    cov_xth_ = 0.2;
+    cov_yth_ = 0.2;
+  }
+
+  double var_x_;
+  double var_y_;
+  double var_th_;
+
+  double cov_xy_;
+  double cov_xth_;
+  double cov_yth_;
+};
+
+TEST_F(TestPoseCov, ThreeDofToTwoDof)
+{
+  Eigen::Matrix<double, 6, 6> cov_3dof;
+  // clang-format off
+  cov_3dof << var_x_  , cov_xy_ , 0, 0, 0, cov_xth_,
+              cov_xy_ , var_y_  , 0, 0, 0, cov_yth_,
+                  0   ,   0     , 0, 0, 0,    0    ,
+                  0   ,   0     , 0, 0, 0,    0    ,
+                  0   ,   0     , 0, 0, 0,    0    ,
+              cov_xth_, cov_yth_, 0, 0, 0, var_th_ ;
+  // clang-format on
+
+  const auto cov_2dof = Cov3dofToCov2dof(cov_3dof);
+
+  // Ensure symmetry
+  EXPECT_TRUE(cov_2dof.isApprox(cov_2dof.transpose()));
+
+  // Elements
+  EXPECT_DOUBLE_EQ(cov_2dof(0, 0), var_x_);
+  EXPECT_DOUBLE_EQ(cov_2dof(0, 1), cov_xy_);
+  EXPECT_DOUBLE_EQ(cov_2dof(0, 2), cov_xth_);
+  EXPECT_DOUBLE_EQ(cov_2dof(1, 0), cov_xy_);
+  EXPECT_DOUBLE_EQ(cov_2dof(1, 1), var_y_);
+  EXPECT_DOUBLE_EQ(cov_2dof(1, 2), cov_yth_);
+  EXPECT_DOUBLE_EQ(cov_2dof(2, 0), cov_xth_);
+  EXPECT_DOUBLE_EQ(cov_2dof(2, 1), cov_yth_);
+  EXPECT_DOUBLE_EQ(cov_2dof(2, 2), var_th_);
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp

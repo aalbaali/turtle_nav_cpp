@@ -75,6 +75,29 @@ geometry_msgs::msg::Pose TurtlePoseToPoseMsg(const turtlesim::msg::Pose & pose)
 }
 
 //==================================================================================================
+// Covariances
+//==================================================================================================
+Eigen::Matrix3d Cov3dofToCov2dof(const Eigen::Matrix<double, 6, 6> & cov_3dof)
+{
+  // Get the relevant covariances
+  Eigen::Matrix3d cov_2dof;
+  cov_2dof.block<2, 2>(0, 0) = cov_3dof.block<2, 2>(0, 0);
+  cov_2dof.block<2, 2>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::x) =
+    cov_3dof.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x);
+  cov_2dof(TwoDof::PoseIdx::th, TwoDof::PoseIdx::th) =
+    cov_3dof(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th);
+  cov_2dof.block<2, 1>(TwoDof::PoseIdx::x, TwoDof::PoseIdx::th) =
+    cov_3dof.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th);
+  cov_2dof.block<1, 2>(TwoDof::PoseIdx::th, TwoDof::PoseIdx::x) =
+    cov_3dof.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x);
+
+  // Ensure symmetry
+  cov_2dof = 0.5 * (cov_2dof.eval() + cov_2dof.transpose().eval());
+
+  return cov_2dof;
+}
+
+//==================================================================================================
 // Filtering
 //==================================================================================================
 
@@ -120,7 +143,9 @@ PoseWithCovarianceStamped AccumOdom(
     return latest_pose;
   }
 
-  // Predict poses until the last velocity time stamp
+  // Predict poses and covariances until the last velocity time stamp
+  // Each pose is predicted to the next time stamp. That is, pose at T(t_km1) is predicted until the
+  // time of the nearest velocity measurement that is after t_km1
   while (!vel_history.empty() && !is_predicted_to_query_time) {
     earliest_vel = vel_history.back();
     vel_history.pop();
@@ -128,7 +153,7 @@ PoseWithCovarianceStamped AccumOdom(
     // Query time to predict to
     rclcpp::Time time_to_predict_to = earliest_vel.header.stamp;
 
-    // Deal with measurements earlier than latest pose
+    // Ignore measurements earlier than latest pose
     if (time_to_predict_to < latest_pose.header.stamp) {
       continue;
     }
@@ -139,12 +164,11 @@ PoseWithCovarianceStamped AccumOdom(
       is_predicted_to_query_time = true;
     }
 
-    // Time difference between latest velocity and latest pose
+    // Time difference from the latest pose to the time to predict to (basically dt)
     auto duration_latest_pose_to_query_time = time_to_predict_to - latest_pose.header.stamp;
-
-    // * Ignore covariances for now
-    // Dead-reckon poses using SE(2) model
     double dt = duration_latest_pose_to_query_time.seconds();
+
+    // Dead-reckon poses using SE(2) model
     Pose T_km1 = latest_pose.pose.pose;
     Vector2d linear_vel_km1 =
       Vector2d(earliest_vel.twist.twist.linear.x, earliest_vel.twist.twist.linear.y);
@@ -179,10 +203,13 @@ PoseWithCovarianceStamped AccumOdom(
     // If that's not the case, then use `dt^2`.
     Eigen::Matrix3d cov_v_km1;
     const double eta = dt * dt;
-    cov_v_km1.block<2, 2>(0, 0) = eta * cov_earliest_vel.block<2, 2>(TwistIdx::x, TwistIdx::x);
-    cov_v_km1(2, 2) = eta * cov_earliest_vel(TwistIdx::th, TwistIdx::th);
-    cov_v_km1.block<2, 1>(0, 2) = eta * cov_earliest_vel.block<2, 1>(TwistIdx::x, TwistIdx::th);
-    cov_v_km1.block<1, 2>(2, 0) = eta * cov_earliest_vel.block<1, 2>(TwistIdx::th, TwistIdx::x);
+    cov_v_km1.block<2, 2>(0, 0) =
+      eta * cov_earliest_vel.block<2, 2>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::x);
+    cov_v_km1(2, 2) = eta * cov_earliest_vel(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::th);
+    cov_v_km1.block<2, 1>(0, 2) =
+      eta * cov_earliest_vel.block<2, 1>(ThreeDof::PoseIdx::x, ThreeDof::PoseIdx::th);
+    cov_v_km1.block<1, 2>(2, 0) =
+      eta * cov_earliest_vel.block<1, 2>(ThreeDof::PoseIdx::th, ThreeDof::PoseIdx::x);
 
     // If covariance on the y-component of the velocity is negative, then replace it with process
     // noise
