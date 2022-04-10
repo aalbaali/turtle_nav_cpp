@@ -14,9 +14,11 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <string>
 #include <tuple>
+#include <unsupported/Eigen/MatrixFunctions>
 #include <utility>
 #include <vector>
 
@@ -41,6 +43,40 @@ struct GaussianRV
   // Standard deviation of the RV
   double stddev;
 };
+
+/**
+ * @brief Cross operator mapping SO(2) Lie algebra coordinates to the Lie algebra
+ *
+ * @param[in] v Value in the Euclidean space
+ * @return Eigen::Matrix2d v^{\cross}
+ */
+Eigen::Matrix2d cross(const double v)
+{
+  Eigen::Matrix2d mat;
+
+  // clang-format off
+  mat << 0, -v,
+       v, 0;
+  // clang-format on
+
+  return mat;
+}
+
+/**
+ * @brief SE(2) exponential map
+ *
+ * @param[in] lie_alg_translation Translational component of the *Lie algebra* vector
+ * @param[in] theta               Heading
+ * @return Pose Exp([rho; theta])
+ */
+Pose Exp(const Eigen::Vector2d & lie_alg_translation, const double theta)
+{
+  // From (156) and (158) of Sola
+  const Eigen::Matrix2d V =
+    sin(theta) / theta * Eigen::Matrix2d::Identity() + (1 - cos(theta)) / theta * cross(1);
+
+  return Pose(V * lie_alg_translation, theta);
+}
 
 /**
  * @brief Plot x-y positions of a vector of pose
@@ -108,11 +144,51 @@ void PlotTrajectoryEndPoints(const std::vector<Trajectory> & trajectories, Args.
  * @brief Plot a 2D ellipse from a symmetric positive definite matrix
  *
  * @param[in] mat         Square symmetric positive definite matrix
+ * @param[in] scale       Number to scale the ellipse
  * @param[in] num_points  Number of points to plot on the ellipse
  * @return std::vector<Eigen::Vector2d> Points of 2D ellipse
  */
 std::vector<Eigen::Vector2d> GetEllipsePoints(
-  const Eigen::Matrix2d & mat, const int num_points = 100)
+  const Eigen::Matrix2d & mat, const double scale = 1, const int num_points = 100)
+{
+  // Ensure symmetry
+  if (!mat.isApprox(mat.transpose())) {
+    throw std::runtime_error("Non symmetric matrix");
+  }
+
+  // Get Cholesky factorization
+  const Eigen::LLT<Eigen::Matrix2d> mat_llt = mat.llt();
+
+  // Check for covariance positive semi-definiteness
+  if (mat_llt.info() == Eigen::NumericalIssue) {
+    throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
+  }
+
+  // Get lower Cholesky factor
+  const Eigen::Matrix2d mat_chol_lower = mat_llt.matrixL();
+
+  // Compute points
+  std::vector<Eigen::Vector2d> ellipse_points(num_points);
+  const std::vector<double> thetas = matplot::linspace(-M_PI, M_PI, num_points);
+  std::transform(thetas.begin(), thetas.end(), ellipse_points.begin(), [&](const double th) {
+    const Eigen::Vector2d v{cos(th), sin(th)};
+    Eigen::Vector2d p = scale * mat_chol_lower * v;
+    return p;
+  });
+
+  return ellipse_points;
+}
+
+/**
+ * @brief Get the Ellipse (not ellipsoid) points object in 3D space
+ *
+ * @param[in] mat 3x3 matrix
+ * @param[in] scale
+ * @param[in] num_points
+ * @return std::vector<Eigen::Vector3d>
+ */
+std::vector<Eigen::Vector3d> GetEllipsePoints(
+  const Eigen::Matrix3d & mat, const double scale = 1, const int num_points = 100)
 {
   // Ensure symmetry
   if (!mat.isApprox(mat.transpose())) {
@@ -120,22 +196,21 @@ std::vector<Eigen::Vector2d> GetEllipsePoints(
   }
 
   // Check for covariance positive semi-definiteness
-  if (Eigen::LLT<Eigen::Matrix2d>(mat).info() == Eigen::NumericalIssue) {
+  if (Eigen::LLT<Eigen::Matrix3d>(mat).info() == Eigen::NumericalIssue) {
     throw std::runtime_error("Covariance matrix possibly non semi-positive definite matrix");
   }
 
   // Get eigenvalues and eigenvectors
-  const Eigen::EigenSolver<Eigen::Matrix2d> eigs(mat);
-  const Eigen::Matrix2d eig_vectors = eigs.eigenvectors().real();
-  const Eigen::Matrix2d eig_sqrt_vals = eigs.eigenvalues().real().unaryExpr(&sqrt).asDiagonal();
+  const Eigen::EigenSolver<Eigen::Matrix3d> eigs(mat);
+  const Eigen::Matrix3d eig_vectors = eigs.eigenvectors().real();
+  const Eigen::Matrix3d eig_sqrt_vals = eigs.eigenvalues().real().unaryExpr(&sqrt).asDiagonal();
 
   // Compute points
-  std::vector<Eigen::Vector2d> ellipse_points(num_points);
+  std::vector<Eigen::Vector3d> ellipse_points(num_points);
   const std::vector<double> thetas = matplot::linspace(0, 2 * M_PI, num_points);
   std::transform(thetas.begin(), thetas.end(), ellipse_points.begin(), [&](const double th) {
-    const Eigen::Vector2d v{cos(th), sin(th)};
-    Eigen::Vector2d p = eig_vectors * eig_sqrt_vals * v;
-    return p;
+    const Eigen::Vector3d v{cos(th), sin(th), 0};
+    return Eigen::Vector3d(scale * eig_vectors * eig_sqrt_vals * v);
   });
 
   return ellipse_points;
@@ -182,25 +257,19 @@ std::pair<Trajectory, std::vector<Eigen::Matrix3d>> DeadReckonTrajectory(
 
   // Process model Jacobian w.r.t. error (161 in Sola)
   auto jac_A = [](const Pose & /* T_km1 */, const Pose & dT_km1) {
-    // Adjoint matrix of [-]_km1
-    Eigen::Matrix3d Xi_km1 = Eigen::Matrix3d::Zero();
+    const Pose dT_km1_inv = dT_km1.Inverse();
+    Eigen::Matrix3d A = Eigen::Matrix3d::Zero();
+    A.block<2, 2>(0, 0) = dT_km1_inv.heading().RotationMatrix();
+    A(0, 2) = dT_km1_inv.y();
+    A(1, 2) = -dT_km1_inv.x();
+    A(2, 2) = 1;
 
-    // Inverse rotation
-    const auto R_inv = dT_km1.heading().Inverse().RotationMatrix();
-    Eigen::Matrix2d cross = Eigen::Matrix2d::Zero();
-    cross(0, 1) = -1;
-    cross(1, 0) = 1;
-
-    Xi_km1.block<2, 2>(0, 0) = R_inv;
-    Xi_km1.block<2, 1>(0, 2) = R_inv * cross * dT_km1.translation();
-    Xi_km1(2, 2) = 1;
-
-    return Xi_km1;
+    return A;
   };
 
   // Process model Jacobian w.r.t. measurement
-  auto jac_L = [](const Pose & /* T_km1 */, const Pose & /* dT_km1 */) {
-    return Eigen::Matrix3d::Identity();
+  auto jac_L = [](const double dt, const Pose & /* T_km1 */, const Pose & /* dT_km1 */) {
+    return -dt * Eigen::Matrix3d::Identity();
   };
 
   // Covariances on the left-invariant errors
@@ -211,18 +280,18 @@ std::pair<Trajectory, std::vector<Eigen::Matrix3d>> DeadReckonTrajectory(
   // Measurement covariances
   //  Let the measurements be [x; y; theta]
   Eigen::Matrix3d cov_meas = Eigen::Matrix3d::Zero();
-  cov_meas(0, 0) = dt * dt * speed_rv.stddev * speed_rv.stddev;
-  cov_meas(2, 2) = dt * dt * yaw_rate_rv.stddev * yaw_rate_rv.stddev;
+  cov_meas(0, 0) = speed_rv.stddev * speed_rv.stddev;
+  cov_meas(1, 1) = 1e-6;
+  cov_meas(2, 2) = yaw_rate_rv.stddev * yaw_rate_rv.stddev;
 
-  Trajectory dT_vecs(num_poses);
   for (size_t i = 1; i < speeds.size(); i++) {
     nav_utils::Pose dT_km1(dt * speeds[i - 1], 0, dt * yaw_rates[i - 1]);
-    auto T_k = poses[i - 1] * dT_km1;
+    const auto T_k = poses[i - 1] * dT_km1;
     poses.push_back(T_k);
 
     // Compute left-invariant covariance
     const Eigen::Matrix3d A = jac_A(poses[i - 1], dT_km1);
-    const Eigen::Matrix3d L = jac_L(poses[i - 1], dT_km1);
+    const Eigen::Matrix3d L = jac_L(dt, poses[i - 1], dT_km1);
     const Eigen::Matrix3d cov_pose_k =
       A * covs.back() * A.transpose() + L * cov_meas * L.transpose();
     covs.push_back(cov_pose_k);
@@ -272,11 +341,16 @@ std::tuple<std::vector<Trajectory>, std::vector<std::vector<Eigen::Matrix3d>>> G
     yaw_rates_bundle.push_back(
       turtle_nav_cpp::GenerateNoisyVector(num_poses - 1, yaw_rate_rv, rn_generator));
 
+    // Noisy initial pose
+    auto randn = [&rn_generator]() { return turtle_nav_cpp::randn_gen(rn_generator); };
+    const Eigen::Matrix3d cov_T_0_cholL = cov_T_0.llt().matrixL();
+    const Eigen::Vector3d xi_T_0 = cov_T_0_cholL * Eigen::Vector3d::NullaryExpr(3, randn);
+    const Pose T_0_sample = T_0 * Exp(xi_T_0.block<2, 1>(0, 0), xi_T_0(2));
+
     // Generate straight-line trajectory
-    // trajectories.push_back(
-    //   DeadReckonTrajectory(T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back()));
     const auto [traj, covs] = DeadReckonTrajectory(
-      T_0, dt, speeds_bundle.back(), yaw_rates_bundle.back(), cov_T_0, speed_rv, yaw_rate_rv);
+      T_0_sample, dt, speeds_bundle.back(), yaw_rates_bundle.back(), cov_T_0, speed_rv,
+      yaw_rate_rv);
     trajectories.push_back(traj);
     pose_covariances.push_back(covs);
   }
@@ -296,10 +370,10 @@ int main()
 
   // Dead-reckoning parameters
   Pose T_0(0, 0, 0);
-  const Eigen::Matrix3d cov_T_0 = Eigen::Vector3d{1, 1, 1}.asDiagonal();
-  const double dt = 0.01;                                 // [sec]
-  const turtle_nav_cpp::GaussianRV speed_rv{1, 0.01};     // [m/s]
-  const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 10.0};  // [rad/s]
+  const Eigen::Matrix3d cov_T_0 = Eigen::Vector3d{1e-5, 1e-5, 1e-5}.asDiagonal();
+  const double dt = 0.1;                                 // [sec]
+  const turtle_nav_cpp::GaussianRV speed_rv{0.1, 0.01};  // [m/s]
+  const turtle_nav_cpp::GaussianRV yaw_rate_rv{0, 0.1};  // [rad/s]
 
   // Random number generator
   std::default_random_engine rn_generator = std::default_random_engine();
@@ -312,12 +386,50 @@ int main()
   matplot::axis(matplot::square);
   matplot::grid(true);
 
-  // Plot ellipse of last pose estimate (in the Lie algebra for now)
-  auto cov_ellipse_points =
-    turtle_nav_cpp::GetEllipsePoints(pose_covariances.back().back().block<2, 2>(0, 0), 100);
-  auto [cov_ellipse_points_x, cov_ellipse_points_y] =
-    turtle_nav_cpp::GetXYPoints(cov_ellipse_points);
-  matplot::plot(cov_ellipse_points_x, cov_ellipse_points_y)->line_width(1.5);
+  // Get confidence intervals only for the last pose:
+  // - Get Chol lower triangular matrix
+  // - Get circular points
+  // - Get ellipse points in the Lie group
+  const int num_ellipse_pts = 100;
+  const Eigen::Matrix2d I_2 = Eigen::Matrix2d::Identity();
+  const auto circular_points_2d = turtle_nav_cpp::GetEllipsePoints(I_2, 1, num_ellipse_pts);
+
+  // Get Cholesky lower triangular matrix of the last matrix of the last trajectory
+  const Eigen::Matrix3d cov_L = pose_covariances.back().back().llt().matrixL();
+
+  // Get the last pose of trajectory
+  // const auto T_end = Pose(dt * speed_rv.mean * num_poses, 0, 0);
+  const auto T_end = trajectories.back().back();
+
+  // Points to plot
+  matplot::vector_1d points_x;
+  matplot::vector_1d points_y;
+  points_x.reserve(num_ellipse_pts);
+  points_y.reserve(num_ellipse_pts);
+
+  // Scale ellipse by this number (sqrt(chi2inv(3, 0.999)))
+  const double scale = 4.0331422236561565;
+
+  for (const auto & pt : circular_points_2d) {
+    // Get circular point in 3D space
+    Eigen::Vector3d pt_3d = Eigen::Vector3d::Zero();
+    pt_3d(0) = pt(0);
+    pt_3d(1) = pt(1);
+
+    // Retract to the group
+    const Eigen::Vector3d ell_se2_vec = scale * cov_L * pt_3d;
+    const auto T_pt_global =
+      T_end * turtle_nav_cpp::Exp(ell_se2_vec.block<2, 1>(0, 0), ell_se2_vec(2));
+    ;
+
+    // Append points
+    points_x.push_back(T_pt_global.x());
+    points_y.push_back(T_pt_global.y());
+  }
+
+  matplot::hold(true);
+  matplot::plot(points_x, points_y)->line_width(1.5);
+  matplot::axis(matplot::square);
 
   matplot::show();
 
