@@ -59,14 +59,6 @@ turtlesim::msg::Pose Pose::TurtlePose() const
   return pose_turtle;
 }
 
-Pose Pose::Inverse() const
-{
-  const auto heading_inverse = this->heading().Inverse();
-  const Vector2d position_inverse = -heading_inverse.RotationMatrix() * this->translation();
-
-  return Pose(position_inverse, heading_inverse);
-}
-
 Affine2d Pose::Affine() const
 {
   Affine2d T;
@@ -133,6 +125,32 @@ bool Pose::operator==(const Pose & pose_rhs) const
 }
 
 bool Pose::operator!=(const Pose & pose_rhs) const { return !(*this == pose_rhs); }
+
+//================================================================================================
+// Lie group operations
+//================================================================================================
+
+Pose Pose::Inverse() const
+{
+  const auto heading_inverse = this->heading().Inverse();
+  const Vector2d position_inverse = -heading_inverse.RotationMatrix() * this->translation();
+
+  return Pose(position_inverse, heading_inverse);
+}
+
+Eigen::Matrix3d Pose::Adjoint() const
+{
+  return Pose(this->y(), -this->x(), this->angle()).Affine().matrix();
+}
+
+Pose Pose::Exp(const Eigen::Vector2d & rho, const double theta)
+{
+  // From (156) and (158) of Sola
+  const Eigen::Matrix2d V =
+    sin(theta) / theta * Eigen::Matrix2d::Identity() + (1 - cos(theta)) / theta * Heading::cross(1);
+
+  return Pose(V * rho, theta);
+}
 
 std::ostream & operator<<(std::ostream & os, const Pose & pose)
 {

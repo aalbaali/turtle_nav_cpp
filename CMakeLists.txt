@@ -159,5 +159,27 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+if(BUILD_EXAMPLES)
+  message(STATUS "Building examples")
+  # Some of the examples use Matplot++ for plotting
+
+  # Fetching Matplot++
+  include(FetchContent)
+
+  # Declare source for the contents
+  fetchcontent_declare(matplotplusplus
+          GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+          GIT_TAG origin/master)
+
+  # Download repo and add it as a subdirectory
+  fetchcontent_getproperties(matplotplusplus)
+  if(NOT matplotplusplus_POPULATED)
+      fetchcontent_populate(matplotplusplus)
+      add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
+
+  add_subdirectory(examples)
+endif()
+
 
 ament_package()

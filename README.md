@@ -1,4 +1,18 @@
-[![codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/devel/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
+![Linting](https://github.com/aalbaali/turtle_nav_cpp/actions/workflows/lint.yml/badge.svg)
+![Unit tests](https://github.com/aalbaali/turtle_nav_cpp/actions/workflows/tests.yml/badge.svg)
+
+[![Codecov](https://codecov.io/gh/aalbaali/turtle_nav_cpp/branch/devel/graph/badge.svg?token=ENILSW0ES2)](https://codecov.io/gh/aalbaali/turtle_nav_cpp)
+
+- [In this repo](#in-this-repo)
+- [Testing](#testing)
+- [Nodes](#nodes)
+  - [`turtle_est_broadcaster`](#turtle_est_broadcaster)
+    - [Parameters](#parameters)
+- [Setting parameters](#setting-parameters)
+  - [Starting teleop](#starting-teleop)
+- [Running tests](#running-tests)
+- [Pre-commits](#pre-commits)
+- [Examples](#examples)
 
 # In this repo
 The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
@@ -59,3 +73,8 @@ To update the `.pre-commit-config.yaml` file:
 pre-commit autoupdate
 ```
 Check [pre-commit](https://pre-commit.com/) for further details on `pre-commit`.
+
+# Examples
+The `examples` directory includes stand-alone examples that are not necessarily directly related to the package.
+For example, it may have examples about propagating uncertainties.
+To build the examples, pass `-DBUILD_EXAMPLES=ON` as a CMake argument

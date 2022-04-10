@@ -107,5 +107,17 @@ std::ostream & operator<<(std::ostream & os, const Heading & heading)
 {
   return os << heading.angle();
 }
+
+Eigen::Matrix2d Heading::cross(const double v)
+{
+  Eigen::Matrix2d mat;
+
+  // clang-format off
+  mat << 0, -v,
+         v, 0;
+  // clang-format on
+
+  return mat;
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
