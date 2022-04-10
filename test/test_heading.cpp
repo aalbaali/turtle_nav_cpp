@@ -232,5 +232,13 @@ TEST_F(TestHeading, Ostream)
   EXPECT_EQ(expect_str, out_str);
 }
 
+TEST_F(TestHeading, LieGroupOperations)
+{
+  const auto mat = Heading::cross(1);
+  EXPECT_DOUBLE_EQ(mat(0, 0), 0);
+  EXPECT_DOUBLE_EQ(mat(0, 1), -1);
+  EXPECT_DOUBLE_EQ(mat(1, 0), 1);
+  EXPECT_DOUBLE_EQ(mat(1, 1), 0);
+}
 }  // namespace nav_utils
 }  // namespace turtle_nav_cpp
