@@ -11,6 +11,7 @@
 #ifndef TURTLE_NAV_CPP_DEAD_RECKON_ESTIMATOR_HPP_
 #define TURTLE_NAV_CPP_DEAD_RECKON_ESTIMATOR_HPP_
 
+#include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <queue>
@@ -22,6 +23,7 @@
 
 namespace turtle_nav_cpp
 {
+using geometry_msgs::msg::PolygonStamped;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
 using geometry_msgs::msg::TwistWithCovarianceStamped;
 
@@ -53,19 +55,18 @@ private:
     const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr twist_with_cov_stamped);
 
   /**
-   * ! TEMPORARY
-   * @brief Turtlesim true-pose call back
-   *
-   * @param[in] pose True pose from turtlesim
-   */
-  void TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose);
-
-  /**
    * @brief Publish estimated node
    *
    * @param[in] pose_with_cov_stamped Pose to be published
    */
   void PublishEstimatedPose(const PoseWithCovarianceStamped & pose_with_cov_stamped) const;
+
+  /**
+   * @brief Publish uncertainty polygon representing 99% confidence level
+   *
+   * @param[in] polygon Stamped polygon to publish
+   */
+  void PublishUncertaintyPolygon(const PolygonStamped & polygon) const;
 
   /**
    * @brief Dead-reckoning algorithm running on a timer
@@ -90,12 +91,11 @@ private:
   // Measured velocity topic to subscribe to
   std::string cmd_vel_meas_topic_;
 
-  //! TEMPORARY
-  // True turtle pose topic
-  std::string true_pose_topic_;
-
   // Estimated pose topic to publish to
   std::string est_pose_topic_;
+
+  // Pose uncertainty polygon
+  std::string uncertainty_polygon_topic_;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // -- Subscribers/publishers
@@ -109,14 +109,13 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr
     cmd_vel_meas_subscriber_{nullptr};
 
-  //! TEMPORARY
-  // true pose subscriber
-  rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr true_pose_subscriber_{nullptr};
-
   // TODO(aalbaali): Publish odometry instead of PoseWithCovariance
   // Estimated pose publisher
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr est_pose_publisher_{
     nullptr};
+
+  // Estimated uncertainty publisher
+  rclcpp::Publisher<PolygonStamped>::SharedPtr uncertainty_polygon_publisher_{nullptr};
 
   // Timer for estimated pose publisher
   rclcpp::TimerBase::SharedPtr est_pose_publish_timer_;
@@ -137,6 +136,9 @@ private:
 
   // Publishing frequency
   const double publishing_freq_;
+
+  // Number of points for the uncertainty polygon
+  const int uncertainty_polygon_num_points_;
 };
 }  // namespace turtle_nav_cpp
 #endif  // TURTLE_NAV_CPP_DEAD_RECKON_ESTIMATOR_HPP_
