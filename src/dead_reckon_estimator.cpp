@@ -16,6 +16,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "turtle_nav_cpp/eigen_utils.hpp"
 #include "turtle_nav_cpp/nav_utils.hpp"
@@ -28,7 +29,11 @@ namespace turtle_nav_cpp
 {
 DeadReckonEstimator::DeadReckonEstimator()
 : Node("dead_reckon_estimator"),
-  publishing_freq_(ros_utils::DeclareAndImportParam(this, "publishing_freq", 10.0))
+  uncertainty_polygon_topic_(ros_utils::DeclareAndImportParam<std::string>(
+    this, "uncertainty_polygon_topic", "/est_turtle/uncertainty_bounds")),
+  publishing_freq_(ros_utils::DeclareAndImportParam(this, "publishing_freq", 10.0)),
+  uncertainty_polygon_num_points_(
+    ros_utils::DeclareAndImportParam(this, "uncertainty_polygon_num_points", 30))
 {
   // -- Declare and acquire parameters
   // Initial pose
@@ -58,6 +63,9 @@ DeadReckonEstimator::DeadReckonEstimator()
 
   // Time-based pose estimate publisher
   est_pose_publisher_ = this->create_publisher<PoseWithCovarianceStamped>(est_pose_topic_, 10);
+  uncertainty_polygon_publisher_ =
+    this->create_publisher<PolygonStamped>(uncertainty_polygon_topic_, 10);
+
   est_pose_publish_timer_ = this->create_wall_timer(
     std::chrono::duration<double>(1 / publishing_freq_),
     std::bind(&DeadReckonEstimator::TimedDeadReckoning, this));
@@ -132,6 +140,11 @@ void DeadReckonEstimator::PublishEstimatedPose(
   est_pose_publisher_->publish(pose_with_cov_stamped);
 }
 
+void DeadReckonEstimator::PublishUncertaintyPolygon(const PolygonStamped & polygon) const
+{
+  uncertainty_polygon_publisher_->publish(polygon);
+}
+
 void DeadReckonEstimator::TimedDeadReckoning()
 {
   if (!estimator_is_active_) {
@@ -147,21 +160,32 @@ void DeadReckonEstimator::TimedDeadReckoning()
     RCLCPP_WARN(this->get_logger(), e);
   }
 
+  // Compute uncertainty polygon
+  const nav_utils::Pose pose(latest_est_pose_msg_.pose.pose);
+  const auto cov_xi = nav_utils::Cov3dofMsgToCov2dof(latest_est_pose_msg_.pose.covariance);
+
+  PolygonStamped uncertainty_polygon_msg;
+  uncertainty_polygon_msg.header = latest_est_pose_msg_.header;
+
+  // Scale ellipse by this number (sqrt(chi2inv(3, 0.99)))
+  const double scale = 3.368214175218727;
+  const auto points =
+    nav_utils::RetractSe2CovarianceEllipse(pose, cov_xi, scale, uncertainty_polygon_num_points_);
+  uncertainty_polygon_msg.polygon = std::move(ros_utils::PointsToPolygon(points));
+
   // Log info
   std::stringstream ss;
   ss << "Pose estimate: \033[96;1m" << nav_utils::Pose(latest_est_pose_msg_.pose.pose)
      << "\033[0m\n";
 
-  auto cov_T_se3_k = eigen_utils::StdArrayToMatrix<6, 6>(latest_est_pose_msg_.pose.covariance);
-  Eigen::Matrix3d cov_T_k;
-  cov_T_k.block<2, 2>(0, 0) = cov_T_se3_k.block<2, 2>(0, 0);
-  cov_T_k(2, 2) = cov_T_se3_k(5, 5);
-  cov_T_k.block<2, 1>(0, 2) = cov_T_se3_k.block<2, 1>(0, 5);
-  cov_T_k.block<1, 2>(2, 0) = cov_T_se3_k.block<1, 2>(5, 0);
+  // Convert covariance to SE(3) covariance message
+  const auto cov_T_k = nav_utils::Cov3dofMsgToCov2dof(latest_est_pose_msg_.pose.covariance);
   ss << "Pose cov:\033[96;1m\n" << cov_T_k << "\033[0m";
   RCLCPP_INFO(this->get_logger(), ss.str());
 
+  // Publish messages
   PublishEstimatedPose(latest_est_pose_msg_);
+  PublishUncertaintyPolygon(uncertainty_polygon_msg);
 }
 
 }  // namespace turtle_nav_cpp

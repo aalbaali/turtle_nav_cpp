@@ -60,7 +60,9 @@ ros2 topic pub --rate 1 /true_turtle/cmd_vel geometry_msgs/msg/Twist "{linear: {
 
 RVIZ output             |  Turtlesim output
 :-------------------------:|:-------------------------:
-![dead_reckoning_rviz](images/dead_reckoning_rviz.png)  |  ![turtlesim_dead_reckon](images/turtlesim_dead_reckon.png)
+![dead_reckoning_rviz](images/dead_reckon_est_se2_covariance_RVIZ.png)  |  ![turtlesim_dead_reckon](images/turtlesim_dead_reckon.png)
+The green polygon in the image above is the 99% uncertainty bound mapped to the *SE(2)* group, whereas the magenta ellipse is the 99% uncertainty bound in the *se(2)* *Lie algebra*.:| Turtleisim view (there's an intentional offset between the two turtles).
+
 
 # Setting parameters
 ```bash

@@ -29,9 +29,9 @@ geometry_msgs::msg::Polygon PointsToPolygon(const std::vector<Vector2d> & points
 {
   geometry_msgs::msg::Polygon polygon;
   polygon.points.reserve(points.size());
-
-  std::transform(points.begin(), points.end(), polygon.points.begin(), PointToPoint32Msg);
-
+  std::for_each(points.begin(), points.end(), [&polygon](const Vector2d & v) {
+    polygon.points.push_back(PointToPoint32Msg(v));
+  });
   return polygon;
 }
 

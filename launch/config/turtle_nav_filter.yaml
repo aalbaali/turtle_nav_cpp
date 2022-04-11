@@ -78,3 +78,9 @@
 
     # Estimated pose publishing frequency
     publishing_freq: 50.0   # Hz
+
+    # Uncertainty polygon topic
+    uncertainty_polygon_topic: /est_turtle/uncertainty_bounds
+
+    # Number of points to publish for the uncertainty polygon
+    uncertainty_polygon_num_points: 30
