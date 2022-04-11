@@ -55,14 +55,6 @@ private:
     const geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr twist_with_cov_stamped);
 
   /**
-   * ! TEMPORARY
-   * @brief Turtlesim true-pose call back
-   *
-   * @param[in] pose True pose from turtlesim
-   */
-  void TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose);
-
-  /**
    * @brief Publish estimated node
    *
    * @param[in] pose_with_cov_stamped Pose to be published
@@ -99,10 +91,6 @@ private:
   // Measured velocity topic to subscribe to
   std::string cmd_vel_meas_topic_;
 
-  //! TEMPORARY
-  // True turtle pose topic
-  std::string true_pose_topic_;
-
   // Estimated pose topic to publish to
   std::string est_pose_topic_;
 
@@ -120,10 +108,6 @@ private:
   // Measured velocity subscriber
   rclcpp::Subscription<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr
     cmd_vel_meas_subscriber_{nullptr};
-
-  //! TEMPORARY
-  // true pose subscriber
-  rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr true_pose_subscriber_{nullptr};
 
   // TODO(aalbaali): Publish odometry instead of PoseWithCovariance
   // Estimated pose publisher

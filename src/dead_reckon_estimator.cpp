@@ -44,11 +44,6 @@ DeadReckonEstimator::DeadReckonEstimator()
   this->declare_parameter<std::string>("cmd_vel_meas_topic", "/meas/cmd_vel");
   this->get_parameter("cmd_vel_meas_topic", cmd_vel_meas_topic_);
 
-  //! TEMPORARY
-  // True pose topic
-  this->declare_parameter<std::string>("true_pose_topic", "/true_turtle/pose");
-  this->get_parameter("true_pose_topic", true_pose_topic_);
-
   // Estimated pose topic to publish to
   this->declare_parameter<std::string>("est_pose_topic", "/est_turtle/est_pose");
   this->get_parameter("est_pose_topic", est_pose_topic_);
@@ -83,39 +78,6 @@ void DeadReckonEstimator::InitialPoseCallBack(
   ss << "Initial pose received on '\033[36;1m" << initial_pose_topic_ << "'\033[0m ";
   ss << "with value '\033[36;1m(" << latest_pose << ")'\033[0m";
   RCLCPP_INFO(this->get_logger(), ss.str());
-}
-
-// !TEMPORARY
-void DeadReckonEstimator::TruePoseCallBack(const turtlesim::msg::Pose::SharedPtr pose)
-{
-  if (!estimator_is_active_) {
-    return;
-  }
-
-  PoseWithCovarianceStamped pose_with_cov_out;
-
-  // TODO(aalbaali): Get this frame from params
-  pose_with_cov_out.header.frame_id = "odom";
-  pose_with_cov_out.header.stamp = this->get_clock()->now();
-  pose_with_cov_out.pose.pose.position.x = pose->x;
-  pose_with_cov_out.pose.pose.position.y = pose->y;
-
-  tf2::Quaternion q;
-  q.setRPY(0, 0, pose->theta);
-  q.normalize();
-  pose_with_cov_out.pose.pose.orientation = tf2::toMsg(q);
-
-  std::array<double, 36> cov;
-  cov[0 * 6 + 0] = 1;   // x
-  cov[1 * 6 + 1] = 1;   // y
-  cov[2 * 6 + 2] = -1;  // z
-  cov[3 * 6 + 3] = -1;  // roll
-  cov[4 * 6 + 4] = -1;  // pitch
-  cov[5 * 6 + 5] = -1;  // yaw
-
-  pose_with_cov_out.pose.covariance = cov;
-
-  latest_est_pose_msg_ = pose_with_cov_out;
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
