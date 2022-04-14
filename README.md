@@ -12,6 +12,7 @@
 - [Bag files](#bag-files)
   - [Recording bag files](#recording-bag-files)
   - [Playing back files](#playing-back-files)
+  - [Play back script](#play-back-script)
 - [Setting parameters](#setting-parameters)
 - [Testing](#testing)
 - [Pre-commits](#pre-commits)
@@ -109,6 +110,13 @@ ros2 launch turtle_nav_cpp turtle_nav_filter.launch.py
 ros2 bag play <bag-name>
 ```
 Note that if the initial pose is not set, then only the true pose will be updated, but not the estimated pose (there may not even be an estimated node/ellipse).
+
+## Play back script
+A playback script is provided in the `script/` directory to start the launch file and play a bag file (after waiting for few seconds).
+For example, from the root directory
+```bash
+./scripts/play_back.py -b ./bags/circle_50Hz_rosbag2_2022_04_14-00_52_30/rosbag2_2022_04_14-00_52_30_0.db3 -w 5
+```
 
 
 # Setting parameters
