@@ -9,6 +9,9 @@
     - [Parameters](#parameters)
 - [Running the dead-reckoning filter](#running-the-dead-reckoning-filter)
   - [Moving turtle using teleop](#moving-turtle-using-teleop)
+- [Bag files](#bag-files)
+  - [Recording bag files](#recording-bag-files)
+  - [Playing back files](#playing-back-files)
 - [Setting parameters](#setting-parameters)
 - [Testing](#testing)
 - [Pre-commits](#pre-commits)
@@ -62,6 +65,50 @@ RVIZ output             |  Turtlesim output
 :-------------------------:|:-------------------------:
 ![dead_reckoning_rviz](images/dead_reckon_est_se2_covariance_RVIZ.png)  |  ![turtlesim_dead_reckon](images/turtlesim_dead_reckon.png)
 The green polygon in the image above is the 99% uncertainty bound mapped to the *SE(2)* group, whereas the magenta ellipse is the 99% uncertainty bound in the *se(2)* *Lie algebra*.| Turtleisim view (there's an intentional offset between the two turtles).
+
+# Bag files
+Bag files can be used to record messages published on certain topics.
+This can be used as a "testing playground" for replicating test scenarios.
+For example, it would be possible to record the messages published on the wheel encoder measurements topic `meas/wheel_encoder`.
+Then, the same bag data can be "replayed" by playing back the bag, and the *estimator node* is then run on the *same* measurements that were recorded earlier.
+This allows testing different estimators on the *same* data.
+## Recording bag files
+To record messages on *all* topics, run
+```bash
+ros2 bag record -o <bag-name> -a
+```
+Recording messages on *all* topics is not always a good idea.
+For example, for testing the dead-reckoning code, we'd like to record the "environment" or simulated data.
+These are basically the `/initialpose` set in RVIZ, and the measurements `/meas/wheel_encoder`.
+These two data points are sufficient to start the dead-reckoning code.
+However, we may also need the `/true_pose/cmd_vel` and `/true_pose/pose` as ground truth data for comparison with the estimated data.
+Therefore, to record only these topics, run
+```bash
+ros2 bag record /initialpose /meas/position /meas/wheel_encoder /true_turtle/cmd_vel /true_turtle/pose
+```
+Note that playing back the bag file with recorded `/initialpose` will overwrite the initial pose recorded by the bag.
+Furthermore, the `/true_turtle/pose` may be irrelevant if the pose was changed outside the playback file. Instead, relying on `/true_turtle/cmd_vel` should be sufficient.
+Thus, it may be best to record the following topics
+```bash
+ros2 bag record /meas/position /meas/wheel_encoder /true_turtle/cmd_vel
+```
+## Playing back files
+The command is simple:
+```bash
+ros2 bag play <bag-file>
+```
+
+The dead-reckoning estimator can be run on bag files recorded using the last command in [the last section](#recording-bag-files) as follows:
+1. Start the `turtle_nav_filter` launch file using
+```bash
+ros2 launch turtle_nav_cpp turtle_nav_filter.launch.py
+```
+2. Set the initial pose on RVIZ. This the dead-reckoning estimation
+3. Playback the recorded bag
+```bash
+ros2 bag play <bag-name>
+```
+Note that if the initial pose is not set, then only the true pose will be updated, but not the estimated pose (there may not even be an estimated node/ellipse).
 
 
 # Setting parameters
