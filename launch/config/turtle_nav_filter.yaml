@@ -23,6 +23,13 @@
     #  Request teleport service from this
     teleport_service: "/est_turtle/teleport_absolute"
 
+    # Vector of x, y values to offset the estimated turtlesim pose (used for debugging)
+    turtlesim_est_pose_offset: [0.0, 0.0]
+
+    # Vector of x, y values to offset the estimated pose TF2 transform (used for debugging)
+    tf2_est_pose_offset: [0.0, 0.0, 0.0]
+
+
 /steering_wheel_encoder:
   ros__parameters:
     # [mean, std]

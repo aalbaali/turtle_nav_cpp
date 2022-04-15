@@ -23,6 +23,7 @@
 #include <turtlesim/msg/pose.hpp>
 #include <turtlesim/srv/spawn.hpp>
 #include <turtlesim/srv/teleport_absolute.hpp>
+#include <vector>
 
 namespace turtle_nav_cpp
 {
@@ -58,6 +59,14 @@ EstimatorBroadcaster::EstimatorBroadcaster() : Node("turtle_est_broadcaster")
   //  Map frame
   this->declare_parameter<std::string>("map_frame", "map");
   this->get_parameter("map_frame", map_frame_);
+
+  // Turtlesim estimated pose offset
+  this->declare_parameter<std::vector<double>>("turtlesim_est_pose_offset", {0, 0});
+  this->get_parameter("turtlesim_est_pose_offset", turtlesim_est_pose_offset_);
+
+  // TF2 estimated pose offset
+  this->declare_parameter<std::vector<double>>("tf2_est_pose_offset", {0, 0, 0});
+  this->get_parameter("tf2_est_pose_offset", tf2_est_pose_offset_);
 
   // Turtle not spawned yet
   turtle_spawning_service_ready_ = false;
@@ -103,12 +112,11 @@ void EstimatorBroadcaster::SendTf2Transforms(const turtlesim::msg::Pose::SharedP
   // map->odom transform
   geometry_msgs::msg::TransformStamped odom_tf;
 
-  // TODO(aalbaali): Temporary
   // Setting arbitrary values for now. I'm setting nonzero values so the transform is more visible
   // in rviz
-  odom_tf.transform.translation.x = 3.0;
-  odom_tf.transform.translation.y = 3.0;
-  odom_tf.transform.translation.z = 0.0;
+  odom_tf.transform.translation.x = tf2_est_pose_offset_[0];
+  odom_tf.transform.translation.y = tf2_est_pose_offset_[1];
+  odom_tf.transform.translation.z = tf2_est_pose_offset_[2];
   tf2::Quaternion q;
   q.setRPY(0, 0, 0);
   odom_tf.transform.rotation.x = q.x();
@@ -163,10 +171,9 @@ void EstimatorBroadcaster::TeleportPose(const turtlesim::msg::Pose::SharedPtr ms
   // Initialize request
   auto request = std::make_shared<SrvTeleportRequest::Request>();
 
-  // TODO(aalbaali): TEMPORARY x and y offset! Setting an offset between x and y so it's visible
   // in turtlesim
-  request->set__x(msg->x + 1.0);
-  request->set__y(msg->y + 1.0);
+  request->set__x(msg->x + turtlesim_est_pose_offset_[0]);
+  request->set__y(msg->y + turtlesim_est_pose_offset_[1]);
   request->set__theta(msg->theta);
 
   teleporter_->async_send_request(request);
