@@ -77,7 +77,9 @@ void DeadReckonEstimator::InitialPoseCallBack(
   std::stringstream ss;
   ss << "Initial pose received on '\033[36;1m" << initial_pose_topic_ << "'\033[0m ";
   ss << "with value '\033[36;1m(" << latest_pose << ")'\033[0m";
-  RCLCPP_INFO(this->get_logger(), ss.str());
+  const std::string& tmp = ss.str();
+  const char* cstr = tmp.c_str();
+  RCLCPP_INFO(this->get_logger(), cstr);
 }
 
 void DeadReckonEstimator::CmdVelCallBack(
@@ -93,7 +95,9 @@ void DeadReckonEstimator::CmdVelCallBack(
   ss << "Pushed \033[96;1m" << x << ", " << y << ", " << th << "\033[0m. ";
   ss << "cmd_vel.size(): \033[93;1m " << cmd_vel_history_.size() << "\033[0m" << std::endl;
 
-  RCLCPP_INFO(this->get_logger(), ss.str());
+  const std::string& tmp = ss.str();
+  const char* cstr = tmp.c_str();
+  RCLCPP_INFO(this->get_logger(), cstr);
 }
 
 void DeadReckonEstimator::PublishEstimatedPose(
@@ -118,8 +122,9 @@ void DeadReckonEstimator::TimedDeadReckoning()
 
   try {
     latest_est_pose_msg_ = nav_utils::AccumOdom(now, latest_est_pose_msg_, cmd_vel_history_);
-  } catch (const std::string & e) {
-    RCLCPP_WARN(this->get_logger(), e);
+  } catch (const std::string & e) {    
+    const char* cstr = e.c_str();
+    RCLCPP_INFO(this->get_logger(), cstr);
   }
 
   // Compute uncertainty polygon
@@ -143,7 +148,9 @@ void DeadReckonEstimator::TimedDeadReckoning()
   // Convert covariance to SE(3) covariance message
   const auto cov_T_k = nav_utils::Cov3dofMsgToCov2dof(latest_est_pose_msg_.pose.covariance);
   ss << "Pose cov:\033[96;1m\n" << cov_T_k << "\033[0m";
-  RCLCPP_INFO(this->get_logger(), ss.str());
+  const std::string& tmp = ss.str();
+  const char* cstr = tmp.c_str();
+  RCLCPP_INFO(this->get_logger(), cstr);
 
   // Publish messages
   PublishEstimatedPose(latest_est_pose_msg_);
