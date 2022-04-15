@@ -1,0 +1,227 @@
+name: unit-tests
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    name: Build package
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build packages
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+          "colcon build --merge-install --symlink-install" \
+          "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
+          "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+
+  unit-test:
+    name: Run unit-tests
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # All steps below uses docker-compose
+      - name: Install dependencies
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+                   "apt-get update -y" \
+                   "&& rosdep update" \
+                   "&& rosdep install --from-paths src --ignore-src -y"
+
+      - name: Build packages
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+                    "colcon build --merge-install --symlink-install" \
+                   "--cmake-args '-DCMAKE_BUILD_TYPE=RelWithDebInfo'" \
+                   "'-DCMAKE_EXPORT_COMPILE_COMMANDS=On' -Wall -Wextra -Wpedantic"
+
+      - name: Build tests
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "colcon test --merge-install"
+
+      - name: Clone and install colcon-tools
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+                "if [[ ! -d colcon_test_tools ]]; then git clone https://github.com/aalbaali/colcon_test_tools.git colcon_test_tools; fi"
+
+      - name: Run tests
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "source colcon_test_tools/colcon_tools.sh; colcon_test"
+
+
+  # Linters
+  cpplint:
+    name: Run ament_cpplint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: ament_cpplint
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_cpplint src/ test/"
+
+  clang:
+    name: Run ament_clang_format
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: ament_clang_format
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_clang_format src/ test/"
+
+  # uncrustify:
+  #   name: Run ament_uncrustify
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     DOCKER_IMAGE_NAME: gh_ci_image
+  #     DOCKERFILE_DIR: .devcontainer/
+  #     working-directory: .devcontainer/
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: ament_cpplint
+  #       working-directory: ${{env.working-directory}}
+  #       run: docker-compose run ros2-ws /bin/bash -c "ament_uncrustify src/ test/"
+
+  ##################################################################################################
+  # `ament_cppcheck` seems to have some inconsistent results, so it won't be used
+  # It's provided here for reference and possible future use
+
+  # cppcheck:
+  #   name: Run ament_cppcheck
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     DOCKER_IMAGE_NAME: gh_ci_image
+  #     DOCKERFILE_DIR: .devcontainer/
+  #     working-directory: .devcontainer/
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: ament_cppcheck
+  #       working-directory: ${{env.working-directory}}
+  #       run: docker-compose run ros2-ws /bin/bash -c "ament_cppcheck src/ test/"
+
+  ##################################################################################################
+  # `ament_lint_cmake` seems to have some inconsistent results, so it won't be used
+  # It's provided here for reference and possible future use
+
+  # cmake_lint:
+  #   name: Run ament_lint_cmake
+  #   runs-on: ubuntu-20.04
+  #   env:
+  #     DOCKER_IMAGE_NAME: gh_ci_image
+  #     DOCKERFILE_DIR: .devcontainer/
+  #     working-directory: .devcontainer/
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: ament_lint_cmake
+  #       working-directory: ${{env.working-directory}}
+  #       run: docker-compose run ros2-ws /bin/bash -c "ament_lint_cmake " \
+  #             "$(find -name "CMakeLists.txt" -not -path "./build/*" " \
+  #             "-not -path "./install/*" -not -path "./test/*")"
+
+  xmllint:
+    name: Run ament_xmllint
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: ament_xmllint
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_xmllint " \
+              "$(find -name "*.xml" -not -path "./build/*" " \
+              "-not -path "./install/*" -not -path "./test/*")"
+
+  flake8:
+    name: Run ament_flake8
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: ament_flake8
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "ament_flake8"
+
+  coverage:
+    name: Run codecov
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_IMAGE_NAME: gh_ci_image
+      DOCKERFILE_DIR: .devcontainer/
+      working-directory: .devcontainer/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # All steps below uses docker-compose
+      - name: Install dependencies
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c \
+          "apt-get update -y" \
+          "&& rosdep update" \
+          "&& rosdep install --from-paths src --ignore-src -y"
+
+      - name: Build packages
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=\"--coverage\" -DCMAKE_CXX_OUTPUT_EXTENSION_REPLACE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Wall -Wextra -Wpedantic"
+
+      - name: Build tests
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "colcon test"
+
+      - name: Gcovr txt -verbose
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --txt -v"
+
+      - name: Gcovr
+        working-directory: ${{env.working-directory}}
+        run: docker-compose run ros2-ws /bin/bash -c "gcovr -r ./ build --txt -v --xml=report.xml"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
