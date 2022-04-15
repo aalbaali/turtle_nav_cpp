@@ -5,8 +5,6 @@
 
 - [In this repo](#in-this-repo)
 - [Nodes](#nodes)
-  - [`turtle_est_broadcaster`](#turtle_est_broadcaster)
-    - [Parameters](#parameters)
 - [Running the dead-reckoning filter](#running-the-dead-reckoning-filter)
   - [Moving turtle using teleop](#moving-turtle-using-teleop)
 - [Bag files](#bag-files)
@@ -19,22 +17,11 @@
 - [Examples](#examples)
 
 # In this repo
-The turtlesim is used to implement a Kalman filter that estimates the turtle's position from noisy measurements.
+This repository is used as a playground to learn ROS tools and concepts including RVIZ, TF2, etc.
+The simulator implements a dead-reckoning estimator and publishes uncertainty bounds using *SE(2)* kinematics.
 
 # Nodes
-## `turtle_est_broadcaster`
-This node spawns a new turtle to the turtlesim and broadcasts the estimated pose.
-Two `TF2` transforms are published.
-Namely,
-- `odom->est_pose`
-- `map->odom`
-
-### Parameters
-The node takes multiple (optional) parameters
-- `target_name`: Estimated turtle name
-- `target_frame`: Estimated turtle TF2 frame name
-- `odom_frame`: Odometry frame name
-- `map_frame`: Map frame name
+The nodes are documented in the wiki of the repository.
 
 # Running the dead-reckoning filter
 - Start the launch file by running
@@ -126,8 +113,6 @@ ros2 run <package-name> <node-name> --ros-args -p <param_name>:=<param_value>
 
 # Testing
 The unit tests can be run using [colcon_test_tools](https://github.com/aalbaali/colcon_test_tools).
-
-To run the tests locally, run the `.devcontainer/run_all.sh` script
 
 # Pre-commits
 To use:
