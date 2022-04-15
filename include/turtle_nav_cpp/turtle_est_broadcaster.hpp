@@ -17,6 +17,7 @@
 #include <turtlesim/msg/pose.hpp>
 #include <turtlesim/srv/spawn.hpp>
 #include <turtlesim/srv/teleport_absolute.hpp>
+#include <vector>
 
 namespace turtle_nav_cpp
 {
@@ -119,6 +120,12 @@ private:
   std::string true_turtle_frame_;
   std::string odom_frame_;
   std::string map_frame_;
+
+  // Vector of x, y values to offset the turtlesim
+  std::vector<double> turtlesim_est_pose_offset_;
+
+  // Vector of x, y, z values to offset the estimated pose TF2 frame
+  std::vector<double> tf2_est_pose_offset_;
 };
 
 }  // namespace turtle_nav_cpp
