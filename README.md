@@ -16,6 +16,9 @@
 - [Pre-commits](#pre-commits)
 - [Examples](#examples)
 
+**!! Note !!** This repo is no longer maintained.
+It was used as a playground for learning ROS2 and implementing navigation algorithms.
+
 # In this repo
 This repository is used as a playground to learn ROS tools and concepts including RVIZ, TF2, etc.
 The simulator implements a dead-reckoning estimator and publishes uncertainty bounds using *SE(2)* kinematics.
