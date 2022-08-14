@@ -30,18 +30,26 @@ find_package(turtlesim REQUIRED)
 # https://github.com/ros2/eigen3_cmake_module#:~:text=Edit%20your%20CMakeLists.txt
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
+ament_export_dependencies(eigen3_cmake_module)
+ament_export_dependencies(Eigen3)
 
 #######################################################
 # Add custom messages
 find_package(rosidl_default_generators REQUIRED)
-rosidl_generate_interfaces(${PROJECT_NAME}
+set(msg_files
   "msg/Vector3WithCovariance.msg"
   "msg/Vector3WithCovarianceStamped.msg"
+)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${msg_files}
   DEPENDENCIES std_msgs geometry_msgs
   ADD_LINTER_TESTS
 )
 
 ament_export_dependencies(rosidl_default_runtime)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 #######################################################
 
 #######################################################
@@ -60,6 +68,7 @@ ament_target_dependencies(
   Eigen3
   geometry_msgs
 )
+target_link_libraries(ros_utils Eigen3::Eigen)
 
 # Add math-tools library
 add_library(math_utils src/math_utils.cpp)
@@ -74,6 +83,7 @@ ament_target_dependencies(
   eigen_utils
   Eigen3
 )
+target_link_libraries(eigen_utils Eigen3::Eigen)
 
 # Add navigation utils
 add_library(nav_utils src/pose.cpp src/heading.cpp src/nav_utils.cpp)
@@ -84,6 +94,7 @@ ament_target_dependencies(
   turtlesim
   geometry_msgs
 )
+target_link_libraries(nav_utils Eigen3::Eigen)
 #######################################################
 
 # Estimated pose broadcaster
@@ -106,6 +117,7 @@ ament_target_dependencies(
   turtlesim #TEMPORARY!
   geometry_msgs
   tf2
+  tf2_geometry_msgs
 )
 
 # Steering wheel encoder
@@ -127,9 +139,10 @@ ament_target_dependencies(
   turtlesim
   Eigen3
 )
+target_link_libraries(position_sensor Eigen3::Eigen "${cpp_typesupport_target}")
 
 # Add custom messages dependencies
-rosidl_target_interfaces(position_sensor
+rosidl_get_typesupport_target(position_sensor
   ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 # Install targets
