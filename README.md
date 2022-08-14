@@ -151,7 +151,7 @@ Using `ament_target_dependencies` alone is not sufficient.
 Add the custom messages to an "interface" using `rosidl_generate_interfaces` and then link them to
 the specific target using `rosidl_get_typesupport_target`.
 For example,
-```bash
+```cmake
 set(msg_files
   "msg/Vector3WithCovariance.msg"
   "msg/Vector3WithCovarianceStamped.msg"
