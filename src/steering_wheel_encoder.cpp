@@ -56,7 +56,7 @@ SteeringWheelEncoder::SteeringWheelEncoder() : Node("steering_wheel_encoder")
   std::stringstream ss;
   ss << "Map params. mu: \033[92;1m" << gaussian_params[0] << "\033[0m"
      << ", std: \033[92;1m" << gaussian_params[1] << "\033[0m";
-  RCLCPP_INFO(this->get_logger(), ss.str());
+  RCLCPP_INFO(this->get_logger(), ss.str().c_str());
 
   rn_generator_ = std::default_random_engine();
 

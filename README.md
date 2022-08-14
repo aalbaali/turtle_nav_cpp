@@ -141,3 +141,39 @@ The image below is the output of the *SE(2) dead-reckoning* example, where the "
 <p align="center">
   <img src="images/example_se2_dead_reckoning.png" />
 </p>
+
+# FAQs and resolved issues
+## Eigen headers not found using `colcon` build
+Link the Eigen library to the targets using `target_link_libraries`.
+Using `ament_target_dependencies` alone is not sufficient.
+
+## ROS custom message headers not found during build
+Add the custom messages to an "interface" using `rosidl_generate_interfaces` and then link them to
+the specific target using `rosidl_get_typesupport_target`.
+For example,
+```bash
+set(msg_files
+  "msg/Vector3WithCovariance.msg"
+  "msg/Vector3WithCovarianceStamped.msg"
+)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${msg_files}
+  DEPENDENCIES std_msgs geometry_msgs
+  ADD_LINTER_TESTS
+)
+
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_get_typesupport_target(position_sensor ${PROJECT_NAME} "rosidl_typesupport_cpp")
+```
+Check [this answer](https://robotics.stackexchange.com/a/23180/29007) for more information.
+
+**Note** that this change is applicable since ROS Humble.
+
+## `colcon` and `ros2` autocomplete not working in `zsh
+[This answer](https://github.com/ros2/ros2cli/issues/534#issuecomment-957516107) resolved the issue.
+But the autocomplete is somewhat slow, so it's not an ideal solution.
+
+## Some changes from Foxy to Humble
+- [Linking custom messages](#ros-custom-message-headers-not-found-during-build)
+- `rosidl_target_interfaces` is replaced with `rosidl_get_typesupport_target`

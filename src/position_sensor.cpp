@@ -8,6 +8,7 @@
 
 #include "turtle_nav_cpp/position_sensor.hpp"
 
+#include "geometry_msgs/msg/point_stamped.h"
 #include <memory>
 #include <string>
 

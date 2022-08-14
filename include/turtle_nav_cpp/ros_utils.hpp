@@ -41,7 +41,7 @@ template <typename T>
 T DeclareAndImportParam(
   rclcpp::Node * const nh, const std::string & param_name, const T & default_value)
 {
-  T imported_value;
+  T imported_value = default_value;
   nh->declare_parameter<T>(param_name, default_value);
   nh->get_parameter(param_name, imported_value);
 
