@@ -1,4 +1,4 @@
-FROM althack/ros2:foxy-dev
+FROM aalbaali/humble:dev
 
 ENV _colcon_cd_root=/workspace
 
@@ -20,4 +20,4 @@ RUN apt-get -y update \
 
 ENV DEBIAN_FRONTEND=dialog
 
-CMD ["/bin/bash"]
+CMD ["zsh"]
